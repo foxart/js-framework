@@ -200,12 +200,12 @@ module.exports = class FaServerHttpClass {
 	/**
 	 *
 	 * @param req
-	 * @return {module.FaPromise}
+	 * @return {Promise}
 	 * @private
 	 */
 	_readData(req) {
 		let context = this;
-		return new FaPromise(function (resolve, reject) {
+		return new Promise(function (resolve, reject) {
 			let result = '';
 			let data = '';
 			req.on('data', function (chunk) {
