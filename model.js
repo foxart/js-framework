@@ -1,6 +1,5 @@
 'use strict';
 
-// const _applyConverter = Symbol('applyConverter');
 class Model {
 	constructor(name) {
 		this.class_name = name;
