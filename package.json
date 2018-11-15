@@ -1,5 +1,5 @@
 {
-  "name": "fa",
+  "name": "fa-nodejs",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FoxArt/fa-nodejs.git"
+    "url": "git+https://github.com/foxart/fa-nodejs.git"
   },
   "author": "Kosenko Ivan Sergeevich",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/FoxArt/fa-nodejs/issues"
+    "url": "https://github.com/foxart/fa-nodejs/issues"
   },
-  "homepage": "https://github.com/FoxArt/fa-nodejs#readme"
+  "homepage": "https://github.com/foxart/fa-nodejs#readme"
 }
