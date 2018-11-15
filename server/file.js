@@ -39,7 +39,7 @@ module.exports = class FaFileClass {
 	/**
 	 *
 	 * @param name
-	 * @return {Promise<any>}
+	 * @return {Promise<void>}
 	 * @private
 	 */
 	_readAsync(name) {
