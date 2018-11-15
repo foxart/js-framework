@@ -93,7 +93,7 @@ module.exports = class FaServerHttpRoutesClass {
 							break;
 						default:
 							content.push(context._file.asByte(`package-fa-nodejs/client/${item}.js`));
-							// content.push(context._file.asByte(`vendor/fa-modules/${item}.min.js`));
+						// content.push(context._file.asByte(`vendor/fa-modules/${item}.min.js`));
 					}
 					content.push(Buffer.from(`;\n`));
 				})
