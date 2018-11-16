@@ -8,7 +8,7 @@ const
 	FaServerHttpClass = require('./http'),
 	FaServerHttpResponseClass = require('./http-response'),
 	FaTemplate = require('./template'),
-	FaConsole = require('../console');
+	FaConsole = require('../console/console-color');
 /**
  *
  * @type {module.FaServerClass}

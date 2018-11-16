@@ -1,6 +1,6 @@
 'use strict';
 const
-	Hue = require('../console');
+	Hue = require('../console/console-color');
 
 /**
  *
