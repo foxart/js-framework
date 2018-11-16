@@ -146,7 +146,6 @@ module.exports = class FaLogClass {
 	consoleError() {
 		let template = `${FaConsole.bg.red}${FaConsole.color.yellow} {time} ${FaConsole.color.white}{path}:${FaConsole.color.yellow}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {data}`;
 		let trace = FaTrace.getData(2);
-		console.log('xxx');
 		let content = this.getArguments(arguments);
 		// console.log(content);
 		// return;
