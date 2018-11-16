@@ -102,7 +102,7 @@ module.exports = function (configuration) {
 				post: {},
 			};
 			// console.log(url);
-			// consoleWarn(body);
+			// FaConsole.consoleWarn(body);
 			// if (Check.empty(url.query) === false) {
 			if (url.query) {
 				data['get'] = parseParameters(url.query);

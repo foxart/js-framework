@@ -76,7 +76,7 @@ module.exports = class FaHttpRouterClass {
 		} else {
 			let error = new FaError(`route exist: ${route}`, false);
 			error.appendTrace(trace);
-			consoleError(error);
+			FaConsole.consoleError(error);
 		}
 	};
 
@@ -92,7 +92,7 @@ module.exports = class FaHttpRouterClass {
 			let trace = FaTrace.getString(1);
 			let error = new FaError(`route not found: ${route}`, false);
 			error.appendTrace(trace);
-			consoleError(error);
+			FaConsole.consoleError(error);
 		}
 	};
 };

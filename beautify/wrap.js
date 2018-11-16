@@ -121,7 +121,7 @@ exports.wrapDate = function (data, show_color, show_type) {
  * @returns {string}
  */
 exports.wrapError = function (name, message, trace, stack, tab, show_color, show_type) {
-	// consoleError(message)
+	// FaConsole.consoleError(message)
 	let type = show_type ? getType('Error', null, show_color) : '';
 	let backtrace;
 	let backtrace_list;

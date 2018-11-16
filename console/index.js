@@ -13,7 +13,7 @@ const FaTrace = require('../trace/index');
  */
 module.exports = class FaLogClass {
 	constructor(executor) {
-		this._path = executor ? executor : '../runtime';
+		this._path = executor ? executor : '../runtime/';
 	}
 
 	/**
@@ -106,6 +106,7 @@ module.exports = class FaLogClass {
 		this._consoleFile(content, filename, template, trace);
 	}
 
+
 	/**
 	 *
 	 * @param data
@@ -150,6 +151,6 @@ module.exports = class FaLogClass {
 		// console.log(content);
 		// return;
 		this._consoleWrite(this._beautify(content, 'extended-color'), template, trace);
-		// this._consoleFile(this._beautify(content, 'extended'), `console-error`, null, trace);
+		// this._FaConsole.consoleFile(this._beautify(content, 'extended'), `console-error`, null, trace);
 	}
 };

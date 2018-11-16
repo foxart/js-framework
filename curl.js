@@ -139,7 +139,7 @@ exports.https = function (options, data, callback) {
  * @returns {Promise<any>}
  */
 function requestPromise(protocol, options, data) {
-	// consoleInfo(arguments);
+	// FaConsole.consoleInfo(arguments);
 	return new FaPromise(function (resolve, reject) {
 		let HttpRequest;
 		let RequestOptions = requestOptions(options);
@@ -176,7 +176,7 @@ function requestPromise(protocol, options, data) {
  * @returns {*}
  */
 exports.httpPromise = function (options, data) {
-	// consoleError(options);
+	// FaConsole.consoleError(options);
 	return requestPromise("http", options, data)
 };
 /**
@@ -186,7 +186,7 @@ exports.httpPromise = function (options, data) {
  * @returns {*}
  */
 exports.httpsPromise = function (options, data) {
-	// consoleError(options);
+	// FaConsole.consoleError(options);
 	return requestPromise("https", options, data)
 };
 /**

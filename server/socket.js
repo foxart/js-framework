@@ -61,7 +61,7 @@ module.exports = class FaServerSocketClass {
 		_Io = SocketIo(parent.http.Http, configuration);
 		_Io.on('connect', function (socket) {
 			// context._extendSocketListener(socket);
-			consoleInfo(`trying: ${socket.id}`);
+			FaConsole.consoleInfo(`trying: ${socket.id}`);
 			let onevent = socket.onevent;
 			socket.onevent = function (packet) {
 				let args = packet.data || [];
@@ -75,8 +75,8 @@ module.exports = class FaServerSocketClass {
 		_Io.on('connection', function (socket) {
 			context._onSocketConnect(socket);
 			socket.on('error', function (error) {
-				consoleError(error);
-				consoleFile(error, 'socket/error');
+				FaConsole.consoleError(error);
+				FaConsole.consoleFile(error, 'socket/error');
 				socket.send(error);
 			});
 			socket.on('disconnect', function () {
@@ -101,7 +101,7 @@ module.exports = class FaServerSocketClass {
 	 */
 	_onSocketConnect(socket) {
 		let context = this;
-		consoleInfo(`listening: ${socket.id}`);
+		FaConsole.consoleInfo(`listening: ${socket.id}`);
 		// let cookie = require('cookie');
 		// let cookies = cookie.parse(socket.handshake.headers.cookie);
 		socket.on('*', function (event, data, callback) {
@@ -120,7 +120,7 @@ module.exports = class FaServerSocketClass {
 	 * @private
 	 */
 	_onSocketDisconnect(socket) {
-		consoleInfo(`disconnect: ${socket.id}`);
+		FaConsole.consoleInfo(`disconnect: ${socket.id}`);
 	}
 
 	_handleRouter(socket, event, handler, data, callback) {

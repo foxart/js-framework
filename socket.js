@@ -36,7 +36,7 @@ module.exports = function (configuration) {
 	let createSocketServer = function (configuration) {
 		// let os = require('os');
 		// let ifaces = os.networkInterfaces();
-		// consoleInfo(ifaces);
+		// FaConsole.consoleInfo(ifaces);
 		// Object.keys(ifaces).forEach(function (ifname) {
 		// 	let alias = 0;
 		// 	ifaces[ifname].forEach(function (iface) {
@@ -77,13 +77,13 @@ module.exports = function (configuration) {
 
 	function onConnectHandler(socket) {
 		/*debug*/
-		// consoleInfo('socket In: ' + socket['id']);
+		// FaConsole.consoleInfo('socket In: ' + socket['id']);
 		NotifySocketClient(socket);
 		NotifySocketClienList();
 	}
 
 	function onDisconnectHandler(socket) {
-		// consoleInfo('socket Out: ' + socket['id']);
+		// FaConsole.consoleInfo('socket Out: ' + socket['id']);
 		// console.log('socket Disconnect' + socket['handshake']['address']);
 		NotifySocketClienList();
 	}

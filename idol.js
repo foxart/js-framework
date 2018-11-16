@@ -81,20 +81,20 @@ exports.serve = function (context, token, data) {
 function getCallback(callback) {
 	return Object.assign({}, {
 		onStart: function (request) {
-			consoleInfo(`onStart | ${request['token']}`);
-			consoleInfo(request);
+			FaConsole.consoleInfo(`onStart | ${request['token']}`);
+			FaConsole.consoleInfo(request);
 		},
 		onFinish: function (request) {
-			consoleInfo(`onFinish | ${request['token']}`);
-			consoleInfo(request);
+			FaConsole.consoleInfo(`onFinish | ${request['token']}`);
+			FaConsole.consoleInfo(request);
 		},
 		onError: function (request) {
-			consoleError(`onError | ${request['token']}`);
-			consoleError(request);
+			FaConsole.consoleError(`onError | ${request['token']}`);
+			FaConsole.consoleError(request);
 		},
 		onUndefined: function (request) {
-			consoleWarn(`onUndefined | ${request['token']}`);
-			consoleWarn(request);
+			FaConsole.consoleWarn(`onUndefined | ${request['token']}`);
+			FaConsole.consoleWarn(request);
 		}
 	}, callback);
 }

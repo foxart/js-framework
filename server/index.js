@@ -1,14 +1,15 @@
 'use strict';
 /*vendor*/
-const
-	FaServerConfigurationClass = require('./configuration'),
-	// FaServerFileClass = require('./file'),
-	FaServerConverterClass = require('./converter'),
-	FaServerSocketClass = require('./socket'),
-	FaServerHttpClass = require('./http'),
-	FaServerHttpResponseClass = require('./http-response'),
-	FaTemplate = require('./template'),
-	FaConsole = require('../console/console-color');
+const FaServerConfigurationClass = require('./configuration');
+// FaServerFileClass = require('./file'),
+const FaServerConverterClass = require('./converter');
+const FaServerSocketClass = require('./socket');
+const FaServerHttpClass = require('./http');
+const FaServerHttpResponseClass = require('./http-response');
+const FaTemplate = require('./template');
+const FaConsoleClass = require('../console');
+const FaConsole = new FaConsoleClass();
+const FaConsoleColor = require('../console/console-color');
 /**
  *
  * @type {module.FaServerClass}
@@ -95,8 +96,9 @@ module.exports = class FaServerClass {
 	 * @param path
 	 */
 	log(name, protocol, host, port, path) {
-		let message = `${name} ${FaConsole.effect.bold}${FaConsole.color.green}\u2714${FaConsole.effect.reset} ${protocol}://${host}:${port} <${path}>`;
-		let template = `${FaConsole.bg.black}${FaConsole.color.cyan} {time} ${FaConsole.color.white}{path}:${FaConsole.color.cyan}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {content}`;
-		consoleWrite(message, template, 'plain');
+		let message = `${name} ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ${protocol}://${host}:${port} <${path}>`;
+		let template = `${FaConsoleColor.bg.black}${FaConsoleColor.color.cyan} {time} ${FaConsoleColor.color.white}{path}:${FaConsoleColor.color.cyan}{line}${FaConsoleColor.color.white}:{column} ${FaConsoleColor.effect.reset} {content}`;
+		FaConsole.consoleWrite(message, template, 'plain');
 	}
 };
+

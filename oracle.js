@@ -22,18 +22,18 @@ module.exports = function (configuration) {
 		try {
 			// let trace = Trace.getData(2);
 			// writeToFile(data, trace, `error`);
-			// consoleError(data);
-			consoleFile(data, 'oracle/error');
+			// FaConsole.consoleError(data);
+			FaConsole.consoleFile(data, 'oracle/error');
 		} catch (error) {
-			consoleError(error);
+			FaConsole.consoleError(error);
 		}
 	}
 
 	function logOracleResponse(data) {
 		try {
-			consoleFile(data, `oracle/response`);
+			FaConsole.consoleFile(data, `oracle/response`);
 		} catch (error) {
-			consoleError(error);
+			FaConsole.consoleError(error);
 		}
 	}
 

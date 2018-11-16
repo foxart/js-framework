@@ -121,7 +121,7 @@ module.exports = function (configuration) {
 		}
 		if (Mongo === undefined || Mongo.isConnected() === false) {
 			Mongo = await this.openConnection().catch(function (error) {
-				consoleError(error)
+				FaConsole.consoleError(error)
 			});
 		}
 		this.sanitize(filter);
@@ -166,14 +166,14 @@ module.exports = function (configuration) {
 	module.insertOne = async function (collection, data, callback) {
 		if (Mongo === undefined || Mongo.isConnected() === false) {
 			Mongo = await this.openConnection().catch(function (error) {
-				consoleError(error)
+				FaConsole.consoleError(error)
 			});
 		}
 		if (Mongo !== undefined) {
 			Mongo.db(this.configuration.database).collection(collection).insertOne(data, function (error, result) {
 				if (error !== null) {
 					// throw error;
-					consoleInfo(error);
+					FaConsole.consoleInfo(error);
 				} else {
 					assert.equal(error, null);
 					assert.equal(1, result.result.n);
@@ -217,7 +217,7 @@ module.exports = function (configuration) {
 	module.insertMany = async function (collection, data, callback) {
 		if (Mongo === undefined || Mongo.isConnected() === false) {
 			Mongo = await this.openConnection().catch(function (error) {
-				consoleError(error)
+				FaConsole.consoleError(error)
 			});
 		}
 		if (Mongo !== undefined) {
@@ -244,7 +244,7 @@ module.exports = function (configuration) {
 		}
 		if (Mongo === undefined || Mongo.isConnected() === false) {
 			Mongo = await this.openConnection().catch(function (error) {
-				consoleError(error)
+				FaConsole.consoleError(error)
 			});
 		}
 		if (Mongo !== undefined) {
@@ -275,7 +275,7 @@ module.exports = function (configuration) {
 		// consoleLog(options);
 		if (Mongo === undefined || Mongo.isConnected() === false) {
 			Mongo = await this.openConnection().catch(function (error) {
-				consoleError(error)
+				FaConsole.consoleError(error)
 			});
 		}
 		this.sanitize(filter);

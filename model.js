@@ -42,7 +42,7 @@ class Model {
 				if (typeof element === "object") {
 					result[index] = context.adapterFunction([item], element, options)[0];
 				} else if (typeof element === "function") {
-					// consoleError(element);
+					// FaConsole.consoleError(element);
 					let result_function;
 					try {
 						result_function = element.call(this, item, options);
@@ -50,7 +50,7 @@ class Model {
 						result_function = undefined;
 						// let Trace = require('./trace');
 						// consoleLog(Trace.getData());
-						// consoleError(exception);
+						// FaConsole.consoleError(exception);
 					}
 					result[index] = result_function !== undefined ? result_function : null;
 				} else if (item) {
