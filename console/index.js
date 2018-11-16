@@ -79,7 +79,7 @@ module.exports = class FaLogClass {
 		let line = trace['lineNumber'];
 		let column = trace['columnNumber'];
 		let string = template.replaceAll([
-				'{time}', '{path}', '{line}', '{column}', '{content}',
+				'{time}', '{path}', '{line}', '{column}', '{data}',
 			], [
 				time, path, line, column, content,
 			]
@@ -122,28 +122,28 @@ module.exports = class FaLogClass {
 	 *
 	 */
 	consoleLog() {
-		let template = `${FaConsole.bg.black}${FaConsole.color.cyan} {time} ${FaConsole.color.white}{path}:${FaConsole.color.cyan}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {content}`;
+		let template = `${FaConsole.bg.black}${FaConsole.color.cyan} {time} ${FaConsole.color.white}{path}:${FaConsole.color.cyan}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {data}`;
 		let trace = FaTrace.getData(2);
 		let content = this.getArguments(arguments);
 		this._consoleWrite(this._beautify(content, 'extended-color'), template, trace);
 	}
 
 	consoleInfo() {
-		let template = `${FaConsole.bg.blue}${FaConsole.color.black} {time} ${FaConsole.color.white}{path}:${FaConsole.color.black}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {content}`;
+		let template = `${FaConsole.bg.blue}${FaConsole.color.black} {time} ${FaConsole.color.white}{path}:${FaConsole.color.black}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {data}`;
 		let trace = FaTrace.getData(2);
 		let content = this.getArguments(arguments);
 		this._consoleWrite(this._beautify(content, 'extended-color'), template, trace);
 	}
 
 	consoleWarn() {
-		let template = `${FaConsole.bg.yellow}${FaConsole.color.red} {time} ${FaConsole.color.black}{path}:${FaConsole.color.red}{line}${FaConsole.color.black}:{column} ${FaConsole.effect.reset} {content}`;
+		let template = `${FaConsole.bg.yellow}${FaConsole.color.red} {time} ${FaConsole.color.black}{path}:${FaConsole.color.red}{line}${FaConsole.color.black}:{column} ${FaConsole.effect.reset} {data}`;
 		let trace = FaTrace.getData(2);
 		let content = this.getArguments(arguments);
 		this._consoleWrite(this._beautify(content, 'extended-color'), template, trace);
 	}
 
 	consoleError() {
-		let template = `${FaConsole.bg.red}${FaConsole.color.yellow} {time} ${FaConsole.color.white}{path}:${FaConsole.color.yellow}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {content}`;
+		let template = `${FaConsole.bg.red}${FaConsole.color.yellow} {time} ${FaConsole.color.white}{path}:${FaConsole.color.yellow}{line}${FaConsole.color.white}:{column} ${FaConsole.effect.reset} {data}`;
 		let trace = FaTrace.getData(2);
 		console.log('xxx');
 		let content = this.getArguments(arguments);
