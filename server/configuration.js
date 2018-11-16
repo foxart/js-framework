@@ -23,6 +23,7 @@ module.exports = class FaServerConfigurationClass {
 			http: this._extendConfiguration(this._http, configuration['http']),
 			socket: this._extendConfiguration(this._socket, configuration['socket']),
 		};
+		return this._configuration;
 	}
 
 	/**

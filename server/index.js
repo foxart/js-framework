@@ -1,15 +1,14 @@
 'use strict';
 /*vendor*/
-const FaServerConfigurationClass = require('./configuration');
-// FaServerFileClass = require('./file'),
-const FaServerConverterClass = require('./converter');
-const FaServerSocketClass = require('./socket');
-const FaServerHttpClass = require('./http');
-const FaServerHttpResponseClass = require('./http-response');
-const FaTemplate = require('./template');
-const FaConsoleClass = require('../console');
-const FaConsole = new FaConsoleClass();
-const FaConsoleColor = require('../console/console-color');
+const
+	FaServerConfigurationClass = require('./configuration'),
+	// FaServerFileClass = require('./file'),
+	FaServerConverterClass = require('./converter'),
+	FaServerSocketClass = require('./socket'),
+	FaServerHttpClass = require('./http'),
+	FaServerHttpResponseClass = require('./http-response'),
+	FaTemplate = require('./template'),
+	FaConsoleColor = require('../console/console-color');
 /**
  *
  * @type {module.FaServerClass}
@@ -21,6 +20,11 @@ module.exports = class FaServerClass {
 	 */
 	constructor(configuration) {
 		let context = this;
+		/**
+		 *
+		 * @type {module.FaServerConfigurationClass}
+		 * @private
+		 */
 		this._ConfigurationClass = new FaServerConfigurationClass(configuration);
 		this._ConverterClass = new FaServerConverterClass(this.configuration.converter);
 		this._HttpClass = new FaServerHttpClass(context, this.configuration.http);
@@ -30,10 +34,11 @@ module.exports = class FaServerClass {
 
 	/**
 	 *
-	 * @return {{http: *, socket: *, converter: *}}
+	 * @return {module.FaServerConfigurationClass}
 	 */
 	get configuration() {
-		return this._ConfigurationClass.get;
+		// return this._ConfigurationClass.get;
+		return this._ConfigurationClass;
 	};
 
 	/**
@@ -97,8 +102,7 @@ module.exports = class FaServerClass {
 	 */
 	log(name, protocol, host, port, path) {
 		let message = `${name} ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ${protocol}://${host}:${port} <${path}>`;
-		let template = `${FaConsoleColor.bg.black}${FaConsoleColor.color.cyan} {time} ${FaConsoleColor.color.white}{path}:${FaConsoleColor.color.cyan}{line}${FaConsoleColor.color.white}:{column} ${FaConsoleColor.effect.reset} {content}`;
+		let template = `${FaConsoleColor.bg.black}${FaConsoleColor.color.cyan} {time} ${FaConsoleColor.color.white}{path}:${FaConsoleColor.color.cyan}{line}${FaConsoleColor.color.white}:{column} ${FaConsoleColor.effect.reset} {data}`;
 		FaConsole.consoleWrite(message, template, 'plain');
 	}
 };
-
