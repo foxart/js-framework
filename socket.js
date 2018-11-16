@@ -2,8 +2,8 @@
 const
 	SocketIo = require('socket.io');
 /*services*/
-const
-	LogService = require('../idol/modules/audit/services/LogService');
+// const
+// 	LogService = require('../idol/modules/audit/services/LogService');
 /*modules*/
 // const Beautify = require('./beautify');
 /**
@@ -34,27 +34,6 @@ module.exports = function (configuration) {
 	}
 
 	let createSocketServer = function (configuration) {
-		// let os = require('os');
-		// let ifaces = os.networkInterfaces();
-		// FaConsole.consoleInfo(ifaces);
-		// Object.keys(ifaces).forEach(function (ifname) {
-		// 	let alias = 0;
-		// 	ifaces[ifname].forEach(function (iface) {
-		// 		if ('IPv4' !== iface.family || iface.internal !== false) {
-		// 			// skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-		// 			return;
-		// 		}
-		// 		if (alias >= 1) {
-		// 			// this single interface has multiple ipv4 addresses
-		// 			consoleLog(ifname + ':' + alias, iface.address);
-		// 		} else {
-		// 			// this interface has only one ipv4 adress
-		// 			consoleLog(ifname, iface.address);
-		// 		}
-		// 		++alias;
-		// 	});
-		// });
-		LogService.check(`socket | ${configuration.host}:${configuration.port}${configuration.options.path}`);
 		/**
 		 * @type Object
 		 */

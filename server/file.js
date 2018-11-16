@@ -17,11 +17,7 @@ module.exports = class FaFileClass {
 	 * @param traceLevel {number|null}
 	 */
 	constructor(path = null, traceLevel = 1) {
-		if (path) {
-			this._path = path;
-		} else {
-			this._path = process.cwd();
-		}
+		this._path = path ? path : process.cwd();
 		this._traceLevel = traceLevel;
 	}
 

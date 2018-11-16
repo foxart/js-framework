@@ -7,7 +7,7 @@ const
 	FaServerSocketClass = require('./socket'),
 	FaServerHttpClass = require('./http'),
 	FaServerHttpResponseClass = require('./http-response'),
-	FaTemplate = require('./template'),
+	FaTemplate = require('../template/index'),
 	FaConsoleColor = require('../console/console-color');
 /**
  *
@@ -29,7 +29,7 @@ module.exports = class FaServerClass {
 		this._ConverterClass = new FaServerConverterClass(this.configuration.converter);
 		this._HttpClass = new FaServerHttpClass(context, this.configuration.http);
 		this._SocketClass = new FaServerSocketClass(context, this.configuration.socket);
-		this._TemplateClass = new FaTemplate();
+		// this._TemplateClass = new FaTemplate();
 	}
 
 	/**
