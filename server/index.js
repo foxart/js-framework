@@ -8,7 +8,6 @@ const
 	FaServerHttpClass = require('./http'),
 	FaServerHttpResponseClass = require('./http-response'),
 	FaTemplate = require('../template/index'),
-	FaTraceClass = require('../trace.js'),
 	FaConsoleColor = require('../console/console-color');
 /**
  *
@@ -30,10 +29,6 @@ module.exports = class FaServerClass {
 		this._ConverterClass = new FaServerConverterClass(this.configuration.converter);
 		this._HttpClass = new FaServerHttpClass(context, this.configuration.http);
 		this._SocketClass = new FaServerSocketClass(context, this.configuration.socket);
-		// this._trace = new FaTraceClass();
-		// let path = Path.dirname(this._trace.path(1));
-		// FaConsole.consoleWarn(path);
-		this._TemplateClass = new FaTemplate(process.cwd() + '/http');
 	}
 
 	/**
@@ -74,14 +69,6 @@ module.exports = class FaServerClass {
 	 */
 	get socket() {
 		return this._SocketClass;
-	}
-
-	/**
-	 *
-	 * @return {module.FaTemplateClass}
-	 */
-	get template() {
-		return this._TemplateClass;
 	}
 
 	/**
