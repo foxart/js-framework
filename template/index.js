@@ -48,7 +48,7 @@ module.exports = class FaTemplateClass {
 	 * @return {module.FaTemplateClass}
 	 */
 	load(filename) {
-		this.set = this._file.asString(`views/${filename}.tpl`);
+		this.set = this._file.asString(`/views/${filename}.tpl`);
 		return this;
 	}
 };
