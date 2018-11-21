@@ -1,7 +1,6 @@
 'use strict';
 /*vendor*/
 const FaServerFileClass = require('../server/file');
-const FaTraceClass = require('../trace.js');
 /**
  *
  * @type {module.FaTemplateClass}
@@ -48,7 +47,7 @@ module.exports = class FaTemplateClass {
 	 * @return {module.FaTemplateClass}
 	 */
 	load(filename) {
-		this.set = this._file.asString(`/views/${filename}.tpl`);
+		this.set = this._file.asString(`/${filename}.tpl`);
 		return this;
 	}
 };

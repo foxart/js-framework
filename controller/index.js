@@ -1,15 +1,17 @@
-/*node*/
-const Path = require('path');
+'use strict';
 /*fa*/
 const FaTemplateClass = require('../template');
-const FaTraceClass = require('../trace.js');
 /**
  *
- * @type {module.IndexController}
+ * @type {module.FaControllerClass}
  */
-module.exports = class IndexController {
-	constructor() {
-		this._template = new FaTemplateClass(Path.dirname(new FaTraceClass().path(3)));
+module.exports = class FaControllerClass {
+	/**
+	 *
+	 * @param path
+	 */
+	constructor(path = null) {
+		this._template = new FaTemplateClass(path);
 	}
 
 	/**
@@ -23,10 +25,10 @@ module.exports = class IndexController {
 	/**
 	 *
 	 * @param data {object}
-	 * @param http {module.FaServerClass}
+	 * @param server {module.FaServerClass}
 	 * @return {*}
 	 */
-	actionIndex(data, http) {
-		return http.httpResponse(data);
+	actionIndex(data, server) {
+		return server.httpResponse({xml:data}, server.http.contentType.xml);
 	}
 };
