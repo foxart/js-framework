@@ -11,7 +11,7 @@ module.exports = class FaTemplateClass {
 	 * @param path {string|null}
 	 */
 	constructor(path = null) {
-		FaConsole.consoleInfo(path);
+		// FaConsole.consoleInfo(path);
 		this._FileClass = new FaServerFileClass(path, 2);
 		this._template = '';
 	}

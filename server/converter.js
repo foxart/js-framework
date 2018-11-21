@@ -121,7 +121,7 @@ module.exports = class FaServerConverterClass {
 	 * @param data {object|string}
 	 * @return {string}
 	 */
-	toDefault(data) {
+	toHtml(data) {
 		return this.isString(data) ? data : FaBeautify.extended(data);
 	}
 };

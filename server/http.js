@@ -173,7 +173,7 @@ module.exports = class FaServerHttpClass {
 					content = Buffer.from(this._parent.converter.toXml(responseClass.get.content));
 					break;
 				default:
-					content = this._parent.converter.toDefault(responseClass.get.content);
+					content = this._parent.converter.toHtml(responseClass.get.content);
 			}
 		}
 		for (let property in responseClass.get.headers) {
