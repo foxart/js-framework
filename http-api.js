@@ -232,7 +232,7 @@ module.exports = function (format) {
 	 * trace error
 	 */
 	const
-		ModuleTrace = require('./trace/index');
+		ModuleTrace = require('./trace/deprecated-index');
 	module.getError = function (error) {
 		if (Array.isArray(error.trace)) {
 			error.trace.push(ModuleTrace.extractString(ModuleTrace.getData(5)));

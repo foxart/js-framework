@@ -3,6 +3,22 @@
  *
  * @return {string}
  */
+String.prototype.escapeHtml = function () {
+	let map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	};
+	return this.replace(/[&<>"']/g, function (m) {
+		return map[m];
+	});
+};
+/**
+ *
+ * @return {string}
+ */
 String.prototype.toUnicode = function () {
 	let result = '';
 	for (let i = 0; i < this.length; i++) {

@@ -2,7 +2,7 @@
 /*vendor*/
 const
 	FaError = require('../error/index'),
-	FaTrace = require('../trace/index');
+	FaTrace = require('../trace/deprecated-index');
 /**
  *
  * @type {module.FaHttpRouterClass}

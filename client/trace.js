@@ -1,6 +1,6 @@
 'use strict';
 
-class FaTraceClass {
+class FaTraceClientClass {
 	constructor() {
 	}
 
@@ -61,6 +61,6 @@ class FaTraceClass {
 
 /**
  *
- * @type {FaTraceClass}
+ * @type {FaTraceClientClass}
  */
-let FaTrace = new FaTraceClass();
+let FaTrace = new FaTraceClientClass();

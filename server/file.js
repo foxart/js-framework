@@ -3,9 +3,8 @@
 const
 	Fs = require('fs');
 /*vendor*/
-const
-	FaError = require('../error/index'),
-	FaTrace = require('../trace/index');
+const FaError = require('../error');
+const FaTraceClass = require('../trace');
 /**
  *
  * @type {module.FaFileClass}
@@ -14,11 +13,12 @@ module.exports = class FaFileClass {
 	/**
 	 *
 	 * @param path {string|null}
-	 * @param traceLevel {number|null}
+	 * @param traceLevel {number}
 	 */
-	constructor(path = null, traceLevel = 1) {
+	constructor(path = null, traceLevel = 3) {
 		this._path = path ? path : process.cwd();
 		this._traceLevel = traceLevel;
+		this._TraceClass = new FaTraceClass();
 	}
 
 	/**
@@ -66,8 +66,23 @@ module.exports = class FaFileClass {
 		if (this.exist(filename)) {
 			return Fs.readFileSync(this._filename(filename));
 		} else {
-			throw new FaError(`file not found: ${this._filename(filename)}`, false);
+			throw this.error(`file not found: ${this._filename(filename)}`);
+			// throw new FaError(`file not found: ${this._filename(filename)}`, false);
+			// throw new FaError(`file not found: ${this._filename(filename)}`);
 		}
+	}
+
+	/**
+	 *
+	 * @param e {module.FaError|*}
+	 * @return {module.FaError}
+	 */
+	error(e) {
+		if (e instanceof FaError === false) {
+			e = new FaError(e, false);
+		}
+		e.appendTrace(this._TraceClass.parse(e).string(this._traceLevel));
+		return e;
 	}
 
 	/**
@@ -89,18 +104,19 @@ module.exports = class FaFileClass {
 	 */
 	asByte(filename, async = false) {
 		if (async) {
-			return this._readAsync(filename).then(function (data) {
-				return data;
-			}).catch(function (e) {
-				throw new FaError(e);
-			});
+			return this._readAsync(filename)
+			// return this._readAsync(filename).then(function (data) {
+			// 	return data;
+			// }).catch(function (e) {
+			// 	throw new FaError(e);
+			// });
 		} else {
 			try {
 				return this._readSync(filename);
 			} catch (e) {
-				let Error = new FaError(e, false);
-				Error.appendTrace(FaTrace.getString(this._traceLevel));
-				throw Error;
+				// let Error = new FaError(e, false);
+				// Error.appendTrace(FaTrace.getString(this._traceLevel));
+				throw e;
 			}
 		}
 	};
@@ -110,7 +126,6 @@ module.exports = class FaFileClass {
 	 * @param filename {string}
 	 * @param async {boolean}
 	 * @return {*}
-	 * @throws {error}
 	 * @throws {module.FaError}
 	 */
 	asString(filename, async = false) {
@@ -121,12 +136,14 @@ module.exports = class FaFileClass {
 				throw new FaError(e);
 			});
 		} else {
+			// return this._readSync(filename).toString();
 			try {
 				return this._readSync(filename).toString();
 			} catch (e) {
-				let Error = new FaError(e, false);
-				Error.appendTrace(FaTrace.getString(this._traceLevel));
-				throw Error;
+				// FaConsole.consoleWarn(this.error(e));
+				// e.appendTrace(FaTrace.getString(this._traceLevel));
+				// throw new FaError(e);
+				throw e;
 			}
 		}
 	};

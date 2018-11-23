@@ -45,7 +45,7 @@ module.exports = class FaServerClass {
 	 * @returns {module.FaFileClass}
 	 */
 	// get file() {
-	// 	return this._FileClass;
+	// 	return this._File;
 	// }
 	/**
 	 *

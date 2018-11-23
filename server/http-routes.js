@@ -23,7 +23,6 @@ module.exports = class FaServerHttpRoutesClass {
 	 * @private
 	 */
 	get _file() {
-
 		return this._FileClass;
 	}
 
@@ -56,12 +55,18 @@ module.exports = class FaServerHttpRoutesClass {
 	socketRoutes(faServerClass) {
 		/** @type {module.FaServerHttpRoutesClass} */
 		let context = this;
+		/**
+		 *
+		 */
 		faServerClass.router.attach('/socket.io.js', function () {
 			/** @type {module.FaServerClass} */
 			let self = this;
 			let content = context._file.asByte('/node_modules/socket.io-client/dist/socket.io.slim.js');
 			return self.httpResponse(content, self.http.contentType.javascript);
 		});
+		/**
+		 *
+		 */
 		faServerClass.router.attach('/socket.io.slim.js.map', function () {
 			/** @type {module.FaServerClass} */
 			let self = this;
@@ -73,10 +78,27 @@ module.exports = class FaServerHttpRoutesClass {
 				'Content-Type': self.http.contentType.json,
 			});
 		});
+		/**
+		 *
+		 */
+		faServerClass.router.attach('/codemirror.js', function () {
+			/** @type {module.FaServerClass} */
+			let self = this;
+			let content = context._file.asByte('/node_modules/codemirror/lib/codemirror.js');
+			// consoleLog(content);
+			// return content;
+			return self.httpResponse(content, {
+				/*https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src*/
+				// 'Content-Security-Policy': `default-src 'none';`,
+				'Content-Type': self.http.contentType.javascript,
+			});
+		});
+		/**
+		 *
+		 */
 		faServerClass.router.attach('/fa.js', function (req) {
 			/** @type {module.FaServerClass} */
 			let self = this;
-
 			let content = [];
 			if (req.get['libraries']) {
 				req.get['libraries'].split(',').each(function (item) {

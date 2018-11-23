@@ -1,108 +1,90 @@
-/* jshint strict: false */
-const StackTrace = require('stack-trace');
-
+'use strict';
 /**
  *
- * @param func
- * @returns {Function}
+ * @type {module.FaTraceClass}
  */
-function getCaller(func) {
-	return func.caller;
-}
-
-/**
- *
- * @param object {object}
- */
-function extractData(object) {
-	if (object) {
-		return {
-			typeName: object['getTypeName'](),
-			functionName: object['getFunctionName'](),
-			methodName: object['getMethodName'](),
-			filePath: object['getFileName'](),
-			lineNumber: object['getLineNumber'](),
-			columnNumber: object['getColumnNumber'](),
-			topLevelFlag: object['isToplevel'](),
-			nativeFlag: object['isNative'](),
-			evalFlag: object['isEval'](),
-			evalOrigin: object['getEvalOrigin'](),
-		}
-	} else {
-		return {
-			typeName: 'undefined',
-			functionName: 'undefined',
-			methodName: 'undefined',
-			filePath: 'undefined',
-			lineNumber: 'undefined',
-			columnNumber: 'undefined',
-			topLevelFlag: 'undefined',
-			nativeFlag: 'undefined',
-			evalFlag: 'undefined',
-			evalOrigin: 'undefined',
-		}
+module.exports = class FaTraceClass {
+	constructor() {
+		this._trace = [];
 	}
-}
 
-/**
- *
- * @param level
- * @returns {*}
- */
-exports.getData = function (level) {
-	let trace = StackTrace.get(getCaller(this.getData));
-	if (level === undefined) {
+	/**
+	 *
+	 * @private
+	 */
+	_traceStack(error) {
+		let text = error.stack.split("\n");
+		let ExpressionMethod = new RegExp("^(.+) \\((.+)\\)$");
+		let ExpressionString = new RegExp("^(.+):(\\d+):(\\d+)$");
 		let result = [];
-		for (let i = 0; i <= trace.length - 1; i++) {
-			result.push(extractData(trace[i]));
+		text.splice(0, 1);
+		text.forEach(function (item) {
+			let trace = {
+				method: null,
+				path: null,
+				line: null,
+				column: null,
+			};
+			let string = '';
+			let line = item.slice(item.indexOf("at ") + 3, item.length);
+			let MatchMethod = ExpressionMethod.exec(line);
+			if (MatchMethod) {
+				// trace.method = MatchMethod[1];
+				// trace.method = MatchMethod[1].replaceAll(['<','>'],['&lt;','&gt;']);
+				trace.method = MatchMethod[1].escapeHtml();
+				string = MatchMethod[2];
+			} else {
+				string = line;
+			}
+			let MatchString = ExpressionString.exec(string);
+			if (MatchString) {
+				trace.path = MatchString[1];
+				trace.line = MatchString[2];
+				trace.column = MatchString[3];
+			}
+			result.push(trace);
+		});
+		return result;
+	}
+
+	/**
+	 *
+	 * @param error {Error}
+	 * @return {module.FaTraceClass}
+	 */
+	parse(error = null) {
+		if (error === null) {
+			error = new Error();
 		}
-		return result
-	} else {
-		// console.log(StackTrace.extractFunction(trace[level]));
-		return extractData(trace[level]);
+		this._trace = this._traceStack(error);
+		return this;
 	}
-};
 
-/**
- *
- * @param data
- * @returns {string|undefined}
- */
-function extractString(data) {
-	if (data.evalFlag) {
-		return data.evalOrigin;
-	} else {
-		try {
-			return `${data.filePath.replace(process.cwd(), '')}:${data.lineNumber}:${data.columnNumber}`;
-		} catch (e) {
-			// return `${data.filePath}:${data.lineNumber}:${data.columnNumber}`;
-			return undefined;
+	/**
+	 *
+	 * @param level {number|null}
+	 * @return {*}
+	 */
+	get(level = null) {
+		if (level !== null) {
+			return this._trace[level];
+		} else {
+			return this._trace;
 		}
 	}
-}
 
-/**
- * @param level {number}
- */
-exports.getString = function (level) {
-	return extractString(this.getData(level));
-};
-
-/**
- * @param data
- * @returns {string}
- */
-function extractFunction(data) {
-	if (data.evalFlag) {
-		return '(eval)' + data.functionName;
-	} else {
-		return data.functionName;
+	/**
+	 *
+	 * @param level {number}
+	 */
+	string(level = 0) {
+		let trace = this.get(level);
+		let method = trace.method === null ? '' : `${trace.method} | `;
+		let path = trace.path === null ? '' : `${trace.path}`;
+		let line = trace.line === null ? '' : `:${trace.line}`;
+		let column = trace.column === null ? '' : `:${trace.column}`;
+		return `${method}${path}${line}${column}`;
+		// return `${path}${line}${column}`;
 	}
-}
-
-/**
- * @param level {number}
- */
-exports.getFunction = function (level) {
-	return extractFunction(this.getData(level));
 };
+

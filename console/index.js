@@ -6,7 +6,7 @@ const Fs = require('fs');
 /*modules*/
 const FaBeautify = require('../beautify/index');
 const FaConsoleColor = require('./console-color');
-const FaTrace = require('../trace/index');
+const FaTrace = require('../trace/deprecated-index');
 /**
  *
  * @type {module.FaLogClass}
