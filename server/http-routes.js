@@ -78,21 +78,7 @@ module.exports = class FaServerHttpRoutesClass {
 				'Content-Type': self.http.contentType.json,
 			});
 		});
-		/**
-		 *
-		 */
-		faServerClass.router.attach('/codemirror.js', function () {
-			/** @type {module.FaServerClass} */
-			let self = this;
-			let content = context._file.asByte('/node_modules/codemirror/lib/codemirror.js');
-			// consoleLog(content);
-			// return content;
-			return self.httpResponse(content, {
-				/*https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src*/
-				// 'Content-Security-Policy': `default-src 'none';`,
-				'Content-Type': self.http.contentType.javascript,
-			});
-		});
+
 		/**
 		 *
 		 */

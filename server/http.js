@@ -78,6 +78,7 @@ module.exports = class FaServerHttpClass {
 	 */
 	get contentType() {
 		return {
+			css: 'text/css',
 			javascript: 'application/javascript',
 			json: 'application/json',
 			html: 'text/html',
@@ -109,7 +110,8 @@ module.exports = class FaServerHttpClass {
 	}
 
 	/**
-	 * @return {http}
+	 *
+	 * @return {Server}
 	 * @private
 	 */
 	_createHttp() {
@@ -190,8 +192,11 @@ module.exports = class FaServerHttpClass {
 						case context.contentType.xml:
 							post = context._parent.converter.fromXml(data);
 							break;
-						default:
+						case context.contentType.urlencoded:
 							post = context._parent.converter.fromUrlEncoded(data);
+							break;
+						default:
+							post = data;
 					}
 				}
 				result = {
@@ -200,7 +205,7 @@ module.exports = class FaServerHttpClass {
 					headers: req.headers,
 					get: get,
 					post: post,
-					data: (typeof get === 'object' && typeof post === 'object') ? Object.assign({}, get, post) : {},
+					request: (typeof get === 'object' && typeof post === 'object') ? Object.assign({}, get, post) : {},
 					input: data,
 				};
 				resolve(result);
@@ -231,7 +236,9 @@ module.exports = class FaServerHttpClass {
 		} else if (responseClass.get.content.byteLength) {
 			content = responseClass.get.content;
 		} else {
+			// 		FaConsole.consoleError(responseClass.get.headers);
 			switch (responseClass.get.headers['Content-Type']) {
+			// switch (responseClass.get.headers['Accept']) {
 				case this.contentType.json:
 					content = this._parent.converter.toJson(responseClass.get.content);
 					break;

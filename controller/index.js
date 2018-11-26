@@ -14,24 +14,6 @@ module.exports = class FaControllerClass {
 		let context = this;
 		this._name = 'FaController';
 		this._template = new FaTemplateClass(path);
-		this.action = {};
-		this.handler = {
-			get(target, name) {
-				FaConsole.consoleWarn(target, name);
-				// FaConsole.consoleWarn(context.actionIndex);
-				return 123;
-
-			},
-		};
-		this._proxy = new Proxy(this.action, this.handler);
-	}
-
-	/**
-	 *
-	 * @return {object}
-	 */
-	get proxy(){
-		return this._proxy;
 	}
 
 	/**
