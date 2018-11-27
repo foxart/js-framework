@@ -69,6 +69,8 @@ module.exports = class FaHttpRouterClass {
 	 * @param callback {function}
 	 */
 	attach(route, callback) {
+		// FaConsole.consoleWarn(callback);
+		// FaConsole.consoleWarn(typeof callback);
 		let trace = FaTrace.getString(1);
 		if (this.exist(route) === false) {
 			this._handler_list[route] = new this._constructor(callback);

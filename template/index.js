@@ -51,7 +51,7 @@ module.exports = class FaTemplateClass {
 			// e.name = this.class;
 			// FaConsole.consoleWarn(this)
 		}
-		e.appendTrace(this._TraceClass.parse(e).string(2));
+		e.appendTrace(this._TraceClass.parse(e).string(3));
 		return e;
 	}
 

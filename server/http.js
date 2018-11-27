@@ -221,6 +221,9 @@ module.exports = class FaServerHttpClass {
 	 * @private
 	 */
 	_respondHttp(req, res, responseClass) {
+		if (responseClass instanceof FaServerHttpResponseClass === false) {
+			responseClass = this._parent.httpResponse(responseClass, null, this.statusCode.ok);
+		}
 		let statusCode;
 		let content;
 		if (!responseClass.get.status) {
@@ -238,7 +241,7 @@ module.exports = class FaServerHttpClass {
 		} else {
 			// 		FaConsole.consoleError(responseClass.get.headers);
 			switch (responseClass.get.headers['Content-Type']) {
-			// switch (responseClass.get.headers['Accept']) {
+				// switch (responseClass.get.headers['Accept']) {
 				case this.contentType.json:
 					content = this._parent.converter.toJson(responseClass.get.content);
 					break;
@@ -302,34 +305,20 @@ module.exports = class FaServerHttpClass {
 	 * @private
 	 */
 	_handleRouter(req, res, path, handler, data) {
+		let context = this;
 		try {
-			let Response;
 			let result = handler.call(this, data);
-			if (result instanceof FaServerHttpResponseClass === false) {
-				Response = this._parent.httpResponse(result, null, this.statusCode.ok);
+			if (result instanceof Promise) {
+				return result.then(function (data) {
+					return data;
+				}).catch(function (e) {
+					return context._parent.httpResponse(context.error(e), null, context.statusCode.internalServerError);
+				});
 			} else {
-				Response = result;
+				return result;
 			}
-			// this._respondHttp(req, res, Response);
-			return Response;
 		} catch (e) {
-			let error = this.error(e);
-			// FaConsole.consoleInfo(error);
-			// let error = this.error(e);
-			// FaConsole.consoleInfo(error);
-			// let error = new FaError(e);
-			// let error = e;
-			// let Error = new FaError(e);
-			// FaConsole.consoleWarn(error);
-			// let trace = this.trace.parse(e);
-			// let level = 0;
-			// FaConsole.consoleError(trace.get(level));
-			// FaConsole.consoleError(trace.string(level));
-			// FaConsole.consoleWarn(this.trace.get(1));
-			// Error.appendTrace(this.router.trace(path));
-			// FaConsole.consoleLog(this.router.trace(path));
-			// this._respondHttp(req, res, this._parent.httpResponse(Error, null, this.statusCode.internalServerError));
-			return this._parent.httpResponse(error, null, this.statusCode.internalServerError);
+			return this._parent.httpResponse(this.error(e), null, this.statusCode.internalServerError);
 		}
 	}
 

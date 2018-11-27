@@ -73,28 +73,6 @@ class Model {
 		}
 	}
 
-	// [_applyConverter](data, converter) {
-	// 	return data.map(function (item) {
-	// 		let result = {};
-	// 		Object.entries(item).forEach(function ([key, value]) {
-	// 			if (converter[key] !== undefined) {
-	// 				result[key] = converter[key].call(this, value);
-	// 			} else {
-	// 				result[key] = value;
-	// 			}
-	// 		});
-	// 		return result;
-	// 	});
-	// }
-	// applyConverter() {
-	// 	if (Array.isArray(this.data) === true) {
-	// 		this.data = this[_applyConverter](this.data, this.getConverter)
-	// 		// this.data = this.converterFunction(this.data, this.getConverter)
-	// 	} else {
-	// 		this.data = this[_applyConverter]([this.data], this.getConverter)[0]
-	// 		// this.data = this.converterFunction([this.data], this.getConverter)[0]
-	// 	}
-	// }
 }
 
 /**

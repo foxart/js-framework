@@ -11,17 +11,16 @@ module.exports = class FaControllerClass {
 	 * @param path
 	 */
 	constructor(path = null) {
-		let context = this;
-		this._name = 'FaController';
+		this.name = 'FaController';
 		this._template = new FaTemplateClass(path);
 	}
 
 	/**
-	 *
+	 * @param filename {string}
 	 * @return {module.FaTemplateClass}
 	 */
-	get template() {
-		return this._template;
+	template(filename) {
+		return this._template.load(filename);
 	}
 
 	/**

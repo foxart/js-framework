@@ -189,10 +189,10 @@ module.exports = function (configuration) {
 	 *
 	 * @param collection
 	 * @param data
-	 * @returns {module.FaPromise}
+	 * @return {Promise<any>}
 	 */
 	module.insertOnePromise = function (collection, data) {
-		return new FaPromise(async function (resolve, reject) {
+		return new Promise(async function (resolve, reject) {
 			if (Mongo === undefined || Mongo.isConnected() === false) {
 				Mongo = await module.openConnection();
 			}
