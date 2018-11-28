@@ -29,7 +29,8 @@ module.exports = class FaFileClass {
 	 */
 	_filename(filename) {
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
-		return `${this._path}${filename}`;
+		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
+		return `${this._path}/${filename}`;
 	}
 
 	/**

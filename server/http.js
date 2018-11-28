@@ -150,12 +150,7 @@ module.exports = class FaServerHttpClass {
 			context._respondHttp(req, res, result);
 		}).catch(function (e) {
 			FaConsole.consoleError(e);
-			context._respondHttp(req, res, e);
-			// context._respondHttp(req, res, context._parent.httpResponse(new FaError(e), type, context.statusCode.notFound));
-			// context._respondHttp(req, res, context._parent.httpResponse(null, type, context.statusCode.ok));
-			// context._respondHttp(req, res, context._parent.httpResponse(null, {
-			// 	'Cache-Control': 'no-store, no-cache, must-revalidate'
-			// }, context.statusCode.notFound));
+			context._respondHttp(req, res, context._parent.httpResponse(context.error(e), null, context.statusCode.internalServerError));
 		});
 	};
 
@@ -332,35 +327,13 @@ module.exports = class FaServerHttpClass {
 	 */
 	_handleFile(req, res, filename, type) {
 		let context = this;
-		// FaConsole.consoleWarn(filename);
 		let data;
-		// data = this.file.asByte(filename);
-		// return context._parent.httpResponse(data, type, context.statusCode.ok);
 		try {
-			data = this.file.asByte(filename);
-			// 	// FaConsole.consoleWarn(filename, 'OK');
+			data = this.file.asByte(filename.replace(/^\/?/, ""));
 			return context._parent.httpResponse(data, type, context.statusCode.ok);
 		} catch (e) {
-			// data = '';
-			FaConsole.consoleWarn(filename, e);
 			return context._parent.httpResponse(e, type, context.statusCode.notFound);
 		}
-		// this.file.asByte(filename, true).then(function (data) {
-		// 	context._respondHttp(req, res, context._parent.httpResponse(data, type, context.statusCode.ok));
-		// }).catch(function (e) {
-		// 	FaConsole.consoleInfo(e);
-		// 	// FaConsole.consoleInfo(filename);
-		// 	// context._respondHttp(req, res, context._parent.httpResponse(e, type, context.statusCode.notFound));
-		// 	context._respondHttp(req, res, context._parent.httpResponse(e, {
-		// 		// 'Transfer-Encoding': 'chunked',
-		// 		// 'Server': 'nginx/1.14.1',
-		// 		// 'Date': 'Thu, 22 Nov 2018 10:27:58 GMT',
-		// 		// 'Vary': 'Accept-Encoding',
-		// 		// 'Content-Encoding': 'gzip',
-		// 		// 'Pragma': 'no-cache',
-		// 		'Content-Type': context.contentType.html,
-		// 	}, context.statusCode.internalServerError));
-		// });
 	}
 };
 

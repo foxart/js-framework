@@ -135,6 +135,7 @@ module.exports = function (configuration) {
 	 */
 	module.tellAll = function (event, data) {
 		// this.SocketServer.emit('idol-log', {message:Beautify.simple(data)});
+		FaConsole.consoleWarn(event, data);
 		this.SocketServer.emit(event, data);
 	};
 	return module;
