@@ -14,11 +14,12 @@ module.exports = class FaTemplateClass {
 	 */
 	constructor(path = null) {
 		// FaConsole.consoleInfo(path);
-		this._FileClass = new FaServerFileClass(path, 3);
+		this._path = path;
+		// this._FileClass = new FaServerFileClass(path, 3);
+		this._FileClass = new FaServerFileClass();
 		this._TraceClass = new FaTraceClass();
 		this._template = '';
 	}
-
 
 	/**
 	 *
@@ -45,11 +46,23 @@ module.exports = class FaTemplateClass {
 		this._template = template;
 	}
 
+	/**
+	 *
+	 * @param filename {string}
+	 * @returns {string}
+	 * @private
+	 */
+	_filename(filename) {
+		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
+		return `${this._path}/${filename}.tpl`;
+	}
+
 	error(e) {
 		if (e instanceof FaError === false) {
+			FaConsole.consoleWarn(e)
 			e = new FaError(e, false);
 			// e.name = this.class;
-			// FaConsole.consoleWarn(this)
 		}
 		e.appendTrace(this._TraceClass.parse(e).string(3));
 		return e;
@@ -61,10 +74,11 @@ module.exports = class FaTemplateClass {
 	 * @return {module.FaTemplateClass}
 	 */
 	load(filename) {
-		try {
-			this.set = this._file.asString(`/${filename}.tpl`);
-		} catch (e) {
-			throw this.error(`template not found: ${filename}`);
+		// FaConsole.consoleInfo(this._file.exist(this._filename(filename)));
+		if (this._file.exist(this._filename(filename))) {
+			this.set = this._file.asString(this._filename(filename));
+		} else {
+			throw this.error(`template not found: ${this._filename(filename)}`);
 		}
 		return this;
 	}
