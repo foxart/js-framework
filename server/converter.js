@@ -2,7 +2,7 @@
 /*node*/
 const
 	FastXmlParser = require('fast-xml-parser'),
-	Querystrings = require('querystrings');
+	QueryString = require('qs');
 /*vendor*/
 const
 	FaBeautify = require('../beautify/index');
@@ -105,7 +105,7 @@ module.exports = class FaServerConverterClass {
 	 * @return {object|string}
 	 */
 	fromUrlEncoded(data) {
-		return Querystrings.parse(decodeURIComponent(data));
+		return QueryString.parse(data);
 	}
 
 	/**
@@ -113,7 +113,7 @@ module.exports = class FaServerConverterClass {
 	 * @param data {object|string}
 	 */
 	toUrlencoded(data) {
-		return (encodeURIComponent(Querystrings.stringify(data)));
+		return (encodeURIComponent(QueryString.stringify(data)));
 	}
 
 	/**

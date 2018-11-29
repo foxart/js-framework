@@ -172,38 +172,42 @@ module.exports = class FaServerHttpClass {
 				reject(error);
 			});
 			req.on('end', function () {
-				let get = {};
-				let post = {};
-				let url = Url.parse(req.url);
-				// FaConsole.consoleError(url.pathname);
-				if (url.query) {
-					get = context._parent.converter.fromUrlEncoded(url.query);
-				}
-				if (["PATCH", "POST", "PUT"].hasElement(req.method)) {
-					switch (req.headers['content-type']) {
-						case context.contentType.json:
-							post = context._parent.converter.fromJson(data);
-							break;
-						case context.contentType.xml:
-							post = context._parent.converter.fromXml(data);
-							break;
-						case context.contentType.urlencoded:
-							post = context._parent.converter.fromUrlEncoded(data);
-							break;
-						default:
-							post = data;
+				try {
+					let get = {};
+					let post = {};
+					let url = Url.parse(req.url);
+					if (url.query) {
+						get = context._parent.converter.fromUrlEncoded(url.query);
 					}
+					if (["PATCH", "POST", "PUT"].hasElement(req.method)) {
+						switch (req.headers['content-type']) {
+							case context.contentType.json:
+								post = context._parent.converter.fromJson(data);
+								break;
+							case context.contentType.xml:
+								post = context._parent.converter.fromXml(data);
+								break;
+							case context.contentType.urlencoded:
+								post = context._parent.converter.fromUrlEncoded(data);
+								FaConsole.consoleError(post);
+								break;
+							default:
+								post = data;
+						}
+					}
+					result = {
+						path: url.pathname,
+						method: req.method.toLowerCase(),
+						headers: req.headers,
+						get: get,
+						post: post,
+						request: (typeof get === 'object' && typeof post === 'object') ? Object.assign({}, get, post) : {},
+						input: data,
+					};
+					resolve(result);
+				} catch (e) {
+					reject(e);
 				}
-				result = {
-					path: url.pathname,
-					method: req.method.toLowerCase(),
-					headers: req.headers,
-					get: get,
-					post: post,
-					request: (typeof get === 'object' && typeof post === 'object') ? Object.assign({}, get, post) : {},
-					input: data,
-				};
-				resolve(result);
 			});
 		});
 	}
@@ -286,7 +290,7 @@ module.exports = class FaServerHttpClass {
 		if (e instanceof FaError === false) {
 			e = new FaError(e);
 		}
-		// e.appendTrace(this._TraceClass.parse(e).string());
+		// e.appendTrace(this._Trace.parse(e).string());
 		return e;
 	}
 
