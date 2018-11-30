@@ -10,11 +10,13 @@ const FaTraceClass = require('../trace');
 module.exports = class FaTemplateClass {
 	/**
 	 *
-	 * @param path {string|null}
+	 * @param path {string}
+	 * @param level {number}
 	 */
-	constructor(path = null) {
+	constructor(path = process.cwd(), level = 2) {
 		// FaConsole.consoleInfo(path);
 		this._path = path;
+		this._trace_level = level;
 		// this._FileClass = new FaServerFileClass(path, 3);
 		this._FileClass = new FaServerFileClass();
 		this._TraceClass = new FaTraceClass();
@@ -60,11 +62,11 @@ module.exports = class FaTemplateClass {
 
 	error(e) {
 		if (e instanceof FaError === false) {
-			FaConsole.consoleWarn(e)
+			FaConsole.consoleWarn(e);
 			e = new FaError(e, false);
 			// e.name = this.class;
 		}
-		e.appendTrace(this._TraceClass.parse(e).string(3));
+		e.appendTrace(this._TraceClass.parse(e).string(this._trace_level));
 		return e;
 	}
 

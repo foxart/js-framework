@@ -150,7 +150,7 @@ module.exports = class FaServerHttpClass {
 			context._respondHttp(req, res, result);
 		}).catch(function (e) {
 			FaConsole.consoleError(e);
-			context._respondHttp(req, res, context._parent.httpResponse(context.error(e), null, context.statusCode.internalServerError));
+			context._respondHttp(req, res, context._parent.httpResponse(context.error(e, path), null, context.statusCode.internalServerError));
 		});
 	};
 
@@ -284,13 +284,14 @@ module.exports = class FaServerHttpClass {
 	/**
 	 *
 	 * @param e {Error|module.FaError}
+	 * @param path {string}
 	 * @return {module.FaError}
 	 */
-	error(e) {
+	error(e, path) {
 		if (e instanceof FaError === false) {
 			e = new FaError(e);
 		}
-		// e.appendTrace(this._Trace.parse(e).string());
+		// e.appendTrace(this.router.trace(path));
 		return e;
 	}
 
@@ -311,13 +312,13 @@ module.exports = class FaServerHttpClass {
 				return result.then(function (data) {
 					return data;
 				}).catch(function (e) {
-					return context._parent.httpResponse(context.error(e), null, context.statusCode.internalServerError);
+					return context._parent.httpResponse(context.error(e, path), null, context.statusCode.internalServerError);
 				});
 			} else {
 				return result;
 			}
 		} catch (e) {
-			return this._parent.httpResponse(this.error(e), null, this.statusCode.internalServerError);
+			return this._parent.httpResponse(this.error(e, path), null, this.statusCode.internalServerError);
 		}
 	}
 

@@ -143,7 +143,8 @@ function index(data, level, circular, color, type) {
 	} else if (typeof data === 'number' && data % 1 !== 0) {
 		// float
 		return FaWrap.wrapFloat(data, color, type);
-	} else if (data instanceof Date) {
+		// } else if (data instanceof Date) {
+	} else if (data instanceof Date || !isNaN(Date.parse(data))) {
 		// date
 		return FaWrap.wrapDate(data, color, type);
 	} else if (typeof data === 'function') {

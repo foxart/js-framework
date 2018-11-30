@@ -2,7 +2,7 @@
 /*vendor*/
 const
 	FaError = require('../error/index'),
-	FaTrace = require('../trace/deprecated-index');
+	FaTraceClass = require('../trace');
 /**
  *
  * @type {module.FaHttpRouterClass}
@@ -15,6 +15,7 @@ module.exports = class FaHttpRouterClass {
 	constructor(executor) {
 		this._handler_list = {};
 		this._trace_list = {};
+		this._Trace = new FaTraceClass();
 		/**
 		 *
 		 * @param callback
@@ -71,7 +72,8 @@ module.exports = class FaHttpRouterClass {
 	attach(route, callback) {
 		// FaConsole.consoleWarn(callback);
 		// FaConsole.consoleWarn(typeof callback);
-		let trace = FaTrace.getString(1);
+		let trace = this._Trace.parse(new Error()).string(1);
+		// FaConsole.consoleWarn(trace)
 		if (this.exist(route) === false) {
 			this._handler_list[route] = new this._constructor(callback);
 			this._trace_list[route] = trace;
@@ -91,7 +93,7 @@ module.exports = class FaHttpRouterClass {
 			delete this._handler_list[route];
 			delete this._trace_list[route];
 		} else {
-			let trace = FaTrace.getString(1);
+			let trace = this._Trace.parse(new Error()).string(1);
 			let error = new FaError(`route not found: ${route}`, false);
 			error.appendTrace(trace);
 			FaConsole.consoleError(error);

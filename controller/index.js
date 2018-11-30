@@ -8,11 +8,11 @@ const FaTemplateClass = require('../template');
 module.exports = class FaControllerClass {
 	/**
 	 *
-	 * @param path
+	 * @param path {string|null}
 	 */
-	constructor(path = null) {
+	constructor(path) {
 		this.name = 'FaController';
-		this._template = new FaTemplateClass(path);
+		this._template = new FaTemplateClass(path, 3);
 	}
 
 	/**
@@ -23,12 +23,6 @@ module.exports = class FaControllerClass {
 		return this._template.load(filename);
 	}
 
-	/**
-	 *
-	 * @type {*}
-	 */
-	// api.posts; // => 'posts'
-	// api.comments; // => 'comments'
 	/**
 	 *
 	 * @param data {object}

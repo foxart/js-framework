@@ -13,6 +13,7 @@ module.exports = class FaTraceClass {
 	 * @private
 	 */
 	_traceStack(error) {
+		// FaConsole.consoleWarn(error)
 		let text = error.stack.split("\n");
 		let ExpressionMethod = new RegExp("^(.+) \\((.+)\\)$");
 		let ExpressionString = new RegExp("^(.+):(\\d+):(\\d+)$");
@@ -29,9 +30,7 @@ module.exports = class FaTraceClass {
 			let line = item.slice(item.indexOf("at ") + 3, item.length);
 			let MatchMethod = ExpressionMethod.exec(line);
 			if (MatchMethod) {
-				// trace.method = MatchMethod[1];
-				// trace.method = MatchMethod[1].replaceAll(['<','>'],['&lt;','&gt;']);
-				trace.method = MatchMethod[1].escapeHtml();
+				trace.method = `${MatchMethod[1].replace("\<anonymous\>", "()")}`;
 				string = MatchMethod[2];
 			} else {
 				string = line;
