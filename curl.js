@@ -1,4 +1,5 @@
 "use strict";
+
 // function checkJson(json) {
 // 	try {
 // 		JSON.parse(json);
