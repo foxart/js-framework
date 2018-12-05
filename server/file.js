@@ -59,7 +59,7 @@ module.exports = class FaFileClass {
 	/**
 	 *
 	 * @param filename {string}
-	 * @return {array}
+	 * @return {Buffer}
 	 * @throws {module.FaError}
 	 * @private
 	 */
@@ -98,28 +98,40 @@ module.exports = class FaFileClass {
 	/**
 	 *
 	 * @param filename {string}
-	 * @param async {boolean}
 	 * @return {*}
 	 * @throws {error}
 	 * @throws {module.FaError}
 	 */
-	asByte(filename, async = false) {
-		if (async) {
-			return this._readAsync(filename)
-			// return this._readAsync(filename).then(function (data) {
-			// 	return data;
-			// }).catch(function (e) {
-			// 	throw new FaError(e);
-			// });
+	asByteSync(filename) {
+		if (this.exist(filename)) {
+			return Fs.readFileSync(this._filename(filename));
 		} else {
-			try {
-				return this._readSync(filename);
-			} catch (e) {
-				// let Error = new FaError(e, false);
-				// Error.appendTrace(FaTrace.getString(this._traceLevel));
-				throw e;
-			}
+			throw this.error(`file not found: ${this._filename(filename)}`);
 		}
+	};
+
+	/**
+	 *
+	 * @param filename {string}
+	 * @return {*}
+	 * @throws {error}
+	 * @throws {module.FaError}
+	 */
+	asByteAsync(filename) {
+		let context = this;
+		return new Promise(function (resolve, reject) {
+			if (context.exist(name)) {
+				Fs.readFile(`${context._filename(name)}`, function (e, data) {
+					if (e) {
+						reject(e);
+					} else {
+						resolve(data);
+					}
+				});
+			} else {
+				reject(new FaError(`file not found: ${context._filename(name)}`, false));
+			}
+		});
 	};
 
 	/**
@@ -129,21 +141,13 @@ module.exports = class FaFileClass {
 	 * @return {*}
 	 * @throws {module.FaError}
 	 */
-	asString(filename, async = false) {
+	asStringSync(filename, async = false) {
 		if (async) {
-			return this._readAsync(filename).then(function (data) {
-				return data;
-			}).catch(function (e) {
-				throw new FaError(e);
-			});
+			return this._readAsync(filename);
 		} else {
-			// return this._readSync(filename).toString();
 			try {
 				return this._readSync(filename).toString();
 			} catch (e) {
-				// FaConsole.consoleWarn(this.error(e));
-				// e.appendTrace(FaTrace.getString(this._traceLevel));
-				// throw new FaError(e);
 				throw e;
 			}
 		}

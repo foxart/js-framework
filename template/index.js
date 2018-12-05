@@ -14,12 +14,11 @@ module.exports = class FaTemplateClass {
 	 * @param level {number}
 	 */
 	constructor(path = process.cwd(), level = 2) {
-		// FaConsole.consoleInfo(path);
-		this._path = path;
-		this._trace_level = level;
 		// this._FileClass = new FaServerFileClass(path, 3);
-		this._FileClass = new FaServerFileClass();
+		this._path = path;
+		this._FileClass = new FaServerFileClass(path);
 		this._TraceClass = new FaTraceClass();
+		this._TraceClassLevel = level;
 		this._template = '';
 	}
 
@@ -57,7 +56,8 @@ module.exports = class FaTemplateClass {
 	_filename(filename) {
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
-		return `${this._path}/${filename}.tpl`;
+		// return `${this._path}/${filename}.tpl`;
+		return `${filename}.tpl`;
 	}
 
 	error(e) {
@@ -66,7 +66,7 @@ module.exports = class FaTemplateClass {
 			e = new FaError(e, false);
 			// e.name = this.class;
 		}
-		e.appendTrace(this._TraceClass.parse(e).string(this._trace_level));
+		e.appendTrace(this._TraceClass.parse(e).string(this._TraceClassLevel));
 		return e;
 	}
 
@@ -76,11 +76,11 @@ module.exports = class FaTemplateClass {
 	 * @return {module.FaTemplateClass}
 	 */
 	load(filename) {
-		// FaConsole.consoleInfo(this._file.exist(this._filename(filename)));
+		// FaConsole.consoleInfo(this._filename(filename), this._file.exist(this._filename(filename)));
 		if (this._file.exist(this._filename(filename))) {
-			this.set = this._file.asString(this._filename(filename));
+			this.set = this._file.asStringSync(this._filename(filename));
 		} else {
-			throw this.error(`template not found: ${this._filename(filename)}`);
+			throw this.error(`template not found: ${this._path}/${this._filename(filename)}`);
 		}
 		return this;
 	}

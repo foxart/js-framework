@@ -144,9 +144,12 @@ function index(data, level, circular, color, type) {
 		// float
 		return FaWrap.wrapFloat(data, color, type);
 		// } else if (data instanceof Date) {
-	} else if (data instanceof Date || !isNaN(Date.parse(data))) {
-		// date
+	} else if (data instanceof Date ) {
+		/*date*/
 		return FaWrap.wrapDate(data, color, type);
+	// } else if (!isNaN(Date.parse(data))) {
+	// 	/*date*/
+	// 	return FaWrap.wrapDate(new Date(data), color, type);
 	} else if (typeof data === 'function') {
 		// function
 		return FaWrap.wrapFunction(data, getTab(level + 1), color, type);

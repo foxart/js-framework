@@ -9,10 +9,10 @@ const
 	assert = require('assert');
 /*services*/
 const
-	LogService = require('../idol/modules/audit/services/LogService');
+	LogService = require('../../idol/modules/audit/services/LogService');
 /*modules*/
 const
-	Helper = require('./helper');
+	Helper = require('../helper');
 /**
  *
  * @param configuration

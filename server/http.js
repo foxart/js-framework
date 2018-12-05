@@ -334,7 +334,7 @@ module.exports = class FaServerHttpClass {
 		let context = this;
 		let data;
 		try {
-			data = this.file.asByte(filename.replace(/^\/?/, ""));
+			data = this.file.asByteSync(filename.replace(/^\/?/, ""));
 			return context._parent.httpResponse(data, type, context.statusCode.ok);
 		} catch (e) {
 			return context._parent.httpResponse(e, type, context.statusCode.notFound);
