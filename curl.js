@@ -1,8 +1,4 @@
 "use strict";
-
-
-
-
 // function checkJson(json) {
 // 	try {
 // 		JSON.parse(json);
@@ -19,7 +15,6 @@
 // 		return data;
 // 	}
 // };
-
 /*node*/
 const
 	Dns = require('dns'),
