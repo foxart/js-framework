@@ -40,7 +40,7 @@ module.exports = class FaServerHttpRoutesClass {
 				// 'Pragma': 'no-cache'
 				// 'Last-Modified': new Date(Date.now()),
 				'Date': new Date(Date.now()),
-			}, self.http.statusCode.ok);
+			}, self.http._FaHttpStatusCode.ok);
 		});
 	}
 
@@ -58,7 +58,7 @@ module.exports = class FaServerHttpRoutesClass {
 			/** @type {module.FaServerClass} */
 			let self = this;
 			let content = context._file.readByteSync('/node_modules/socket.io-client/dist/socket.io.slim.js');
-			return self.http.response(content, self.http.contentType.javascript);
+			return self.http.response(content, self.http._FaHttpContentType.javascript);
 		});
 		/**
 		 *
@@ -71,7 +71,7 @@ module.exports = class FaServerHttpRoutesClass {
 			return self.http.response(content, {
 				/*https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src*/
 				// 'Content-Security-Policy': `default-src 'none';`,
-				'Content-Type': self.http.contentType.json,
+				'Content-Type': self.http._FaHttpContentType.json,
 			});
 		});
 		/**
@@ -105,8 +105,8 @@ module.exports = class FaServerHttpRoutesClass {
 			} else {
 				content.push(Buffer.from(`'use strict';\n`));
 			}
-			// return self.httpResponse(content.join(';'), self.Http.contentType.javascript, self.Http.statusCode.ok);
-			return self.http.response(Buffer.concat(content), self.http.contentType.javascript, self.http.statusCode.ok);
+			// return self.httpResponse(content.join(';'), self.Http._FaHttpContentType.javascript, self.Http._FaHttpStatusCode.ok);
+			return self.http.response(Buffer.concat(content), self.http._FaHttpContentType.javascript, self.http._FaHttpStatusCode.ok);
 		});
 	}
 };

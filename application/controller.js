@@ -37,7 +37,7 @@ class FaController {
 	actionIndex(data) {
 		return this.Http.response({
 			xml: data
-		}, this.Http.contentType.xml);
+		}, this.Http._FaHttpContentType.xml);
 	}
 }
 

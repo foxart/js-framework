@@ -1,3 +1,3 @@
-'use strict';
-require('./array');
-require('./string');
+"use strict";
+require("./array");
+require("./string");

@@ -1,9 +1,9 @@
 "use strict";
 /**
  *
- * @type {module.FaHttpHeadersStatusCode}
+ * @type {module.FaHttpStatusCode}
  */
-module.exports = class FaHttpHeadersStatusCode {
+module.exports = class FaHttpStatusCode {
 	constructor() {
 		//Http
 		this.badRequest = 400;

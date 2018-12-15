@@ -10,8 +10,8 @@ const FaConsoleColor = require('../console/console-color');
 const FaConverterClass = require('../base/converter');
 const FaHttpRequestClass = require('./http-request');
 const FaHttpResponseClass = require('./http-response');
-const FaHttpHeadersContentType = require("./http-headers-content-type");
-const FaHttpHeadersStatusCode = require("./http-headers-status-code");
+const FaHttpContentType = require("./http-content-type");
+const FaHttpStatusCode = require("./http-status-code");
 
 /**
  *
@@ -24,8 +24,8 @@ class FaHttpClass {
 		this._FaFileClass = require('../base/file')(this.Configuration.path);
 		this._FaRouterClass = require('../base/router')(this);
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
-		this.contentType = new FaHttpHeadersContentType();
-		this.statusCode = new FaHttpHeadersStatusCode();
+		this._FaHttpContentType = new FaHttpContentType();
+		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this.Server = this._createHttp(this.Configuration);
 		// new FaServerHttpRoutesClass(this._Http);
 	}
@@ -41,7 +41,7 @@ class FaHttpClass {
 
 	/**
 	 *
-	 * @return {module.FaServerConverterClass}
+	 * @return {FaConverterClass}
 	 * @constructor
 	 */
 	get Converter() {
@@ -62,6 +62,22 @@ class FaHttpClass {
 	 */
 	get Router() {
 		return this._FaRouterClass;
+	}
+
+	/**
+	 *
+	 * @return {module.FaHttpContentType}
+	 */
+	get type() {
+		return this._FaHttpContentType;
+	}
+
+	/**
+	 *
+	 * @return {module.FaHttpStatusCode}
+	 */
+	get status() {
+		return this._FaHttpStatusCode;
 	}
 
 	/**
@@ -117,47 +133,45 @@ class FaHttpClass {
 	 * @private
 	 */
 	_respondHttp(req, res, FaHttpResponse) {
-		// if (FaHttpResponse.headers['Content-Type'] === null) {
-		// 	if (req.headers.accept) {
-		// 		if (req.headers.accept.indexOf(this.contentType.json) !== -1) {
-		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.json;
-		// 		} else if (req.headers.accept.indexOf(this.contentType.html) !== -1) {
-		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.html;
-		// 		} else if (req.headers.accept.indexOf(this.contentType.urlencoded) !== -1) {
-		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.urlencoded;
-		// 		} else if (req.headers.accept.indexOf(this.contentType.xml) !== -1) {
-		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.xml;
-		// 		} else {
-		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.html;
-		// 		}
-		// 	} else {
-		// 		FaHttpResponse.headers['Content-Type'] = this.contentType.html;
-		// 	}
-		// }
-		let accepts = require('accepts');
-		let accept =accepts(req);
-		FaConsole.consoleLog(accept.type('json'));
-		// req.accepts('html');
+		if (FaHttpResponse.headers['Content-Type'] === null) {
+			if (req.headers.accept) {
+				if (req.headers.accept.indexOf(this._FaHttpContentType.json) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.json;
+				} else if (req.headers.accept.indexOf(this._FaHttpContentType.html) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.html;
+				} else if (req.headers.accept.indexOf(this._FaHttpContentType.urlencoded) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.urlencoded;
+				} else if (req.headers.accept.indexOf(this._FaHttpContentType.xml) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.xml;
+				} else {
+					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.html;
+				}
+			} else {
+				FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.html;
+			}
+		}
+		// let accepts = require('accepts');
+		// let accept = accepts(req);
+		// FaConsole.consoleLog(accept.type('json'));
 
 		switch (FaHttpResponse.headers['Content-Type']) {
-			case this.contentType.json:
+			case this._FaHttpContentType.json:
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
 				break;
-			case this.contentType.html:
+			case this._FaHttpContentType.html:
 				FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
 				break;
-			case this.contentType.urlencoded:
+			case this._FaHttpContentType.urlencoded:
 				FaHttpResponse.content = this.Converter.toUrlencoded(FaHttpResponse.content);
 				break;
-			case this.contentType.xml:
+			case this._FaHttpContentType.xml:
 				FaHttpResponse.content = this.Converter.toXml(FaHttpResponse.content);
 				break;
-			default:
-				FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
+			// default:
+				// FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
 		}
 		if (!FaHttpResponse.status) {
-			// FaHttpResponse.status = this.statusCode.ok;
-
+			FaHttpResponse.status = this._FaHttpStatusCode.ok;
 		}
 		if (!FaHttpResponse.content.byteLength) {
 			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
@@ -175,7 +189,6 @@ class FaHttpClass {
 		res.setHeader('Content-Length', FaHttpResponse.content.byteLength);
 		res.statusCode = FaHttpResponse.status;
 		res.write(FaHttpResponse.content);
-
 		res.end();
 		FaHttpResponse = null;
 	}
@@ -198,18 +211,18 @@ class FaHttpClass {
 						callback.then(function (result) {
 							resolve(context._handleRoute(data.path, result));
 						}).catch(function (e) {
-							reject(context.response(FaError.pickTrace(e, 0), null, context.statusCode.internalServerError));
+							reject(context.response(FaError.pickTrace(e, 0), null, context._FaHttpStatusCode.internalServerError));
 						});
 					} else {
 						resolve(context._handleRoute(data.path, callback));
 					}
 				} catch (e) {
-					reject(context.response(FaError.pickTrace(e, 0), null, context.statusCode.internalServerError));
+					reject(context.response(FaError.pickTrace(e, 0), null, context._FaHttpStatusCode.internalServerError));
 				}
 			} else if (mime) {
 				resolve(context._handleFile(data.path, mime));
 			} else {
-				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context.statusCode.notFound));
+				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context._FaHttpStatusCode.notFound));
 			}
 		});
 	}
@@ -224,7 +237,7 @@ class FaHttpClass {
 		if (data instanceof FaHttpResponseClass) {
 			return data;
 		} else {
-			return this.response(data, null, this.statusCode.ok);
+			return this.response(data, null, this._FaHttpStatusCode.ok);
 		}
 	}
 
@@ -237,9 +250,9 @@ class FaHttpClass {
 	 */
 	_handleFile(filename, type) {
 		try {
-			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this.statusCode.ok);
+			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this._FaHttpStatusCode.ok);
 		} catch (e) {
-			return this.response(e.message, null, this.statusCode.notFound);
+			return this.response(e.message, null, this._FaHttpStatusCode.notFound);
 		}
 	}
 

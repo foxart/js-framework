@@ -1,9 +1,9 @@
 "use strict";
 /**
  *
- * @type {module.FaHttpHeadersContentType}
+ * @type {module.FaHttpContentType}
  */
-module.exports = class FaHttpHeadersContentType {
+module.exports = class FaHttpContentType {
 	constructor() {
 		this.css = 'text/css';
 		this.javascript = 'application/javascript';

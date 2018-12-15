@@ -156,7 +156,7 @@ function index(data, level, circular, color, type) {
 		// 	return FaWrap.wrapFaError(data['name'], data['message'], data['stack'], getTab(level + 1), color);
 	} else if (data instanceof Error) {
 		/*Error*/
-		return FaWrap.wrapError(data['name'], data['message'], data['stack'], data['trace'], getTab(level + 1), color);
+		return FaWrap.wrapError(data['name'], data['message'], data['stack'], data['trace'], getTab(level ), color);
 	} else if (typeof data === 'object') {
 		try {
 			if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {

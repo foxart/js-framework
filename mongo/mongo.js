@@ -7,9 +7,10 @@ const
 	MongoClient = require('mongodb').MongoClient,
 	ObjectID = require('mongodb').ObjectID,
 	assert = require('assert');
+
 /*services*/
-const
-	LogService = require('../../idol/modules/audit/services/LogService');
+// const
+// 	LogService = require('../../idol/modules/audit/services/LogService');
 /*modules*/
 const
 	Helper = require('../helper');
@@ -24,8 +25,9 @@ module.exports = function (configuration) {
 	let createConnection = function (configuration) {
 		module.configuration = configuration;
 		module.link = `mongodb://${configuration.host}:${configuration.port}`;
-		LogService.check(`mongo | ${configuration.host}:${configuration.port}/${configuration.database}`);
+		// LogService.check(`mongo | ${configuration.host}:${configuration.port}/${configuration.database}`);
 	};
+
 	/*create*/
 	new createConnection(configuration);
 	/**
@@ -33,7 +35,7 @@ module.exports = function (configuration) {
 	 * @returns {module.FaPromise}
 	 */
 	module.openConnection = function () {
-		return new FaPromise(function (resolve, reject) {
+		return new Promise(function (resolve, reject) {
 			MongoClient.connect(module.link, {
 				useNewUrlParser: true
 			}, function (error, client) {
@@ -94,7 +96,7 @@ module.exports = function (configuration) {
 	 * @return {module.FaPromise}
 	 */
 	module.findOnePromise = function (collection, filter, options) {
-		return new FaPromise(async function (resolve, reject) {
+		return new Promise(async function (resolve, reject) {
 			if (Mongo === undefined || Mongo.isConnected() === false) {
 				Mongo = await module.openConnection();
 			}
@@ -142,7 +144,7 @@ module.exports = function (configuration) {
 	 * @return {Promise<any>}
 	 */
 	module.findManyPromise = function (collection, filter, options) {
-		return new FaPromise(async function (resolve, reject) {
+		return new Promise(async function (resolve, reject) {
 			if (Mongo === undefined || Mongo.isConnected() === false) {
 				Mongo = await module.openConnection();
 			}
@@ -300,7 +302,7 @@ module.exports = function (configuration) {
 	 * @returns {Promise<module.FaPromise>}
 	 */
 	module.updateOne = function (collection, filter, data, options) {
-		return new FaPromise(async function (resolve, reject) {
+		return new Promise(async function (resolve, reject) {
 			if (Mongo === undefined || Mongo.isConnected() === false) {
 				Mongo = await module.openConnection();
 			}

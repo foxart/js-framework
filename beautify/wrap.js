@@ -149,9 +149,9 @@ exports.wrapError = function (name, message, stack, trace, tab, show_color) {
 	});
 	stack = stack_list.join('');
 	if (show_color) {
-		return `${type} ${message} ${Hue.effect.dim}${trace}${Hue.effect.reset}${stack}`;
+		return `${type} ${message}${trace}${stack}`;
 	} else {
-		return `${name} ${message}${trace}`;
+		return `${name} ${message}${trace}${stack}`;
 	}
 };
 /**
@@ -288,9 +288,9 @@ exports.wrapString = function (data, length, tab, show_color, show_type) {
 	// let content = length > limit ? data.slice(0, limit + 1) : data;
 	let content = data;
 	content = content.replace(/\n/g, `\n${tab}`);
-	content = content.replace(/"/g, "\\\"");
+	// content = content.replace(/"/g, "\\\"");
 	if (show_color) {
-		return `${type}${Hue.effect.reset}"${content}"${Hue.effect.reset}`;
+		return `${type}${Hue.effect.reset}${content}${Hue.effect.reset}`;
 	} else {
 		return `${type}${content}`;
 	}

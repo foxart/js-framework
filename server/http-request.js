@@ -1,5 +1,5 @@
 "use strict";
-const HttpHeadersContentTypeModule = require("./http-headers-content-type");
+const HttpHeadersContentTypeModule = require("./http-content-type");
 /**
  *
  * @type {module.FaHttpRequestClass}

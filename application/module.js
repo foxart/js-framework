@@ -1,5 +1,5 @@
 "use strict";
-const FaError = require('../base/~error');
+const FaError = require('../base/error');
 
 /**
  *
@@ -15,6 +15,12 @@ class FaModule {
 		return Object.keys(this._controller_list);
 	}
 
+	/**
+	 *
+	 * @param index
+	 * @return {*}
+	 * @private
+	 */
 	_controllerGet(index) {
 		return this._controller_list[index];
 	}
@@ -23,6 +29,7 @@ class FaModule {
 	 *
 	 * @param index {string}
 	 * @param controller {FaControllerClass}
+	 * @private
 	 */
 	_controllerSet(index, controller) {
 		this._controller_list[index] = controller;
@@ -32,22 +39,10 @@ class FaModule {
 	 *
 	 * @param index {string}
 	 * @return {boolean}
+	 * @private
 	 */
 	_constrollerExist(index) {
 		return !!this._controller_list[index];
-	}
-
-	/**
-	 *
-	 * @param error {Error|string}
-	 * @return {module.FaError}
-	 * @private
-	 */
-	_error(error) {
-		let e = error instanceof FaError === false ? new FaError(error, false) : error;
-		e.name = this.name;
-		// e.appendStack(this._trace.parse(e).string(this._traceLevel));
-		return e;
 	}
 
 	/**
@@ -68,22 +63,15 @@ class FaModule {
 			}
 			Controller = this._controllerGet(index);
 			if (Controller[value["action"]]) {
-
-				// FaConsole.consoleWarn(Controller[value["action"]]);
-				// FaConsole.consoleWarn(Controller[value["action"]] instanceof Promise);
-				// FaConsole.consoleWarn(typeof Controller[value["action"]]);
-
 				FaHttpClass.Router.attach(key, function (req) {
 					FaConsole.consoleError(value["action"]);
-					// return Controller[value["action"]](req, this);
-					// FaConsole.consoleWarn(key)
 					return Controller[value["action"]](req);
 				});
 			} else {
-				let Error = this._error(`${Controller["name"]} action not implemented: ${value["action"]}`);
-				FaConsole.consoleError(Error);
+				let error = FaError.pickTrace(`${Controller["name"]} action not implemented: ${value["action"]}`, 2);
+				FaConsole.consoleError(error);
 				FaHttpClass.Router.attach(key, function () {
-					throw Error;
+					throw error;
 				});
 			}
 			// } catch (e) {
