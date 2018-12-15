@@ -77,6 +77,7 @@ module.exports = class FaTraceClass {
 	 * @param level {number}
 	 */
 	string(level = 0) {
+		// FaConsole.consoleError(level);
 		let trace = this.get(level);
 		let method = trace.method === null ? '' : `${trace.method} | `;
 		let path = trace.path === null ? '' : `${trace.path}`;

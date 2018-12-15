@@ -1,13 +1,13 @@
 'use strict';
 /*vendor*/
 const
-	FaServerConfigurationClass = require('./configuration'),
-	// FaServerFileClass = require('./file'),
-	FaServerConverterClass = require('./converter'),
+	FaServerConfigurationClass = require('./http-configuration'),
+	// FaServerFileClass = require('./File'),
+	FaServerConverterClass = require('../base/converter'),
 	FaServerSocketClass = require('./socket'),
 	FaServerHttpClass = require('./http'),
 	FaServerHttpResponseClass = require('./http-response'),
-	FaTemplate = require('../template/index'),
+	FaTemplate = require('../application/template'),
 	FaConsoleColor = require('../console/console-color');
 /**
  *
@@ -25,9 +25,11 @@ module.exports = class FaServerClass {
 		 * @type {module.FaServerConfigurationClass}
 		 * @private
 		 */
+		FaConsole.consoleLog(configuration)
 		this._ConfigurationClass = new FaServerConfigurationClass(configuration);
+		FaConsole.consoleInfo(this._ConfigurationClass)
 		this._ConverterClass = new FaServerConverterClass(this.configuration.converter);
-		this._HttpClass = new FaServerHttpClass(context, this.configuration.http);
+		this._HttpClass = new FaServerHttpClass(context, this.configuration.Http);
 		this._SocketClass = new FaServerSocketClass(context, this.configuration.socket);
 	}
 
@@ -44,8 +46,8 @@ module.exports = class FaServerClass {
 	 *
 	 * @returns {module.FaFileClass}
 	 */
-	// get file() {
-	// 	return this._File;
+	// get File() {
+	// 	return this._FaFileClass;
 	// }
 	/**
 	 *
@@ -78,9 +80,9 @@ module.exports = class FaServerClass {
 	 * @param status {number|null}
 	 * @return {module.FaServerHttpResponseClass}
 	 */
-	httpResponse(data, headers = null, status = null) {
-		return new FaServerHttpResponseClass(data, headers, status);
-	}
+	// httpResponse(data, headers = null, status = null) {
+	// 	return new FaServerHttpResponseClass(data, headers, status);
+	// }
 
 	/**
 	 *

@@ -3,7 +3,7 @@
 const
 	Fs = require('fs'),
 	FastXmlParser = require('fast-xml-parser'),
-	// Http = require('nodejs/vendor/fa/http'),
+	// Http = require('nodejs/vendor/fa/Http'),
 	Http = require('http'),
 	MimeTypes = require('mime-types'),
 	Querystring = require('querystring'),
@@ -164,10 +164,10 @@ module.exports = function (configuration) {
 		if (match !== null) {
 			// switch (match[0]) {
 			// 	case '.css':
-			// 		result = handler_list['file'];
+			// 		result = handler_list['File'];
 			// 		break;
 			// 	case '.js':
-			// 		result = handler_list['file'];
+			// 		result = handler_list['File'];
 			// 		break;
 			// }
 			result = handler_list['file'];
@@ -273,8 +273,8 @@ module.exports = function (configuration) {
 	 * @returns {string}
 	 */
 	module.requireFile = function (filename) {
-		// let file = Fs.readFileSync(HttpServerApi.configuration.path + '/train/Volkswagen.jpg');
-		// let base64Image = new Buffer(file, 'binary').toString('base64');
+		// let File = Fs.readFileSync(HttpServerApi.configuration.path + '/train/Volkswagen.jpg');
+		// let base64Image = new Buffer(File, 'binary').toString('base64');
 		let filepath = this.configuration.path + filename;
 		if (Fs.existsSync(filepath)) {
 			return Fs.readFileSync(filepath).toString();

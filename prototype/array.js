@@ -7,6 +7,15 @@
 Array.prototype.hasElement = function (item) {
 	return this.indexOf(item) !== -1;
 };
+
+/**
+ *
+ * @param item
+ * @return {boolean}
+ */
+Array.prototype.omitElement = function (item) {
+	return this.indexOf(item) === -1;
+};
 /**
  *
  * @param item

@@ -1,23 +1,22 @@
 'use strict';
 /*node*/
-const
-	FastXmlParser = require('fast-xml-parser'),
-	QueryString = require('qs');
+const FastXmlParser = require('fast-xml-parser');
+const QueryString = require('qs');
 /*vendor*/
-const
-	FaBeautify = require('../beautify/index');
+const FaBeautify = require('../beautify');
+
 /**
  *
- * @type {module.FaServerConverterClass}
+ * @type {FaConverterClass}
  */
-module.exports = class FaServerConverterClass {
+class FaConverterClass {
 	/**
 	 *
-	 * @param FaServerConverterConfiguration {{fromXml: *, toXml: *}}
+	 * @param configuration {{fromXml: *, toXml: *}}
 	 */
-	constructor(FaServerConverterConfiguration) {
-		this._fromXml = FaServerConverterConfiguration.fromXml;
-		this._toXml = FaServerConverterConfiguration.toXml;
+	constructor(configuration) {
+		this._fromXml = configuration.fromXml;
+		this._toXml = configuration.toXml;
 	}
 
 	/**
@@ -90,15 +89,14 @@ module.exports = class FaServerConverterClass {
 		return typeof data === 'string';
 	}
 
-	/**
-	 *
-	 * @param data {object|string}
-	 * @return {string}
-	 */
-	toString(data) {
-		return this.isString(data) ? data : FaBeautify.extended(data);
-	}
-
+	// /**
+	//  *
+	//  * @param data {object|string}
+	//  * @return {string}
+	//  */
+	// toString(data) {
+	// 	return this.isString(data) ? data : FaBeautify.extended(data);
+	// }
 	/**
 	 *
 	 * @param data {string}
@@ -123,5 +121,18 @@ module.exports = class FaServerConverterClass {
 	 */
 	toHtml(data) {
 		return this.isString(data) ? data : FaBeautify.extended(data);
+	}
+}
+
+/**
+ *
+ * @param configuration {Object}
+ * @return {FaConverterClass}
+ */
+module.exports = function (configuration) {
+	if (configuration) {
+		return new FaConverterClass(configuration);
+	} else {
+		return FaConverterClass;
 	}
 };

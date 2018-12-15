@@ -1,53 +1,30 @@
-'use strict';
+/*https://socket.io/docs/server-api/*/
+"use strict";
+const UtilsExtend = require("utils-extend");
+const MergeDeep = require("merge-deep");
 /**
  *
  * @type {module.FaServerConfigurationClass}
  */
 module.exports = class FaServerConfigurationClass {
-	/*https://socket.io/docs/server-api/*/
-	/**
-	 *
-	 * @param configuration {object}
-	 */
 	constructor(configuration) {
-		/**
-		 *
-		 * @type {{http: *, socket: *, converter: {fromXml: *, toXml: *}}}
-		 * @private
-		 */
-		this._configuration = {
-			converter: {
-				fromXml: this._extendConfiguration(this._converterFromXml, configuration['converterFromXml']),
-				toXml: this._extendConfiguration(this._converterToXml, configuration['converterToXml']),
-			},
-			http: this._extendConfiguration(this._http, configuration['http']),
-			socket: this._extendConfiguration(this._socket, configuration['socket']),
-		};
-		return this._configuration;
+		return MergeDeep(this._http, configuration['http']);
 	}
 
+	// _extendConfiguration(what, wherewith) {
+	// 	if (typeof wherewith !== 'object') {
+	// 		wherewith = {};
+	// 	}
+	// 	return Object.assign({}, what, Object.keys(wherewith).filter(function (key) {
+	// 		return Object.keys(what).includes(key)
+	// 	}).reduce(function (obj, key) {
+	// 		obj[key] = wherewith[key];
+	// 		return obj;
+	// 	}, {}));
+	// }
 	/**
 	 *
-	 * @param what
-	 * @param wherewith
-	 * @return {*}
-	 * @private
-	 */
-	_extendConfiguration(what, wherewith) {
-		if (typeof wherewith !== 'object') {
-			wherewith = {};
-		}
-		return Object.assign({}, what, Object.keys(wherewith).filter(function (key) {
-			return Object.keys(what).includes(key)
-		}).reduce(function (obj, key) {
-			obj[key] = wherewith[key];
-			return obj;
-		}, {}));
-	}
-
-	/**
-	 *
-	 * @return {{http: *, socket: *, converter: {fromXml: *, toXml: *}}}
+	 * @return {{Http: *, socket: *, converter: {fromXml: *, toXml: *}}}
 	 */
 	get get() {
 		return this._configuration;
@@ -64,6 +41,10 @@ module.exports = class FaServerConfigurationClass {
 			host: 'localhost',
 			port: 80,
 			path: '/web',
+			converter: {
+				fromXml: this._converterFromXml,
+				toXml: this._converterToXml,
+			},
 		}
 	};
 

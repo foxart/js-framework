@@ -1,37 +1,26 @@
-'use strict';
+"use strict";
 /**
  *
- * @type {module.FaServerHttpResponseClass}
+ * @type {module.FaHttpResponseClass}
  */
-module.exports = class FaServerHttpResponseClass {
+module.exports = class FaHttpResponseClass {
 	/**
 	 *
-	 * @param data
+	 * @param content {*}
 	 * @param headers {object|string|null}
 	 * @param status {number|null}
 	 */
-	constructor(data, headers = null, status = null) {
-		this._content = data;
-		this._headers = {};
-		if (headers === null || typeof headers === 'string') {
-			this._headers['Content-Type'] = headers;
-		} else if (typeof headers === 'object') {
-			this._headers = headers;
-		}
-		if (status) {
-			this._status = status;
-		}
-	}
-
-	/**
-	 *
-	 * @return {{content: *, headers: (*|Object|string), status: number}}
-	 */
-	get get() {
-		return {
-			content: this._content,
-			headers: this._headers,
-			status: this._status,
+	constructor(content, headers = null, status = null) {
+		this.content = content ? content : "";
+		this.headers = {
+			"Content-Type": null
 		};
+		if (typeof headers === "string") {
+			this.headers["Content-Type"] = headers;
+		} else if (typeof headers === "object") {
+			this.headers = Object.assign({}, this.headers, headers);
+		}
+		this.status = status;
 	}
 };
+

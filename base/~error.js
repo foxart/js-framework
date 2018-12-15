@@ -1,6 +1,6 @@
 'use strict';
 // const FaTrace = require('../trace/index');
-const FaTraceClass = require('../trace/index.js');
+const FaTraceClass = require('./trace.js');
 const FaTrace = new FaTraceClass();
 /**
  *

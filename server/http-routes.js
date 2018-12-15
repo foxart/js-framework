@@ -1,16 +1,12 @@
 'use strict';
 /*vendor*/
 const
-	FaServerFileClass = require('./file');
+	FaServerFileClass = require('../base/file');
 /**
  *
  * @type {module.FaServerHttpRoutesClass}
  */
 module.exports = class FaServerHttpRoutesClass {
-	/**
-	 *
-	 * @param executor {module.FaServerHttpClass}
-	 */
 	constructor(executor) {
 		this._FileClass = new FaServerFileClass('/usr/src');
 		this.httpRoutes(executor);
@@ -31,12 +27,12 @@ module.exports = class FaServerHttpRoutesClass {
 	 * @param faServerClass {module.FaServerHttpClass}
 	 */
 	httpRoutes(faServerClass) {
-		// const FileType = require('file-type');
+		// const FileType = require('File-type');
 		// 'Content-Type': FileType(favicon).mime,
 		faServerClass.router.attach('/favicon.ico', function () {
 			/** @type {module.FaServerClass} */
 			let self = this;
-			return self.httpResponse(self.http.file.asByteSync('/favicon.ico'), {
+			return self.http.response(self.http.file.readByteSync('/favicon.ico'), {
 				'Accept-Ranges': 'bytes',
 				'Content-Type': 'image/x-icon',
 				'Cache-Control': 'public, max-age=2592000',//30 days
@@ -61,8 +57,8 @@ module.exports = class FaServerHttpRoutesClass {
 		faServerClass.router.attach('/socket.io.js', function () {
 			/** @type {module.FaServerClass} */
 			let self = this;
-			let content = context._file.asByteSync('/node_modules/socket.io-client/dist/socket.io.slim.js');
-			return self.httpResponse(content, self.http.contentType.javascript);
+			let content = context._file.readByteSync('/node_modules/socket.io-client/dist/socket.io.slim.js');
+			return self.http.response(content, self.http.contentType.javascript);
 		});
 		/**
 		 *
@@ -70,15 +66,14 @@ module.exports = class FaServerHttpRoutesClass {
 		faServerClass.router.attach('/socket.io.slim.js.map', function () {
 			/** @type {module.FaServerClass} */
 			let self = this;
-			let content = context._file.asByteSync('/node_modules/socket.io-client/dist/socket.io.slim.js.map');
+			let content = context._file.readByteSync('/node_modules/socket.io-client/dist/socket.io.slim.js.map');
 			// consoleLog(content);
-			return self.httpResponse(content, {
+			return self.http.response(content, {
 				/*https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/default-src*/
 				// 'Content-Security-Policy': `default-src 'none';`,
 				'Content-Type': self.http.contentType.json,
 			});
 		});
-
 		/**
 		 *
 		 */
@@ -98,11 +93,11 @@ module.exports = class FaServerHttpRoutesClass {
 									options: self.socket.configuration
 								})};`
 							));
-							content.push(context._file.asByteSync('/ula-client/package-fa-nodejs/client/socket-client.js'));
+							content.push(context._file.readByteSync('/ula-client/package-fa-nodejs/client/socket-client.js'));
 							// content.push(context._file.asByteSync('vendor/fa-modules/socket.min.js'));
 							break;
 						default:
-							content.push(context._file.asByteSync(`/ula-client/package-fa-nodejs/client/${item}.js`));
+							content.push(context._file.readByteSync(`/ula-client/package-fa-nodejs/client/${item}.js`));
 						// content.push(context._file.asByteSync(`vendor/fa-modules/${item}.min.js`));
 					}
 					content.push(Buffer.from(`;\n`));
@@ -110,8 +105,8 @@ module.exports = class FaServerHttpRoutesClass {
 			} else {
 				content.push(Buffer.from(`'use strict';\n`));
 			}
-			// return self.httpResponse(content.join(';'), self.http.contentType.javascript, self.http.statusCode.ok);
-			return self.httpResponse(Buffer.concat(content), self.http.contentType.javascript, self.http.statusCode.ok);
+			// return self.httpResponse(content.join(';'), self.Http.contentType.javascript, self.Http.statusCode.ok);
+			return self.http.response(Buffer.concat(content), self.http.contentType.javascript, self.http.statusCode.ok);
 		});
 	}
 };

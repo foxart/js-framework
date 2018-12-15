@@ -6,7 +6,7 @@ const Fs = require('fs');
 /*modules*/
 const FaBeautify = require('../beautify/index');
 const FaConsoleColor = require('./console-color');
-const FaTrace = require('../trace/deprecated-index');
+const FaTrace = require('../base/~trace');
 /**
  *
  * @type {module.FaLogClass}
@@ -24,7 +24,7 @@ module.exports = class FaLogClass {
 	 * @private
 	 */
 	_consoleFile(content, filename, template = null, trace) {
-		filename = filename === undefined ? 'console-file' : filename;
+		filename = filename === undefined ? 'console-File' : filename;
 		template = template ? template : `{time} | {caller}:{line}:{column} | {data}`;
 		let time = new Date().toLocaleTimeString();
 		// let date = new Date().toLocaleDateString();

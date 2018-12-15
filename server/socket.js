@@ -2,8 +2,8 @@
 /*node*/
 const SocketIo = require('socket.io');
 /*fa*/
-const FaRouterClass = require('./router');
-const FaError = require('../error/index');
+const FaRouterClass = require('../base/router');
+const FaError = require('../base/~error');
 /**
  *
  * @type {module.FaServerSocketClass}
@@ -103,7 +103,7 @@ module.exports = class FaServerSocketClass {
 		// let cookie = require('cookie');
 		// let cookies = cookie.parse(socket.handshake.headers.cookie);
 		socket.on('*', function (event, data, callback) {
-			let handler = context.router.handler(event);
+			let handler = context.router.find(event);
 			if (handler) {
 				context._handleRouter(socket, event, handler, data, callback);
 			} else {

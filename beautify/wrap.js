@@ -1,6 +1,6 @@
-'use strict';
-const
-	Hue = require('../console/console-color');
+"use strict";
+const Hue = require('../console/console-color');
+const FaError = require("../base/error");
 
 /**
  *
@@ -20,9 +20,12 @@ function getType(type, length, show_color) {
 			case 'Date':
 				result = `${Hue.effect.underscore}${Hue.color.yellow}${type}${length}${Hue.effect.reset} `;
 				break;
-			case 'Error':
-				result = `${Hue.effect.underscore}${Hue.color.red}${type}${Hue.effect.reset} `;
-				break;
+			// case 'Error':
+			// 	result = `${Hue.effect.underscore}${Hue.color.red}${type}${Hue.effect.reset} `;
+			// 	break;
+			// case 'FaError':
+			// 	result = `${Hue.effect.underscore}${Hue.color.red}${type}${Hue.effect.reset} `;
+			// 	break;
 			case 'Json':
 				result = `${Hue.effect.bold}${Hue.color.green}<${type}${length}>${Hue.effect.reset} `;
 				break;
@@ -113,37 +116,42 @@ exports.wrapDate = function (data, show_color, show_type) {
  *
  * @param name
  * @param message
- * @param trace
  * @param stack
+ * @param trace
  * @param tab
  * @param show_color
- * @param show_type
- * @returns {string}
+ * @return {string}
  */
-exports.wrapError = function (name, message, trace, stack, tab, show_color, show_type) {
-	// FaConsole.consoleError(message)
-	let type = show_type ? getType('Error', null, show_color) : '';
-	let backtrace;
-	let backtrace_list;
-	let backtrace_message_list = [];
+exports.wrapError = function (name, message, stack, trace, tab, show_color) {
+	let type;
+	let trace_list = [];
+	let stack_list = [];
 	if (trace) {
-		backtrace_list = trace;
+		type = `${Hue.effect.underscore}${Hue.color.red}${name}${Hue.effect.reset}`;
 	} else {
-		backtrace_list = stack.split('\n');
+		trace = FaError.traceStack(stack);
+		type = `${Hue.effect.underscore}${Hue.effect.dim}${name}${Hue.effect.reset}`;
 	}
-	backtrace_list.forEach(function (item) {
-		let string = item.trim();
+	trace.forEach(function (item) {
 		if (show_color) {
-			backtrace_message_list.push(`\n${tab}${Hue.effect.dim}${string}${Hue.effect.reset}`);
+			trace_list.push(`\n${tab}${Hue.color.cyan}${item['method']} ${Hue.color.yellow}${item['path']}${Hue.effect.reset}:${Hue.color.red}${item['line']}${Hue.effect.reset}:${Hue.effect.dim}${item['column']}${Hue.effect.reset}`);
 		} else {
-			backtrace_message_list.push(`\n${tab}${string}`);
+			trace_list.push(`\n${tab}${item['method']} ${item['path']}:${item['line']}:${item['column']}`);
 		}
 	});
-	backtrace = backtrace_message_list.join('');
+	trace = trace_list.join('');
+	stack.split('\n').forEach(function (item) {
+		if (show_color) {
+			stack_list.push(`\n${tab}| ${Hue.effect.dim}${item.trim()}${Hue.effect.reset}`);
+		} else {
+			stack_list.push(`\n${tab}| ${item.trim()}`);
+		}
+	});
+	stack = stack_list.join('');
 	if (show_color) {
-		return `${type}${name} ${message} ${Hue.effect.dim}${backtrace}${Hue.effect.reset}`;
+		return `${type} ${message} ${Hue.effect.dim}${trace}${Hue.effect.reset}${stack}`;
 	} else {
-		return `${type}${name} ${message} ${backtrace}`;
+		return `${name} ${message}${trace}`;
 	}
 };
 /**

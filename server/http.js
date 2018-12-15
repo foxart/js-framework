@@ -1,129 +1,88 @@
 'use strict';
 /*node*/
-const
-	Http = require('http'),
-	MimeTypes = require('mime-types'),
-	Url = require('url');
-/*vendor*/
-const FaError = require('../error/index');
-const FaFileClass = require('./file');
-const FaServerHttpResponseClass = require('./http-response');
-const FaServerHttpRoutesClass = require('./http-routes');
-const FaRouterClass = require('./router');
-const FaTraceClass = require('../trace');
+const Buffer = require('buffer').Buffer;
+const Http = require('http');
+const MimeTypes = require('mime-types');
+const Url = require('url');
+/*fa*/
+const FaError = require('../base/error');
+const FaConsoleColor = require('../console/console-color');
+const FaConverterClass = require('../base/converter');
+const FaHttpRequestClass = require('./http-request');
+const FaHttpResponseClass = require('./http-response');
+const FaHttpHeadersContentType = require("./http-headers-content-type");
+const FaHttpHeadersStatusCode = require("./http-headers-status-code");
+
 /**
  *
- * @type {module.FaServerHttpClass}
+ * @type {FaHttpClass}
  */
-module.exports = class FaServerHttpClass {
-	/**
-	 *
-	 * @param parent {module.FaServerClass}
-	 * @param configuration
-	 */
-	constructor(parent, configuration) {
-		this._parent = parent;
-		this._configuration = configuration;
-		this._File = new FaFileClass(this.configuration.path, 3);
-		this._Router = new FaRouterClass(parent);
-		this._Trace = new FaTraceClass();
-		new FaServerHttpRoutesClass(this);
-		this._Http = this._createHttp();
+class FaHttpClass {
+	constructor(configuration) {
+		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
+		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
+		this._FaFileClass = require('../base/file')(this.Configuration.path);
+		this._FaRouterClass = require('../base/router')(this);
+		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
+		this.contentType = new FaHttpHeadersContentType();
+		this.statusCode = new FaHttpHeadersStatusCode();
+		this.Server = this._createHttp(this.Configuration);
+		// new FaServerHttpRoutesClass(this._Http);
 	}
 
 	/**
 	 *
-	 * @return {http|*}
+	 * @return {{protocol: string, host: string, port: number, path: string, converter: {}}}
 	 * @constructor
 	 */
-	get Http() {
-		return this._Http;
+	get Configuration() {
+		return this._FaHttpConfigurationClass;
 	}
 
 	/**
 	 *
-	 * @return {{protocol: string, host: string, port: number, path: string}}
+	 * @return {module.FaServerConverterClass}
+	 * @constructor
 	 */
-	get configuration() {
-		return this._configuration;
-	};
-
-	/**
-	 *
-	 * @returns {module.FaFileClass}
-	 */
-	get file() {
-		return this._File;
+	get Converter() {
+		return this._FaConverterClass;
 	}
 
 	/**
 	 *
-	 * @return {module.FaHttpRouterClass}
+	 * @returns {FaFileClass}
 	 */
-	get router() {
-		return this._Router;
+	get File() {
+		return this._FaFileClass;
 	}
 
 	/**
 	 *
-	 * @return {FaTraceClass}
+	 * @return {FaRouterClass}
 	 */
-	get trace() {
-		return this._Trace;
+	get Router() {
+		return this._FaRouterClass;
 	}
 
 	/**
 	 *
-	 * @return {{javascript: string, json: string, html: string, text: string, urlencoded: string, xml: string}}
-	 */
-	get contentType() {
-		return {
-			css: 'text/css',
-			javascript: 'application/javascript',
-			json: 'application/json',
-			html: 'text/html',
-			text: 'text/plain',
-			urlencoded: 'application/x-www-form-urlencoded',
-			xml: 'application/xml',
-		}
-	}
-
-	/**
-	 *
-	 * @return {{badRequest: number, internalServerError: number, notFound: number, notImplemented: number, ok: number, apiGet: number, apiDelete: number, apiPatch: number, apiPost: number, apiPut: number}}
-	 */
-	get statusCode() {
-		return {
-			//http
-			badRequest: 400,
-			internalServerError: 500,
-			notFound: 404,
-			notImplemented: 501,
-			ok: 200,
-			//api
-			apiGet: 200,
-			apiDelete: 204,
-			apiPatch: 202,
-			apiPost: 201,
-			apiPut: 200,
-		}
-	}
-
-	/**
-	 *
+	 * @param configuration
 	 * @return {Server}
 	 * @private
 	 */
-	_createHttp() {
+	_createHttp(configuration) {
 		let context = this;
-		let _Http;
-		_Http = Http.createServer(function (req, res) {
+		let Server = Http.createServer(function (req, res) {
 			context._listenHttp(req, res);
 		});
-		_Http.listen(this.configuration.port, function () {
-			context._parent.log('FaServerHttp', context.configuration.protocol, context.configuration.host, context.configuration.port, context.configuration.path);
+		Server.listen(configuration.port, function () {
+			let message = `FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
+				return `{${key}}`;
+			}), Object.values(configuration));
+			let template = `${FaConsoleColor.bg.black}${FaConsoleColor.color.cyan} {time} ${FaConsoleColor.color.white}{path}:${FaConsoleColor.color.cyan}{line}${FaConsoleColor.color.white}:{column} ${FaConsoleColor.effect.reset} {data}`;
+			FaConsole.consoleWrite(message, template, 'plain');
 		});
-		return _Http;
+		return Server;
 	}
 
 	/**
@@ -134,211 +93,177 @@ module.exports = class FaServerHttpClass {
 	 */
 	_listenHttp(req, res) {
 		let context = this;
-		let path = Url.parse(req.url).pathname;
-		let handler = this.router.handler(path);
-		let type = MimeTypes.lookup(path);
-		// FaConsole.consoleInfo(path);
-		this._readData(req).then(function (data) {
-			if (handler) {
-				return context._handleRouter(req, res, path, handler, data);
-			} else if (type) {
-				return context._handleFile(req, res, path, type);
-			} else {
-				return context._parent.httpResponse(new FaError(`route not found: ${path}`, false), null, context.statusCode.notFound);
-			}
-		}).then(function (result) {
-			context._respondHttp(req, res, result);
-		}).catch(function (e) {
-			FaConsole.consoleError(e);
-			context._respondHttp(req, res, context._parent.httpResponse(context.error(e, path), null, context.statusCode.internalServerError));
+		let body = '';
+		req.on('data', function (chunk) {
+			body += chunk;
+		});
+		req.on('error', function (error) {
+			// reject(error);
+		});
+		req.on('end', function () {
+			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
+				context._respondHttp(req, res, result);
+			}).catch(function (e) {
+				context._respondHttp(req, res, e);
+			});
 		});
 	};
 
 	/**
 	 *
 	 * @param req
-	 * @return {Promise}
+	 * @param res
+	 * @param FaHttpResponse {module.FaHttpResponseClass}
 	 * @private
 	 */
-	_readData(req) {
+	_respondHttp(req, res, FaHttpResponse) {
+		// if (FaHttpResponse.headers['Content-Type'] === null) {
+		// 	if (req.headers.accept) {
+		// 		if (req.headers.accept.indexOf(this.contentType.json) !== -1) {
+		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.json;
+		// 		} else if (req.headers.accept.indexOf(this.contentType.html) !== -1) {
+		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.html;
+		// 		} else if (req.headers.accept.indexOf(this.contentType.urlencoded) !== -1) {
+		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.urlencoded;
+		// 		} else if (req.headers.accept.indexOf(this.contentType.xml) !== -1) {
+		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.xml;
+		// 		} else {
+		// 			FaHttpResponse.headers['Content-Type'] = this.contentType.html;
+		// 		}
+		// 	} else {
+		// 		FaHttpResponse.headers['Content-Type'] = this.contentType.html;
+		// 	}
+		// }
+		let accepts = require('accepts');
+		let accept =accepts(req);
+		FaConsole.consoleLog(accept.type('json'));
+		// req.accepts('html');
+
+		switch (FaHttpResponse.headers['Content-Type']) {
+			case this.contentType.json:
+				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
+				break;
+			case this.contentType.html:
+				FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
+				break;
+			case this.contentType.urlencoded:
+				FaHttpResponse.content = this.Converter.toUrlencoded(FaHttpResponse.content);
+				break;
+			case this.contentType.xml:
+				FaHttpResponse.content = this.Converter.toXml(FaHttpResponse.content);
+				break;
+			default:
+				FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
+		}
+		if (!FaHttpResponse.status) {
+			// FaHttpResponse.status = this.statusCode.ok;
+
+		}
+		if (!FaHttpResponse.content.byteLength) {
+			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
+		}
+		for (let property in FaHttpResponse.headers) {
+			if (FaHttpResponse.headers.hasOwnProperty(property)) {
+				// if (property === 'Content-Type' && FaHttpResponse.headers[property].indexOf('; charset=') === -1) {
+				// 	res.setHeader(property, FaHttpResponse.headers[property] + '; charset=utf-8');
+				// } else {
+				// 	res.setHeader(property, FaHttpResponse.headers[property]);
+				// }
+				res.setHeader(property, FaHttpResponse.headers[property]);
+			}
+		}
+		res.setHeader('Content-Length', FaHttpResponse.content.byteLength);
+		res.statusCode = FaHttpResponse.status;
+		res.write(FaHttpResponse.content);
+
+		res.end();
+		FaHttpResponse = null;
+	}
+
+	/**
+	 *
+	 * @param data
+	 * @return {Promise<module.FaHttpResponseClass>}
+	 * @private
+	 */
+	_handleRequest(data) {
 		let context = this;
+		let mime = MimeTypes.lookup(data.path);
+		let router = this.Router.find(data.path);
 		return new Promise(function (resolve, reject) {
-			let result = '';
-			let data = '';
-			req.on('data', function (chunk) {
-				data += chunk;
-			});
-			req.on('error', function (error) {
-				reject(error);
-			});
-			req.on('end', function () {
+			if (router) {
 				try {
-					let get = {};
-					let post = {};
-					let url = Url.parse(req.url);
-					if (url.query) {
-						get = context._parent.converter.fromUrlEncoded(url.query);
+					let callback = router.call(this, data);
+					if (callback instanceof Promise) {
+						callback.then(function (result) {
+							resolve(context._handleRoute(data.path, result));
+						}).catch(function (e) {
+							reject(context.response(FaError.pickTrace(e, 0), null, context.statusCode.internalServerError));
+						});
+					} else {
+						resolve(context._handleRoute(data.path, callback));
 					}
-					if (["PATCH", "POST", "PUT"].hasElement(req.method)) {
-						switch (req.headers['content-type']) {
-							case context.contentType.json:
-								post = context._parent.converter.fromJson(data);
-								break;
-							case context.contentType.xml:
-								post = context._parent.converter.fromXml(data);
-								break;
-							case context.contentType.urlencoded:
-								post = context._parent.converter.fromUrlEncoded(data);
-								FaConsole.consoleError(post);
-								break;
-							default:
-								post = data;
-						}
-					}
-					result = {
-						path: url.pathname,
-						method: req.method.toLowerCase(),
-						headers: req.headers,
-						get: get,
-						post: post,
-						request: (typeof get === 'object' && typeof post === 'object') ? Object.assign({}, get, post) : {},
-						input: data,
-					};
-					resolve(result);
 				} catch (e) {
-					reject(e);
+					reject(context.response(FaError.pickTrace(e, 0), null, context.statusCode.internalServerError));
 				}
-			});
+			} else if (mime) {
+				resolve(context._handleFile(data.path, mime));
+			} else {
+				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context.statusCode.notFound));
+			}
 		});
 	}
 
 	/**
 	 *
-	 * @param req
-	 * @param res
-	 * @param responseClass {module.FaServerHttpResponseClass}
+	 * @param route {string}
+	 * @param data
 	 * @private
 	 */
-	_respondHttp(req, res, responseClass) {
-		if (responseClass instanceof FaServerHttpResponseClass === false) {
-			responseClass = this._parent.httpResponse(responseClass, null, this.statusCode.ok);
-		}
-		let statusCode;
-		let content;
-		if (!responseClass.get.status) {
-			statusCode = this.statusCode.ok;
+	_handleRoute(route, data) {
+		if (data instanceof FaHttpResponseClass) {
+			return data;
 		} else {
-			statusCode = responseClass.get.status;
-		}
-		if (!responseClass.get.headers['Content-Type']) {
-			responseClass.get.headers['Content-Type'] = req.headers['content-type'] ? req.headers['content-type'] : this.contentType.html;
-		}
-		if (!responseClass.get.content) {
-			content = '';
-		} else if (responseClass.get.content.byteLength) {
-			content = responseClass.get.content;
-		} else {
-			// 		FaConsole.consoleError(responseClass.get.headers);
-			switch (responseClass.get.headers['Content-Type']) {
-				// switch (responseClass.get.headers['Accept']) {
-				case this.contentType.json:
-					content = this._parent.converter.toJson(responseClass.get.content);
-					break;
-				case this.contentType.urlencoded:
-					content = this._parent.converter.toUrlencoded(responseClass.get.content);
-					break;
-				case this.contentType.xml:
-					content = this._parent.converter.toXml(responseClass.get.content);
-					break;
-				default:
-					content = this._parent.converter.toHtml(responseClass.get.content);
-			}
-		}
-		for (let property in responseClass.get.headers) {
-			if (responseClass.get.headers.hasOwnProperty(property)) {
-				if (property === 'Content-Type' && responseClass.get.headers[property].indexOf('; charset=') === -1) {
-					res.setHeader(property, responseClass.get.headers[property] + '; charset=utf-8');
-				} else {
-					res.setHeader(property, responseClass.get.headers[property]);
-				}
-			}
-		}
-		if (!content.byteLength) {
-			content = Buffer.from(content);
-		}
-		if (content.byteLength) {
-			// res.setHeader('Accept-Ranges', 'bytes');
-			res.setHeader('Content-Length', content.byteLength);
-		}
-		if (statusCode === 404) {
-			// FaConsole.consoleWarn(statusCode);
-			res.statusCode = 404;
-			// res.writeHead(404, {});
-		} else {
-			res.statusCode = statusCode;
-		}
-		res.write(content);
-		res.end();
-	}
-
-	/**
-	 *
-	 * @param e {Error|module.FaError}
-	 * @param path {string}
-	 * @return {module.FaError}
-	 */
-	error(e, path) {
-		if (e instanceof FaError === false) {
-			e = new FaError(e);
-		}
-		// e.appendTrace(this.router.trace(path));
-		return e;
-	}
-
-	/**
-	 *
-	 * @param req
-	 * @param res
-	 * @param path {string}
-	 * @param handler {function}
-	 * @param data {*}
-	 * @private
-	 */
-	_handleRouter(req, res, path, handler, data) {
-		let context = this;
-		try {
-			let result = handler.call(this, data);
-			if (result instanceof Promise) {
-				return result.then(function (data) {
-					return data;
-				}).catch(function (e) {
-					return context._parent.httpResponse(context.error(e, path), null, context.statusCode.internalServerError);
-				});
-			} else {
-				return result;
-			}
-		} catch (e) {
-			return this._parent.httpResponse(this.error(e, path), null, this.statusCode.internalServerError);
+			return this.response(data, null, this.statusCode.ok);
 		}
 	}
 
 	/**
 	 *
-	 * @param req
-	 * @param res
 	 * @param filename {string}
 	 * @param type {string}
+	 * @return {module.FaHttpResponseClass}
 	 * @private
 	 */
-	_handleFile(req, res, filename, type) {
-		let context = this;
-		let data;
+	_handleFile(filename, type) {
 		try {
-			data = this.file.asByteSync(filename.replace(/^\/?/, ""));
-			return context._parent.httpResponse(data, type, context.statusCode.ok);
+			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this.statusCode.ok);
 		} catch (e) {
-			return context._parent.httpResponse(e, type, context.statusCode.notFound);
+			return this.response(e.message, null, this.statusCode.notFound);
 		}
 	}
-};
 
+	/**
+	 *
+	 * @param content
+	 * @param type
+	 * @param status
+	 * @return {module.FaHttpResponseClass}
+	 */
+	response(content, type = null, status = null) {
+		return new FaHttpResponseClass(content, type, status);
+	}
+}
+
+/**
+ *
+ * @param configuration {Object}
+ * @return {FaHttpClass}
+ */
+module.exports = function (configuration = null) {
+	if (configuration) {
+		return new FaHttpClass(configuration);
+	} else {
+		return FaHttpClass;
+	}
+};

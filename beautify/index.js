@@ -1,11 +1,9 @@
 'use strict';
 /*node*/
-const
-	FastXmlParser = require('fast-xml-parser'),
-	FileType = require('file-type');
+const FastXmlParser = require('fast-xml-parser');
+const FileType = require('file-type');
 /*fa*/
-const
-	FaWrap = require('./wrap');
+const FaWrap = require('./wrap');
 
 /**
  *
@@ -144,40 +142,39 @@ function index(data, level, circular, color, type) {
 		// float
 		return FaWrap.wrapFloat(data, color, type);
 		// } else if (data instanceof Date) {
-	} else if (data instanceof Date ) {
+	} else if (data instanceof Date) {
 		/*date*/
 		return FaWrap.wrapDate(data, color, type);
-	// } else if (!isNaN(Date.parse(data))) {
-	// 	/*date*/
-	// 	return FaWrap.wrapDate(new Date(data), color, type);
+		// } else if (!isNaN(Date.parse(data))) {
+		// 	/*date*/
+		// 	return FaWrap.wrapDate(new Date(data), color, type);
 	} else if (typeof data === 'function') {
 		// function
 		return FaWrap.wrapFunction(data, getTab(level + 1), color, type);
-		// } else if (data instanceof Error || data instanceof FaError) {
+		// } else if (data instanceof FaError) {
+		// 	/*FaError*/
+		// 	return FaWrap.wrapFaError(data['name'], data['message'], data['stack'], getTab(level + 1), color);
 	} else if (data instanceof Error) {
-		// error
-		let message = index.call(this, data['message'], level, false, color, type);
-		let stack = data['stack'];
-		// let trace = index.call(this, data['trace'] ? data['trace'] : '', level, false, color, type);
-		// return FaWrap.wrapError(data['name'], message, trace, stack, getTab(level + 1), color, type);
-		return FaWrap.wrapError(data['name'], message, data['trace'], stack, getTab(level + 1), color, type);
+		/*Error*/
+		return FaWrap.wrapError(data['name'], data['message'], data['stack'], data['trace'], getTab(level + 1), color);
 	} else if (typeof data === 'object') {
 		try {
 			if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {
-				// MONGO
+				/*MONGO*/
 				return FaWrap.wrapMongoId(data, color, type);
 			} else if (data instanceof RegExp) {
-				// REGEXP
+				/*REGEXP*/
 				return FaWrap.wrapRegExp(data.toString(), color, type);
 			} else if (data.byteLength) {
-				// IMAGE
+				//todo rewrite to true type detection
+				/*IMAGE*/
 				return FaWrap.wrapImage(FileType(data).mime, data.length, color, type);
 			} else {
-				// OBJECT
+				/*OBJECT*/
 				return FaWrap.wrapObject(stringifyObject.call(this, data, level, index, color, type), Object.keys(data).length, color, type);
 			}
 		} catch (e) {
-			// OBJECT
+			/*OBJECT*/
 			return FaWrap.wrapObject(stringifyObject.call(this, data, level, index, color, type), Object.keys(data).length, color, type);
 		}
 		// } else if (data.byteLength) {
@@ -195,7 +192,7 @@ function index(data, level, circular, color, type) {
 			// xml
 			return FaWrap.wrapXml(index.call(this, FastXmlParser.parse(data, {}), level, false, color, type), data.length, color, type);
 		} else if (FileType(Buffer.from(data, 'base64'))) {
-			// IMAGE
+			/*IMAGE*/
 			return FaWrap.wrapImage(FileType(Buffer.from(data, 'base64')).mime, data.length, color, type);
 		} else {
 			// string
@@ -222,7 +219,7 @@ exports.extendedColor = function (data) {
 	return index(data, 1, false, true, true);
 };
 /**
- * @param data
+ * @param data {*}
  * @returns {string}
  */
 exports.plain = function (data) {

@@ -3,8 +3,8 @@
 const
 	Fs = require('fs');
 /*vendor*/
-const FaError = require('../error');
-const FaTraceClass = require('../trace');
+const FaError = require('./~error');
+const FaTraceClass = require('./trace');
 /**
  *
  * @type {module.FaFileClass}
@@ -25,7 +25,6 @@ module.exports = class FaFileClass {
 	 *
 	 * @param filename {string}
 	 * @returns {string}
-	 * @private
 	 */
 	_filename(filename) {
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
@@ -67,9 +66,10 @@ module.exports = class FaFileClass {
 		if (this.exist(filename)) {
 			return Fs.readFileSync(this._filename(filename));
 		} else {
-			throw this.error(`file not found: ${this._filename(filename)}`);
-			// throw new FaError(`file not found: ${this._filename(filename)}`, false);
-			// throw new FaError(`file not found: ${this._filename(filename)}`);
+			throw new FaError(`file not found: ${this._filename(filename)}`);
+			// throw this.error(`File not found: ${this._filename(filename)}`);
+			// throw new FaError(`File not found: ${this._filename(filename)}`, false);
+			// throw new FaError(`File not found: ${this._filename(filename)}`);
 		}
 	}
 
@@ -78,13 +78,13 @@ module.exports = class FaFileClass {
 	 * @param e {module.FaError|*}
 	 * @return {module.FaError}
 	 */
-	error(e) {
-		if (e instanceof FaError === false) {
-			e = new FaError(e, false);
-		}
-		e.appendTrace(this._TraceClass.parse(e).string(this._traceLevel));
-		return e;
-	}
+	// error(e) {
+	// 	if (e instanceof FaError === false) {
+	// 		e = new FaError(e, false);
+	// 	}
+	// 	e.appendTrace(this._TraceClass.parse(e).string(this._traceLevel));
+	// 	return e;
+	// }
 
 	/**
 	 *
