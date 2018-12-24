@@ -116,7 +116,7 @@ function stringifyObject(object, level, callback, color, type) {
 
 /**
  *
- * @param data
+ * @param data {*}
  * @param level
  * @param circular
  * @param color
@@ -205,14 +205,14 @@ function index(data, level, circular, color, type) {
 }
 
 /**
- * @param data
+ * @param data {*}
  * @returns {string}
  */
 exports.extended = function (data) {
 	return index(data, 1, false, false, true);
 };
 /**
- * @param data
+ * @param data {*}
  * @returns {string}
  */
 exports.extendedColor = function (data) {
@@ -226,7 +226,7 @@ exports.plain = function (data) {
 	return index(data, 1, false, false, false);
 };
 /**
- * @param data
+ * @param data {*}
  * @returns {string}
  */
 exports.plainColor = function (data) {

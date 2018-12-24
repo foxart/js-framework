@@ -59,7 +59,7 @@ module.exports = class FaServerClass {
 
 	/**
 	 *
-	 * @return {module.FaServerHttpClass}
+	 * @return {FaHttpClass}
 	 */
 	get http() {
 		return this._HttpClass;
@@ -83,7 +83,6 @@ module.exports = class FaServerClass {
 	// httpResponse(data, headers = null, status = null) {
 	// 	return new FaServerHttpResponseClass(data, headers, status);
 	// }
-
 	/**
 	 *
 	 * https://www.compart.com/en/unicode/category/So

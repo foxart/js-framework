@@ -39,16 +39,21 @@ class Model {
 		return data.map(function (item) {
 			let result = {};
 			Object.entries(adapter).forEach(function ([index, element]) {
-				if (typeof element === "object") {
+				if (!element) {
+					result[index] = null;
+				} else if (typeof element === "object") {
 					result[index] = context.adapterFunction([item], element, options)[0];
 				} else if (typeof element === "function") {
 					let result_function;
-					result_function = element.call(this, item, options);
-					if (result_function instanceof Error) {
-						throw new Error(result_function);
+					try {
+						result_function = element.call(item, item, options);
+					} catch (e) {
+						result_function = null;
+						FaConsole.consoleError(e);
 					}
 					result[index] = result_function !== undefined ? result_function : null;
 				} else if (item) {
+					// FaConsole.consoleError(index, element);
 					result[index] = item[element] !== undefined ? item[element] : null;
 				} else {
 					result[index] = null;

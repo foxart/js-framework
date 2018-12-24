@@ -276,6 +276,7 @@ module.exports = function (configuration) {
 		// let File = Fs.readFileSync(HttpServerApi.configuration.path + '/train/Volkswagen.jpg');
 		// let base64Image = new Buffer(File, 'binary').toString('base64');
 		let filepath = this.configuration.path + filename;
+		// FaConsole.consoleLog(filepath)
 		if (Fs.existsSync(filepath)) {
 			return Fs.readFileSync(filepath).toString();
 		} else {

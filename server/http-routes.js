@@ -24,7 +24,7 @@ module.exports = class FaServerHttpRoutesClass {
 
 	/**
 	 *
-	 * @param faServerClass {module.FaServerHttpClass}
+	 * @param faServerClass
 	 */
 	httpRoutes(faServerClass) {
 		// const FileType = require('File-type');
@@ -46,7 +46,7 @@ module.exports = class FaServerHttpRoutesClass {
 
 	/**
 	 *
-	 * @param faServerClass {module.FaServerHttpClass}
+	 * @param faServerClass
 	 */
 	socketRoutes(faServerClass) {
 		/** @type {module.FaServerHttpRoutesClass} */

@@ -14,8 +14,15 @@ class FaFileClass {
 	 * @param path {string|null}
 	 */
 	constructor(path = null) {
-		// this._path = path;
-		this._path = path ? path : process.cwd();
+		this._path = path;
+	}
+
+	/**
+	 *
+	 * @return {string}
+	 */
+	get path() {
+		return this._path;
 	}
 
 	/**
@@ -34,10 +41,42 @@ class FaFileClass {
 	 * @param filename {string}
 	 * @returns {boolean}
 	 */
-	exist(filename) {
+	existFilename(filename) {
 		let fullname = this.fullname(filename);
 		return !!(Fs.existsSync(fullname) && Fs.lstatSync(fullname).isFile());
 	};
+
+	/**
+	 *
+	 * @param path {string}
+	 * @return {boolean}
+	 */
+	existPath(path) {
+		return !!(Fs.existsSync(path) && Fs.lstatSync(path).isDirectory());
+	};
+
+	createPathSync(path) {
+		try {
+			Fs.mkdirSync(path);
+		} catch (e) {
+			// if (e.code !== 'EEXIST') {
+			// }
+			throw FaError.pickTrace(e, 2);
+		}
+	}
+
+	/**
+	 *
+	 * @param filename {string}
+	 * @param data
+	 */
+	writeByteSync(filename, data) {
+		let fileStream = Fs.createWriteStream(`${this.fullname(filename)}`, {
+			flags: 'w'
+		});
+		fileStream.write(data);
+		fileStream.end();
+	}
 
 	/**
 	 *

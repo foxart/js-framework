@@ -1,11 +1,8 @@
 'use strict';
 /*node*/
-const
-	/** @type {Object} */
-	OracleClient = require('oracledb');
+const OracleClient = require('oracledb');
 /*services*/
-const
-	LogService = require('../idol/modules/audit/services/LogService');
+const LogService = require('../idol/modules/audit/services/LogService');
 /**
  *
  * @param configuration
@@ -16,6 +13,7 @@ module.exports = function (configuration) {
 	let createConnection = function (configuration) {
 		module.configuration = configuration;
 		LogService.check(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
+		// console.log(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
 	};
 
 	function logOracleError(data) {
@@ -41,19 +39,22 @@ module.exports = function (configuration) {
 	new createConnection(configuration);
 	/**
 	 *
-	 * @returns {module.FaPromise}
+	 * @return {Promise<any>}
 	 */
 	module.openConnection = function () {
-		return new FaPromise(function (resolve, reject) {
+		return new Promise(function (resolve, reject) {
 			OracleClient.getConnection({
 				connectString: `${module.configuration.host}:${module.configuration.port}/${module.configuration.SID}`,
 				user: module.configuration.user,
 				password: module.configuration.password,
 			}, function (e, connection) {
 				if (e) {
-					// logOracleError(e);
+					// FaConsole.consoleLog(e);
 					reject(e);
 				} else {
+					OracleClient.outFormat = OracleClient['OBJECT'];
+					// OracleClient.fetchAsString = [OracleClient['DATE']];
+					OracleClient.fetchAsBuffer = [OracleClient['BLOB']];
 					resolve(connection);
 				}
 			});
@@ -118,26 +119,55 @@ module.exports = function (configuration) {
 		// OracleClient.outFormat = OracleClient.OBJECT;
 		OracleClient.outFormat = OracleClient[format];
 	};
+	/**
+	 *
+	 */
 	module.query = function () {
-		let query,
-			parameters,
-			options,
-			onSuccess,
-			onError;
+		let query, parameters, options, onSuccess, onError;
 		let filter = filterArguments(arguments);
-		[query, parameters, options, onSuccess, onError] =
-			[filter[0], filter[1], filter[2], filter[3], filter[4]];
+		[query, parameters, options, onSuccess, onError] = [filter[0], filter[1], filter[2], filter[3], filter[4]];
 		if (this.isConnected()) {
+			// module.execute("alter session set time_zone='America/New_York'", query, parameters, options, onSuccess, onError);
 			module.execute(query, parameters, options, onSuccess, onError);
 		} else {
 			this.openConnection().then(function (connection) {
 				Oracle = connection;
+				// FaConsole.consoleLog(connection)
 				module.execute(query, parameters, options, onSuccess, onError);
 			}, function (error) {
 				/*connection open error*/
 				onError.call(this, error);
 			})
 		}
+	};
+	module.queryPromise = function () {
+		let context = this;
+		let query, parameters, options;
+		let filter = filterArguments(arguments);
+		let error = new FaError('');
+		[query, parameters, options] = [filter[0], filter[1], filter[2]];
+		return new Promise(function (resolve, reject) {
+			context.openConnection().then(function (connection) {
+				// FaConsole.consoleLog(connection)
+				connection.execute(query, parameters, options, function (e, result) {
+					if (e) {
+						console.log(e);
+						let oracleError = e.message.split(': ');
+						// FaConsole.consoleWarn(e.message);
+						// FaConsole.consoleWarn(e.errorNum);
+						error.name = oracleError[0];
+						error.message = oracleError[1];
+						// console.log(e.message);
+						// FaConsole.consoleWarn(FaError.pickTrace(error,1));
+						reject(FaError.pickTrace(error, 1));
+					} else {
+						resolve(result);
+					}
+				});
+			}, function (e) {
+				reject(e);
+			});
+		});
 	};
 	return module;
 };

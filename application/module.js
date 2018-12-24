@@ -1,5 +1,5 @@
 "use strict";
-const FaError = require('../base/error');
+const FaError = require("../base/error");
 
 /**
  *
@@ -7,7 +7,6 @@ const FaError = require('../base/error');
  */
 class FaModule {
 	constructor() {
-		this.name = 'FaModule';
 		this._controller_list = {};
 	}
 
@@ -51,9 +50,8 @@ class FaModule {
 	 * @param configuration {Object}
 	 */
 	handleHttpRoutes(FaHttpClass, configuration) {
-		for (const [key, value] of Object.entries(configuration['routes'])) {
-			// try {
-			let namespace = value['namespace'] ? `${process.cwd()}/${value['namespace']}` : `${process.cwd()}/${configuration["namespace"]}`;
+		for (const [key, value] of Object.entries(configuration["routes"])) {
+			let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
 			let index = `${namespace}/controllers/${value["controller"]}.js`;
 			let Controller;
 			if (this._constrollerExist(index) === false) {
@@ -74,17 +72,14 @@ class FaModule {
 					throw error;
 				});
 			}
-			// } catch (e) {
-			// 	console.log(e);
-			// 	// let error = this.error(`Controller not found: ${path}/controllers/${value["controller"]}.js`);
-			// 	let error = this._error(e);
-			// 	// FaConsole.consoleError(e);
-			// 	FaHttpClass.Router.attach(key, function () {
-			// 		throw error;
-			// 	});
-			// }
 		}
 	}
+
+
+	handleHttpWeb(FaHttpClass, configuration) {
+		FaConsole.consoleError(arguments);
+	}
+
 }
 
 /**

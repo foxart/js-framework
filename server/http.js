@@ -153,8 +153,7 @@ class FaHttpClass {
 		// let accepts = require('accepts');
 		// let accept = accepts(req);
 		// FaConsole.consoleLog(accept.type('json'));
-
-		switch (FaHttpResponse.headers['Content-Type']) {
+		switch (!FaHttpResponse.content.byteLength && FaHttpResponse.headers['Content-Type']) {
 			case this._FaHttpContentType.json:
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
 				break;
@@ -168,7 +167,7 @@ class FaHttpClass {
 				FaHttpResponse.content = this.Converter.toXml(FaHttpResponse.content);
 				break;
 			// default:
-				// FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
+			// FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
 		}
 		if (!FaHttpResponse.status) {
 			FaHttpResponse.status = this._FaHttpStatusCode.ok;
@@ -176,14 +175,14 @@ class FaHttpClass {
 		if (!FaHttpResponse.content.byteLength) {
 			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
 		}
+		// FaConsole.consoleError(FaHttpResponse.content);
 		for (let property in FaHttpResponse.headers) {
 			if (FaHttpResponse.headers.hasOwnProperty(property)) {
-				// if (property === 'Content-Type' && FaHttpResponse.headers[property].indexOf('; charset=') === -1) {
-				// 	res.setHeader(property, FaHttpResponse.headers[property] + '; charset=utf-8');
-				// } else {
-				// 	res.setHeader(property, FaHttpResponse.headers[property]);
-				// }
-				res.setHeader(property, FaHttpResponse.headers[property]);
+				if (property === 'Content-Type' && FaHttpResponse.headers[property].indexOf('; charset=') === -1) {
+					res.setHeader(property, FaHttpResponse.headers[property] + '; charset=utf-8');
+				} else {
+					res.setHeader(property, FaHttpResponse.headers[property]);
+				}
 			}
 		}
 		res.setHeader('Content-Length', FaHttpResponse.content.byteLength);
@@ -249,6 +248,7 @@ class FaHttpClass {
 	 * @private
 	 */
 	_handleFile(filename, type) {
+		// FaConsole.consoleError(filename, type);
 		try {
 			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this._FaHttpStatusCode.ok);
 		} catch (e) {

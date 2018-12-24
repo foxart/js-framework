@@ -1,5 +1,4 @@
 "use strict";
-
 // function checkJson(json) {
 // 	try {
 // 		JSON.parse(json);
@@ -16,7 +15,6 @@
 // 		return data;
 // 	}
 // };
-
 /*node*/
 const
 	Dns = require('dns'),
@@ -25,8 +23,8 @@ const
 	Querystring = require('querystring'),
 	UtilsExtend = require('utils-extend');
 /*fa*/
-const
-	FaPromise = require('./promise/index');
+// const
+// 	FaPromise = require('./promise/index');
 /*models*/
 const
 	Model = require('./model');
@@ -44,7 +42,7 @@ function requestOptions(options) {
 		method: "get",
 		// path: "/",
 		// headers: {},
-		timeout: 1000,
+		timeout: 100,
 		encoding: null,
 	}, options);
 }
@@ -142,7 +140,7 @@ exports.https = function (options, data, callback) {
  */
 function requestPromise(protocol, options, data) {
 	// FaConsole.consoleInfo(arguments);
-	return new FaPromise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		let HttpRequest;
 		let RequestOptions = requestOptions(options);
 		RequestOptions.method = RequestOptions.method.toUpperCase();
@@ -203,7 +201,7 @@ CurlModel.setAdapter = function () {
 			return record['protocol'].toUpperCase() === 'HTTPS' ? 'HTTPS' : 'HTTP'
 		},
 		timeout: function (record) {
-			return record['timeout'] ? record['timeout'] : 1000
+			return record['timeout'] ? record['timeout'] : 5000
 		},
 		request: {
 			// hostname: function (record) {
@@ -232,10 +230,10 @@ CurlModel.setAdapter = function () {
 /**
  *
  * @param options
- * @returns {module.FaPromise}
+ * @returns {Promise}
  */
 function checkHost(options) {
-	return new FaPromise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		// Dns.lookup('test', function (error) {
 		Dns.lookup(options['request']['hostname'], function (error) {
 			if (error === null) {
@@ -251,10 +249,10 @@ function checkHost(options) {
  *
  * @param options
  * @param data
- * @returns {module.FaPromise}
+ * @returns {Promise}
  */
 exports.request = function (options, data) {
-	return new FaPromise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		CurlModel.loadData(options);
 		CurlModel.applyAdapter();
 		let model = CurlModel.getData;
@@ -268,6 +266,8 @@ exports.request = function (options, data) {
 				}
 			}
 			Request.on('socket', function (Socket) {
+				// FaConsole.consoleWarn(model.timeout);
+				// model.timeout = 10;
 				Socket.setTimeout(model.timeout);
 				Socket.on('timeout', function () {
 					Request.abort();
@@ -284,6 +284,7 @@ exports.request = function (options, data) {
 				});
 			});
 			Request.on('error', function (e) {
+				// FaConsole.consoleWarn(options, data)
 				reject(e);
 			});
 			Request.end();

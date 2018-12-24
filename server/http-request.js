@@ -30,7 +30,7 @@ module.exports = class FaHttpRequestClass {
 
 	/**
 	 *
-	 * @return {module.FaHttpHeadersContentType}
+	 * @return {module.FaHttpContentType}
 	 * @private
 	 */
 	get _contentType() {
