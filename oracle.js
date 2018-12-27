@@ -1,8 +1,13 @@
 'use strict';
 /*node*/
+/**
+ *
+ * @type {oracledbCLib.Oracledb}
+ */
 const OracleClient = require('oracledb');
+const FaConsole = require('./console');
 /*services*/
-const LogService = require('../idol/modules/audit/services/LogService');
+
 /**
  *
  * @param configuration
@@ -12,7 +17,7 @@ module.exports = function (configuration) {
 	let Oracle;
 	let createConnection = function (configuration) {
 		module.configuration = configuration;
-		LogService.check(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
+		console.log(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
 		// console.log(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
 	};
 

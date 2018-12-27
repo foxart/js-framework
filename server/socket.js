@@ -3,22 +3,23 @@
 const SocketIo = require('socket.io');
 /*fa*/
 const FaRouterClass = require('../base/router');
-const FaError = require('../base/~error');
+const FaError = require('../base/error');
+const FaConsoleClass = require('../console');
+const FaConsole = new FaConsoleClass();
+
 /**
  *
- * @type {module.FaServerSocketClass}
  */
-module.exports = class FaServerSocketClass {
+class FaSocketClass {
 	/**
 	 *
-	 * @param parent {module.FaServerClass}
+	 * @param Server {Server}
 	 * @param configuration {{path: string, serveClient: boolean, cookie: boolean, pingInterval: number, pingTimeout: number}}
 	 */
-	constructor(parent, configuration) {
-		this._parent = parent;
+	constructor(Server, configuration) {
 		this._configuration = configuration;
-		this._RouterClass = new FaRouterClass(parent);
-		this._Io = this._createSocket(parent, configuration);
+		this._Router = new FaRouterClass(this);
+		this._Io = this._createSocket(Server, configuration);
 	}
 
 	/**
@@ -34,29 +35,30 @@ module.exports = class FaServerSocketClass {
 	 *
 	 * @return {{path: string, serveClient: boolean, cookie: boolean, pingInterval: number, pingTimeout: number}}
 	 */
-	get configuration() {
+	get Configuration() {
 		return this._configuration;
 	};
 
 	/**
 	 *
-	 * @return {module.FaHttpRouterClass}
+	 * @return {FaRouterClass}
+	 * @constructor
 	 */
-	get router() {
-		return this._RouterClass;
+	get Router() {
+		return this._Router;
 	}
 
 	/**
 	 *
-	 * @param parent {module.FaServerClass}
+	 * @param Server {Server}
 	 * @param configuration
 	 * @return {socket.io}
 	 * @private
 	 */
-	_createSocket(parent, configuration) {
+	_createSocket(Server, configuration) {
 		let context = this;
 		let _Io;
-		_Io = SocketIo(parent.http.Http, configuration);
+		_Io = SocketIo(Server, configuration);
 		_Io.on('connect', function (socket) {
 			// context._extendSocketListener(socket);
 			FaConsole.consoleInfo(`trying: ${socket.id}`);
@@ -74,7 +76,6 @@ module.exports = class FaServerSocketClass {
 			context._onSocketConnect(socket);
 			socket.on('error', function (error) {
 				FaConsole.consoleError(error);
-				FaConsole.consoleFile(error, 'socket/error');
 				socket.send(error);
 			});
 			socket.on('disconnect', function () {
@@ -82,12 +83,12 @@ module.exports = class FaServerSocketClass {
 			});
 			// socket.emit('SERVER', 'HEY');
 		});
-		this._parent.log(
+		console.log(
 			'FaServerSocket',
 			'ws',
-			this._parent.http.configuration.host,
-			this._parent.http.configuration.port,
-			this.configuration.path
+			this.Configuration.host,
+			this.Configuration.port,
+			this.Configuration.path
 		);
 		return _Io;
 	}
@@ -103,11 +104,11 @@ module.exports = class FaServerSocketClass {
 		// let cookie = require('cookie');
 		// let cookies = cookie.parse(socket.handshake.headers.cookie);
 		socket.on('*', function (event, data, callback) {
-			let handler = context.router.find(event);
+			let handler = context.Router.find(event);
 			if (handler) {
 				context._handleRouter(socket, event, handler, data, callback);
 			} else {
-				let Error = new FaError(`route not found: ${event}`, false);
+				let Error = new FaError(`route not found: ${event}`);
 				socket.emit('error', Error)
 			}
 		});
@@ -130,8 +131,8 @@ module.exports = class FaServerSocketClass {
 				socket.emit(event, result);
 			}
 		} catch (e) {
-			let Error = new FaError(e, false);
-			Error.appendTrace(this.router.trace(event));
+			let Error = new FaError(e);
+			// Error.appendTrace(this.Router.trace(event));
 			socket.emit('error', Error)
 		}
 	}
@@ -154,7 +155,8 @@ module.exports = class FaServerSocketClass {
 	emit(socket, event, data) {
 		socket.emit(event, data);
 	}
-};
+}
+
 // let os = require('os');
 // let ifaces = os.networkInterfaces();
 // FaConsole.consoleInfo(ifaces);
@@ -175,3 +177,10 @@ module.exports = class FaServerSocketClass {
 // 		++alias;
 // 	});
 // });
+module.exports = function (FaHttpServer, configuration = null) {
+	if (arguments) {
+		return new FaSocketClass(FaHttpServer, configuration);
+	} else {
+		return FaSocketClass;
+	}
+};

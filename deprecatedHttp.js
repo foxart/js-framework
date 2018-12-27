@@ -9,9 +9,7 @@ const
 	Querystring = require('querystring'),
 	Url = require('url');
 /*services*/
-const
-	FaBeautify = require('./beautify/index'),
-	LogService = require('../idol/modules/audit/services/LogService');
+const FaBeautify = require('./beautify');
 /**
  *
  * @param configuration
@@ -32,7 +30,7 @@ module.exports = function (configuration) {
 			serveHttpServer(request, response);
 		});
 		Server.listen(configuration.port, function () {
-			LogService.check(`http | ${configuration.host}:${configuration.port}/${configuration.path}`);
+			console.log(`http | ${configuration.host}:${configuration.port}/${configuration.path}`);
 		});
 		return Server;
 	};
