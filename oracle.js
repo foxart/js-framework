@@ -5,7 +5,8 @@
  * @type {oracledbCLib.Oracledb}
  */
 const OracleClient = require('oracledb');
-const FaConsole = require('./console');
+const FaConsoleClass = require('./console');
+const FaConsole = new FaConsoleClass;
 /*services*/
 
 /**
