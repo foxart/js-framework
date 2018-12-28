@@ -13,13 +13,12 @@ const FaConsole = new FaConsoleClass();
 class FaSocketClass {
 	/**
 	 *
-	 * @param Server {Server}
-	 * @param configuration {{path: string, serveClient: boolean, cookie: boolean, pingInterval: number, pingTimeout: number}}
+	 * @param FaHttp {FaHttpClass}
 	 */
-	constructor(Server, configuration) {
-		this._configuration = configuration;
+	constructor(FaHttp) {
+		this._configuration = FaHttp.Configuration;
 		this._Router = new FaRouterClass(this);
-		this._Io = this._createSocket(Server, configuration);
+		this._Io = this._createSocket(FaHttp);
 	}
 
 	/**
@@ -50,15 +49,14 @@ class FaSocketClass {
 
 	/**
 	 *
-	 * @param Server {Server}
-	 * @param configuration
+	 * @param FaHttp {FaHttpClass}
 	 * @return {socket.io}
 	 * @private
 	 */
-	_createSocket(Server, configuration) {
+	_createSocket(FaHttp) {
 		let context = this;
 		let _Io;
-		_Io = SocketIo(Server, configuration);
+		_Io = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
 		_Io.on('connect', function (socket) {
 			// context._extendSocketListener(socket);
 			FaConsole.consoleInfo(`trying: ${socket.id}`);

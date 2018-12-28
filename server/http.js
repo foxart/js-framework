@@ -26,7 +26,7 @@ class FaHttpClass {
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpStatusCode = new FaHttpStatusCode();
-		this.Server = this._createHttp(this.Configuration);
+		this.HttpServer = this._createHttp(this.Configuration);
 		// new FaServerHttpRoutesClass(this._Http);
 	}
 
