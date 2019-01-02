@@ -4,8 +4,6 @@ const SocketIo = require('socket.io');
 /*fa*/
 const FaRouterClass = require('../base/router');
 const FaError = require('../base/error');
-const FaConsoleClass = require('../console');
-const FaConsole = new FaConsoleClass();
 const FaConsoleColor = require('../console/console-color');
 
 /**
@@ -60,7 +58,7 @@ class FaSocketClass {
 		_SocketIo = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
 		_SocketIo.on('connect', function (socket) {
 			// context._extendSocketListener(socket);
-			FaConsole.consoleInfo(`trying: ${socket.id}`);
+			console.info(`trying: ${socket.id}`);
 			let onevent = socket.onevent;
 			socket.onevent = function (packet) {
 				let args = packet.data || [];
@@ -74,7 +72,7 @@ class FaSocketClass {
 		_SocketIo.on('connection', function (socket) {
 			context._onSocketConnect(socket);
 			socket.on('error', function (error) {
-				FaConsole.consoleError(error);
+				console.error(error);
 				socket.send(error);
 			});
 			socket.on('disconnect', function () {
@@ -104,7 +102,7 @@ class FaSocketClass {
 	 */
 	_onSocketConnect(socket) {
 		let context = this;
-		FaConsole.consoleInfo(`listening: ${socket.id}`);
+		console.info(`listening: ${socket.id}`);
 		// let cookie = require('cookie');
 		// let cookies = cookie.parse(socket.handshake.headers.cookie);
 		socket.on('*', function (event, data, callback) {
@@ -123,7 +121,7 @@ class FaSocketClass {
 	 * @private
 	 */
 	_onSocketDisconnect(socket) {
-		FaConsole.consoleInfo(`disconnect: ${socket.id}`);
+		console.info(`disconnect: ${socket.id}`);
 	}
 
 	_handleRouter(socket, event, handler, data, callback) {
@@ -163,7 +161,7 @@ class FaSocketClass {
 
 // let os = require('os');
 // let ifaces = os.networkInterfaces();
-// FaConsole.consoleInfo(ifaces);
+// console.info(ifaces);
 // Object.keys(ifaces).forEach(function (ifname) {
 // 	let alias = 0;
 // 	ifaces[ifname].forEach(function (iface) {

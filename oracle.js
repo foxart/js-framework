@@ -5,10 +5,7 @@
  * @type {oracledbCLib.Oracledb}
  */
 const OracleClient = require('oracledb');
-const FaConsoleClass = require('./console');
-const FaConsole = new FaConsoleClass;
 /*services*/
-
 /**
  *
  * @param configuration
@@ -23,22 +20,11 @@ module.exports = function (configuration) {
 	};
 
 	function logOracleError(data) {
-		try {
-			// let trace = Trace.getData(2);
-			// writeToFile(data, trace, `error`);
-			// FaConsole.consoleError(data);
-			FaConsole.consoleFile(data, 'oracle/error');
-		} catch (error) {
-			FaConsole.consoleError(error);
-		}
+		console.error(data);
 	}
 
 	function logOracleResponse(data) {
-		try {
-			FaConsole.consoleFile(data, `oracle/response`);
-		} catch (error) {
-			FaConsole.consoleError(error);
-		}
+		console.error(data);
 	}
 
 	/*create*/
@@ -55,7 +41,7 @@ module.exports = function (configuration) {
 				password: module.configuration.password,
 			}, function (e, connection) {
 				if (e) {
-					// FaConsole.consoleLog(e);
+					// console.log(e);
 					reject(e);
 				} else {
 					OracleClient.outFormat = OracleClient['OBJECT'];
@@ -138,7 +124,7 @@ module.exports = function (configuration) {
 		} else {
 			this.openConnection().then(function (connection) {
 				Oracle = connection;
-				// FaConsole.consoleLog(connection)
+				// console.log(connection)
 				module.execute(query, parameters, options, onSuccess, onError);
 			}, function (error) {
 				/*connection open error*/
@@ -154,17 +140,17 @@ module.exports = function (configuration) {
 		[query, parameters, options] = [filter[0], filter[1], filter[2]];
 		return new Promise(function (resolve, reject) {
 			context.openConnection().then(function (connection) {
-				// FaConsole.consoleLog(connection)
+				// console.log(connection)
 				connection.execute(query, parameters, options, function (e, result) {
 					if (e) {
 						console.log(e);
 						let oracleError = e.message.split(': ');
-						// FaConsole.consoleWarn(e.message);
-						// FaConsole.consoleWarn(e.errorNum);
+						// console.warn(e.message);
+						// console.warn(e.errorNum);
 						error.name = oracleError[0];
 						error.message = oracleError[1];
 						// console.log(e.message);
-						// FaConsole.consoleWarn(FaError.pickTrace(error,1));
+						// console.warn(FaError.pickTrace(error,1));
 						reject(FaError.pickTrace(error, 1));
 					} else {
 						resolve(result);

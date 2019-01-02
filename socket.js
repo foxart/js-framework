@@ -57,13 +57,13 @@ module.exports = function (configuration) {
 
 	function onConnectHandler(socket) {
 		/*debug*/
-		// FaConsole.consoleInfo('socket In: ' + socket['id']);
+		// console.info('socket In: ' + socket['id']);
 		NotifySocketClient(socket);
 		NotifySocketClienList();
 	}
 
 	function onDisconnectHandler(socket) {
-		// FaConsole.consoleInfo('socket Out: ' + socket['id']);
+		// console.info('socket Out: ' + socket['id']);
 		// console.log('socket Disconnect' + socket['handshake']['address']);
 		NotifySocketClienList();
 	}

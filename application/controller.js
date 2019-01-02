@@ -9,7 +9,7 @@ class FaController {
 	 * @param namespace {string}
 	 */
 	constructor(FaHttp, namespace) {
-		// FaConsole.consoleWarn(namespace);
+		// console.warn(namespace);
 		this.name = "FaControllerHttp";
 		this.Http = FaHttp;
 		this._FaTemplateClass = new FaTemplateClass(`${namespace}/views`);
@@ -23,7 +23,7 @@ class FaController {
 		try {
 			return this._FaTemplateClass.load(template);
 		} catch (e) {
-			// FaConsole.consoleError(e);
+			// console.error(e);
 			// throw e;
 			throw FaError.pickTrace(e.message,2);
 		}

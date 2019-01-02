@@ -49,11 +49,11 @@ class Model {
 						result_function = element.call(item, item, options);
 					} catch (e) {
 						result_function = null;
-						FaConsole.consoleError(e);
+						console.error(e);
 					}
 					result[index] = result_function !== undefined ? result_function : null;
 				} else if (item) {
-					// FaConsole.consoleError(index, element);
+					// console.error(index, element);
 					result[index] = item[element] !== undefined ? item[element] : null;
 				} else {
 					result[index] = null;

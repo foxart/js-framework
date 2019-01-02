@@ -12,8 +12,6 @@ const FaHttpRequestClass = require('./http-request');
 const FaHttpResponseClass = require('./http-response');
 const FaHttpContentType = require("./http-content-type");
 const FaHttpStatusCode = require("./http-status-code");
-const FaConsoleClass = require('../console');
-const FaConsole = new FaConsoleClass();
 
 /**
  *
@@ -126,7 +124,7 @@ class FaHttpClass {
 		});
 		req.on('end', function () {
 			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
-				// FaConsole.consoleWarn(result.headers, result.status);
+				// console.warn(result.headers, result.status);
 				context._respondHttp(req, res, result);
 			});
 		});
@@ -159,7 +157,7 @@ class FaHttpClass {
 		}
 		// let accepts = require('accepts');
 		// let accept = accepts(req);
-		// FaConsole.consoleLog(accept.type('json'));
+		// console.log(accept.type('json'));
 		switch (!FaHttpResponse.content.byteLength && FaHttpResponse.headers['Content-Type']) {
 			case this._FaHttpContentType.json:
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
@@ -182,7 +180,7 @@ class FaHttpClass {
 		if (!FaHttpResponse.content.byteLength) {
 			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
 		}
-		// FaConsole.consoleError(FaHttpResponse.content);
+		// console.error(FaHttpResponse.content);
 		for (let property in FaHttpResponse.headers) {
 			if (FaHttpResponse.headers.hasOwnProperty(property)) {
 				if (property === 'Content-Type' && FaHttpResponse.headers[property].indexOf('; charset=') === -1) {
@@ -240,7 +238,7 @@ class FaHttpClass {
 				return context.response(result, null, context.status.ok);
 			}
 		}).catch(function (e) {
-			FaConsole.consoleError(e);
+			console.error(e);
 			return context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError);
 		});
 	}
@@ -253,7 +251,7 @@ class FaHttpClass {
 	 * @private
 	 */
 	_handleFile(filename, type) {
-		// FaConsole.consoleError(filename, type);
+		// console.error(filename, type);
 		try {
 			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this.status.ok);
 		} catch (e) {

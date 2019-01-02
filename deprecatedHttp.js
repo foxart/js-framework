@@ -100,7 +100,7 @@ module.exports = function (configuration) {
 				post: {},
 			};
 			// console.log(url);
-			// FaConsole.consoleWarn(body);
+			// console.warn(body);
 			// if (Check.empty(url.query) === false) {
 			if (url.query) {
 				data['get'] = parseParameters(url.query);
@@ -274,7 +274,7 @@ module.exports = function (configuration) {
 		// let File = Fs.readFileSync(HttpServerApi.configuration.path + '/train/Volkswagen.jpg');
 		// let base64Image = new Buffer(File, 'binary').toString('base64');
 		let filepath = this.configuration.path + filename;
-		// FaConsole.consoleLog(filepath)
+		// console.log(filepath)
 		if (Fs.existsSync(filepath)) {
 			return Fs.readFileSync(filepath).toString();
 		} else {

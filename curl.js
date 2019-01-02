@@ -139,7 +139,7 @@ exports.https = function (options, data, callback) {
  * @returns {Promise<any>}
  */
 function requestPromise(protocol, options, data) {
-	// FaConsole.consoleInfo(arguments);
+	// console.info(arguments);
 	return new Promise(function (resolve, reject) {
 		let HttpRequest;
 		let RequestOptions = requestOptions(options);
@@ -176,7 +176,7 @@ function requestPromise(protocol, options, data) {
  * @returns {*}
  */
 exports.httpPromise = function (options, data) {
-	// FaConsole.consoleError(options);
+	// console.error(options);
 	return requestPromise("http", options, data)
 };
 /**
@@ -186,7 +186,7 @@ exports.httpPromise = function (options, data) {
  * @returns {*}
  */
 exports.httpsPromise = function (options, data) {
-	// FaConsole.consoleError(options);
+	// console.error(options);
 	return requestPromise("https", options, data)
 };
 /**
@@ -266,7 +266,7 @@ exports.request = function (options, data) {
 				}
 			}
 			Request.on('socket', function (Socket) {
-				// FaConsole.consoleWarn(model.timeout);
+				// console.warn(model.timeout);
 				// model.timeout = 10;
 				Socket.setTimeout(model.timeout);
 				Socket.on('timeout', function () {
@@ -284,7 +284,7 @@ exports.request = function (options, data) {
 				});
 			});
 			Request.on('error', function (e) {
-				// FaConsole.consoleWarn(options, data)
+				// console.warn(options, data)
 				reject(e);
 			});
 			Request.end();

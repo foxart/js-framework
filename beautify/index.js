@@ -196,7 +196,7 @@ function beautify(data, level, circular, color, type) {
 			return FaWrap.wrapImage(FileType(Buffer.from(data, 'base64')).mime, data.length, color, type);
 		} else {
 			// string
-			return FaWrap.wrapString(data, data.length, getTab(level + 1), color, type);
+			return FaWrap.wrapString(data, data.length, getTab(level), color, type);
 		}
 	} else {
 		// undefined

@@ -62,12 +62,12 @@ class FaModule {
 			Controller = this._controllerGet(index);
 			if (Controller[value["action"]]) {
 				FaHttpClass.Router.attach(key, function (req) {
-					FaConsole.consoleError(value["action"]);
+					console.error(value["action"]);
 					return Controller[value["action"]](req);
 				});
 			} else {
 				let error = FaError.pickTrace(`${Controller["name"]} action not implemented: ${value["action"]}`, 2);
-				FaConsole.consoleError(error);
+				console.error(error);
 				FaHttpClass.Router.attach(key, function () {
 					throw error;
 				});
@@ -77,7 +77,7 @@ class FaModule {
 
 
 	handleHttpWeb(FaHttpClass, configuration) {
-		FaConsole.consoleError(arguments);
+		console.error(arguments);
 	}
 
 }
