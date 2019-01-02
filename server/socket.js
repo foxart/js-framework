@@ -6,6 +6,7 @@ const FaRouterClass = require('../base/router');
 const FaError = require('../base/error');
 const FaConsoleClass = require('../console');
 const FaConsole = new FaConsoleClass();
+const FaConsoleColor = require('../console/console-color');
 
 /**
  *
@@ -23,7 +24,7 @@ class FaSocketClass {
 
 	/**
 	 *
-	 * @return {socket.io|*}
+	 * @return {Server}
 	 * @constructor
 	 */
 	get Io() {
@@ -49,15 +50,15 @@ class FaSocketClass {
 
 	/**
 	 *
-	 * @param FaHttp {FaHttpClass}
-	 * @return {socket.io}
+	 * @param FaHttp
+	 * @return {Server}
 	 * @private
 	 */
 	_createSocket(FaHttp) {
 		let context = this;
-		let _Io;
-		_Io = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
-		_Io.on('connect', function (socket) {
+		let _SocketIo;
+		_SocketIo = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
+		_SocketIo.on('connect', function (socket) {
 			// context._extendSocketListener(socket);
 			FaConsole.consoleInfo(`trying: ${socket.id}`);
 			let onevent = socket.onevent;
@@ -70,7 +71,7 @@ class FaSocketClass {
 				onevent.call(this, packet);
 			};
 		});
-		_Io.on('connection', function (socket) {
+		_SocketIo.on('connection', function (socket) {
 			context._onSocketConnect(socket);
 			socket.on('error', function (error) {
 				FaConsole.consoleError(error);
@@ -81,14 +82,19 @@ class FaSocketClass {
 			});
 			// socket.emit('SERVER', 'HEY');
 		});
-		console.log(
-			'FaServerSocket',
-			'ws',
-			this.Configuration.host,
-			this.Configuration.port,
-			this.Configuration.path
-		);
-		return _Io;
+		// console.log(
+		// 	'FaServerSocket',
+		// 	'ws',
+		// 	this.Configuration.host,
+		// 	this.Configuration.port,
+		// 	this.Configuration.path
+		// );
+
+		console.log(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://{host}:{port} <{path}>`.replaceAll(Object.keys(FaHttp.Configuration).map(function (key) {
+			return `{${key}}`;
+		}), Object.values(FaHttp.Configuration)));
+
+		return _SocketIo;
 	}
 
 	/**

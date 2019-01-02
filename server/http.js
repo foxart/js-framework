@@ -88,15 +88,15 @@ class FaHttpClass {
 	 */
 	_createHttp(configuration) {
 		let context = this;
-		let Server = Http.createServer(function (req, res) {
+		let _HttpServer = Http.createServer(function (req, res) {
 			context._listenHttp(req, res);
 		});
-		Server.listen(configuration.port, function () {
+		_HttpServer.listen(configuration.port, function () {
 			console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
 				return `{${key}}`;
 			}), Object.values(configuration)));
 		});
-		return Server;
+		return _HttpServer;
 	}
 
 	/**
