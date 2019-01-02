@@ -22,12 +22,12 @@ class FaHttpClass {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		this._FaFileClass = require('../base/file')(this.Configuration.path);
+		this._NodeModules = require('../base/router')(this);
 		this._FaRouterClass = require('../base/router')(this);
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this.HttpServer = this._createHttp(this.Configuration);
-		// new FaServerHttpRoutesClass(this._Http);
 	}
 
 	/**
@@ -62,6 +62,14 @@ class FaHttpClass {
 	 */
 	get Router() {
 		return this._FaRouterClass;
+	}
+
+	/**
+	 *
+	 * @return {FaRouterClass}
+	 */
+	get NodeModules() {
+		return this._NodeModules;
 	}
 
 	/**
@@ -168,7 +176,7 @@ class FaHttpClass {
 			// FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
 		}
 		if (!FaHttpResponse.status) {
-			FaHttpResponse.status = this._FaHttpStatusCode.ok;
+			FaHttpResponse.status = this.status.ok;
 		}
 		if (!FaHttpResponse.content.byteLength) {
 			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
@@ -199,28 +207,59 @@ class FaHttpClass {
 	_handleRequest(data) {
 		let context = this;
 		let mime = MimeTypes.lookup(data.path);
-		let router = this.Router.find(data.path);
+		let route = this.Router.find(data.path);
 		return new Promise(function (resolve, reject) {
-			if (router) {
-				try {
-					let callback = router.call(this, data);
-					if (callback instanceof Promise) {
-						callback.then(function (result) {
-							resolve(context._handleRoute(data.path, result));
-						}).catch(function (e) {
-							reject(context.response(FaError.pickTrace(e, 0), null, context._FaHttpStatusCode.internalServerError));
-						});
-					} else {
-						resolve(context._handleRoute(data.path, callback));
-					}
-				} catch (e) {
-					reject(context.response(FaError.pickTrace(e, 0), null, context._FaHttpStatusCode.internalServerError));
-				}
+			if (route) {
+				resolve(context.handeRoute(route, data));
+				// try {
+				// 	let callback = route.call(this, data);
+				// 	if (callback instanceof Promise) {
+				// 		callback.then(function (result) {
+				// 			resolve(context._handleRoute(data.path, result));
+				// 		}).catch(function (e) {
+				// 			reject(context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError));
+				// 		});
+				// 	} else {
+				// 		resolve(context._handleRoute(data.path, callback));
+				// 	}
+				// } catch (e) {
+				// 	reject(context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError));
+				// }
 			} else if (mime) {
 				resolve(context._handleFile(data.path, mime));
 			} else {
-				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context._FaHttpStatusCode.notFound));
+				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context.status.notFound));
 			}
+		});
+	}
+
+	/**
+	 *
+	 * @param route
+	 * @param data
+	 * @return {Promise<any>}
+	 */
+	handeRoute(route, data) {
+		let context = this;
+		return new Promise(function (resolve, reject) {
+			// try {
+			let callback = route.call(context, data);
+			if (callback instanceof Promise) {
+				return callback;
+			} else {
+				resolve(callback);
+			}
+			// } catch (e) {
+			// 	reject(e);
+			// }
+		}).then(function (result) {
+			if (result instanceof FaHttpResponseClass) {
+				return result;
+			} else {
+				return context.response(data, null, context.status.ok);
+			}
+		}).catch(function (e) {
+			throw(context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError));
 		});
 	}
 
@@ -234,7 +273,7 @@ class FaHttpClass {
 		if (data instanceof FaHttpResponseClass) {
 			return data;
 		} else {
-			return this.response(data, null, this._FaHttpStatusCode.ok);
+			return this.response(data, null, this.status.ok);
 		}
 	}
 
@@ -248,9 +287,9 @@ class FaHttpClass {
 	_handleFile(filename, type) {
 		// FaConsole.consoleError(filename, type);
 		try {
-			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this._FaHttpStatusCode.ok);
+			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this.status.ok);
 		} catch (e) {
-			return this.response(e.message, null, this._FaHttpStatusCode.notFound);
+			return this.response(e.message, null, this.status.notFound);
 		}
 	}
 
