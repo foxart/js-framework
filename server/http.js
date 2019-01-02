@@ -212,7 +212,9 @@ class FaHttpClass {
 		let route = this.Router.find(data.path);
 		return new Promise(function (resolve, reject) {
 			if (route) {
-				resolve(context.handeRoute(route, data));
+				resolve(context.handeRoute(route, data).then(function (result) {
+					return result;
+				}));
 				// try {
 				// 	let callback = route.call(this, data);
 				// 	if (callback instanceof Promise) {
@@ -248,15 +250,18 @@ class FaHttpClass {
 			let callback = route.call(context, data);
 			if (callback instanceof Promise) {
 				return callback.then(function (result) {
+					FaConsole.consoleInfo("PROMISE");
 					return result;
 				});
 			} else {
-				resolve(callback);
+				FaConsole.consoleInfo("NOT A PROMISE");
+				return callback;
 			}
 			// } catch (e) {
 			// 	reject(e);
 			// }
 		}).then(function (result) {
+			FaConsole.consoleLog(result);
 			if (result instanceof FaHttpResponseClass) {
 				FaConsole.consoleLog('INSTANCE');
 				return result;
