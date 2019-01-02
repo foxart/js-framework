@@ -126,6 +126,7 @@ class FaHttpClass {
 		});
 		req.on('end', function () {
 			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
+				FaConsole.consoleWarn(result);
 				context._respondHttp(req, res, result);
 			}).catch(function (e) {
 				context._respondHttp(req, res, e);
