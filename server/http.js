@@ -249,13 +249,13 @@ class FaHttpClass {
 			// try {
 			let callback = route.call(context, data);
 			if (callback instanceof Promise) {
-				return callback.then(function (result) {
+				resolve(callback.then(function (result) {
 					FaConsole.consoleInfo("PROMISE");
 					return result;
-				});
+				}));
 			} else {
 				FaConsole.consoleInfo("NOT A PROMISE");
-				return callback;
+				resolve(callback);
 			}
 			// } catch (e) {
 			// 	reject(e);
