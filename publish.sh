@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-#git commit -a -m "pre patch"
-VERSION=`npm version patch`
+VERSION=`npm view fa-nodejs version`
 git commit -a -m "$VERSION"
 npm version patch
 npm publish
