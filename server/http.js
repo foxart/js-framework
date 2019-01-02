@@ -96,7 +96,7 @@ class FaHttpClass {
 				return `{${key}}`;
 			}), Object.values(configuration));
 			let template = `${FaConsoleColor.bg.black}${FaConsoleColor.color.cyan} {time} ${FaConsoleColor.color.white}{path}:${FaConsoleColor.color.cyan}{line}${FaConsoleColor.color.white}:{column} ${FaConsoleColor.effect.reset} {data}`;
-			FaConsole.consoleWrite(message, template, 'plain');
+			console.log(message, template, 'plain');
 		});
 		return Server;
 	}
