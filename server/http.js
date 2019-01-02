@@ -245,13 +245,14 @@ class FaHttpClass {
 		let context = this;
 		return new Promise(function (resolve, reject) {
 			// try {
-			resolve(route.call(context, data));
-			// let callback = route.call(context, data);
-			// if (callback instanceof Promise) {
-			// 	return callback;
-			// } else {
-			// 	resolve(callback);
-			// }
+			let callback = route.call(context, data);
+			if (callback instanceof Promise) {
+				resolve(callback.then(function (result) {
+					return result;
+				}));
+			} else {
+				resolve(callback);
+			}
 			// } catch (e) {
 			// 	reject(e);
 			// }
