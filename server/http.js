@@ -12,6 +12,8 @@ const FaHttpRequestClass = require('./http-request');
 const FaHttpResponseClass = require('./http-response');
 const FaHttpContentType = require("./http-content-type");
 const FaHttpStatusCode = require("./http-status-code");
+const FaConsoleClass = require('../console');
+const FaConsole = new FaConsoleClass();
 
 /**
  *
@@ -255,8 +257,10 @@ class FaHttpClass {
 			// }
 		}).then(function (result) {
 			if (result instanceof FaHttpResponseClass) {
+				FaConsole.consoleLog('INSTANCE');
 				return result;
 			} else {
+				FaConsole.consoleLog('NOT AN INSTANCE');
 				return context.response(data, null, context.status.ok);
 			}
 		}).catch(function (e) {
