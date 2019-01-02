@@ -92,11 +92,9 @@ class FaHttpClass {
 			context._listenHttp(req, res);
 		});
 		Server.listen(configuration.port, function () {
-			let message = `FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
+			console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
 				return `{${key}}`;
-			}), Object.values(configuration));
-			let template = `${FaConsoleColor.bg.black}${FaConsoleColor.color.cyan} {time} ${FaConsoleColor.color.white}{path}:${FaConsoleColor.color.cyan}{line}${FaConsoleColor.color.white}:{column} ${FaConsoleColor.effect.reset} {data}`;
-			console.log(message, template, 'plain');
+			}), Object.values(configuration)));
 		});
 		return Server;
 	}
