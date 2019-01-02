@@ -24,7 +24,7 @@ class FaHttpClass {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		this._FaFileClass = require('../base/file')(this.Configuration.path);
-		this._NodeModules = require('../base/router')(this);
+		this._FaAssetsRouterClass = require('../base/router')(this);
 		this._FaRouterClass = require('../base/router')(this);
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
@@ -70,8 +70,8 @@ class FaHttpClass {
 	 *
 	 * @return {FaRouterClass}
 	 */
-	get NodeModules() {
-		return this._NodeModules;
+	get Assets() {
+		return this._FaAssetsRouterClass;
 	}
 
 	/**
@@ -122,14 +122,12 @@ class FaHttpClass {
 			body += chunk;
 		});
 		req.on('error', function (error) {
-			// reject(error);
+			context._respondHttp(req, res, error);
 		});
 		req.on('end', function () {
 			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
-				FaConsole.consoleWarn(result);
+				// FaConsole.consoleWarn(result.headers, result.status);
 				context._respondHttp(req, res, result);
-			}).catch(function (e) {
-				context._respondHttp(req, res, e);
 			});
 		});
 	};
@@ -211,82 +209,40 @@ class FaHttpClass {
 		let context = this;
 		let mime = MimeTypes.lookup(data.path);
 		let route = this.Router.find(data.path);
-		return new Promise(function (resolve, reject) {
+		let asset = this.Assets.find(data.path);
+		return new Promise(function (resolve) {
 			if (route) {
-				resolve(context.handeRoute(route, data).then(function (result) {
-					return result;
-				}));
-				// try {
-				// 	let callback = route.call(this, data);
-				// 	if (callback instanceof Promise) {
-				// 		callback.then(function (result) {
-				// 			resolve(context._handleRoute(data.path, result));
-				// 		}).catch(function (e) {
-				// 			reject(context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError));
-				// 		});
-				// 	} else {
-				// 		resolve(context._handleRoute(data.path, callback));
-				// 	}
-				// } catch (e) {
-				// 	reject(context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError));
-				// }
+				resolve(context._handeRoute(route, data));
+			} else if (asset) {
+				resolve(context._handeRoute(asset, data));
 			} else if (mime) {
 				resolve(context._handleFile(data.path, mime));
 			} else {
-				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context.status.notFound));
+				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context.status.notImplemented));
 			}
 		});
 	}
 
 	/**
 	 *
-	 * @param route
-	 * @param data
+	 * @param route {function | string}
+	 * @param data {*}
 	 * @return {Promise<any>}
 	 */
-	handeRoute(route, data) {
+	_handeRoute(route, data) {
 		let context = this;
-		return new Promise(function (resolve, reject) {
-			// try {
-			let callback = route.call(context, data);
-			if (callback instanceof Promise) {
-				resolve(callback.then(function (result) {
-					FaConsole.consoleInfo("PROMISE");
-					return result;
-				}));
-			} else {
-				FaConsole.consoleInfo("NOT A PROMISE");
-				resolve(callback);
-			}
-			// } catch (e) {
-			// 	reject(e);
-			// }
+		return new Promise(function (resolve) {
+			resolve(route.call(context, data));
 		}).then(function (result) {
-			FaConsole.consoleLog(result);
 			if (result instanceof FaHttpResponseClass) {
-				FaConsole.consoleLog('INSTANCE');
 				return result;
 			} else {
-				FaConsole.consoleLog('NOT AN INSTANCE');
-				return context.response(data, null, context.status.ok);
+				return context.response(result, null, context.status.ok);
 			}
 		}).catch(function (e) {
-			throw(context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError));
+			FaConsole.consoleError(e);
+			return context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError);
 		});
-	}
-
-	/**
-	 *
-	 * @param route {string}
-	 * @param data
-	 * @private
-	 */
-	_handleRoute(route, data) {
-		if (data instanceof FaHttpResponseClass) {
-			return data;
-		} else {
-			return this.response(data, null, this.status.ok);
-		}
 	}
 
 	/**

@@ -123,7 +123,7 @@ function stringifyObject(object, level, callback, color, type) {
  * @param type
  * @returns {string}
  */
-function index(data, level, circular, color, type) {
+function beautify(data, level, circular, color, type) {
 	level = level === undefined ? 0 : level;
 	if (circular === true) {
 		return FaWrap.wrapCircular(data, Object.keys(data).length, color, type);
@@ -131,7 +131,7 @@ function index(data, level, circular, color, type) {
 		// null
 		return FaWrap.wrapNull(data, color, type);
 	} else if (Array.isArray(data)) {
-		return FaWrap.wrapArray(stringifyArray.call(this, data, level, index, color, type), data.length, color, type);
+		return FaWrap.wrapArray(stringifyArray.call(this, data, level, beautify, color, type), data.length, color, type);
 	} else if (typeof data === 'boolean') {
 		// bool
 		return FaWrap.wrapBool(data, color, type);
@@ -171,11 +171,11 @@ function index(data, level, circular, color, type) {
 				return FaWrap.wrapImage(FileType(data).mime, data.length, color, type);
 			} else {
 				/*OBJECT*/
-				return FaWrap.wrapObject(stringifyObject.call(this, data, level, index, color, type), Object.keys(data).length, color, type);
+				return FaWrap.wrapObject(stringifyObject.call(this, data, level, beautify, color, type), Object.keys(data).length, color, type);
 			}
 		} catch (e) {
 			/*OBJECT*/
-			return FaWrap.wrapObject(stringifyObject.call(this, data, level, index, color, type), Object.keys(data).length, color, type);
+			return FaWrap.wrapObject(stringifyObject.call(this, data, level, beautify, color, type), Object.keys(data).length, color, type);
 		}
 		// } else if (data.byteLength) {
 		//IMAGE
@@ -187,10 +187,10 @@ function index(data, level, circular, color, type) {
 	} else if (typeof data === 'string') {
 		if (checkJson(data)) {
 			// JSON
-			return FaWrap.wrapJson(index.call(this, JSON.parse(data), level, false, color, type), data.length, color, type);
+			return FaWrap.wrapJson(beautify.call(this, JSON.parse(data), level, false, color, type), data.length, color, type);
 		} else if (checkXml(data)) {
 			// xml
-			return FaWrap.wrapXml(index.call(this, FastXmlParser.parse(data, {}), level, false, color, type), data.length, color, type);
+			return FaWrap.wrapXml(beautify.call(this, FastXmlParser.parse(data, {}), level, false, color, type), data.length, color, type);
 		} else if (FileType(Buffer.from(data, 'base64'))) {
 			/*IMAGE*/
 			return FaWrap.wrapImage(FileType(Buffer.from(data, 'base64')).mime, data.length, color, type);
@@ -209,26 +209,26 @@ function index(data, level, circular, color, type) {
  * @returns {string}
  */
 exports.extended = function (data) {
-	return index(data, 1, false, false, true);
+	return beautify(data, 1, false, false, true);
 };
 /**
  * @param data {*}
  * @returns {string}
  */
 exports.extendedColor = function (data) {
-	return index(data, 1, false, true, true);
+	return beautify(data, 1, false, true, true);
 };
 /**
  * @param data {*}
  * @returns {string}
  */
 exports.plain = function (data) {
-	return index(data, 1, false, false, false);
+	return beautify(data, 1, false, false, false);
 };
 /**
  * @param data {*}
  * @returns {string}
  */
 exports.plainColor = function (data) {
-	return index(data, 1, false, true, false);
+	return beautify(data, 1, false, true, false);
 };
