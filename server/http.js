@@ -247,9 +247,9 @@ class FaHttpClass {
 			// try {
 			let callback = route.call(context, data);
 			if (callback instanceof Promise) {
-				resolve(callback.then(function (result) {
+				return callback.then(function (result) {
 					return result;
-				}));
+				});
 			} else {
 				resolve(callback);
 			}
