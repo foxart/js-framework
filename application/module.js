@@ -1,13 +1,40 @@
 "use strict";
 const FaError = require("../base/error");
+const FaFile = require("../base/file")();
+const FaSocketClass = require("../server/socket");
+const FaHttpClass = require("../server/http");
 
 /**
  *
  * @type {FaModule}
  */
 class FaModule {
-	constructor() {
+	constructor(parent, configuration) {
+		// console.log(parent);
+		// console.log(parent instanceof FaSocketClass, parent instanceof FaHttpClass);
+		// console.warn(parent.HttpServer !== undefined, parent.SocketIo !== undefined);
+		let folder;
+		folder = parent.HttpServer !== undefined ? "controllers" : "sockets";
+		console.warn(folder);
 		this._controller_list = {};
+		for (const [key, value] of Object.entries(configuration["routes"])) {
+			let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
+			let path = `${namespace}/controllers/${value["controller"]}.js`;
+			if (FaFile.existFilename(path)) {
+				let Controller = this._controllerLoad(parent, path, namespace);
+				if (Controller[value["action"]]) {
+					parent.Router.attach(key, function (req) {
+						console.info(value["action"]);
+						console.warn(req);
+						return Controller[value["action"]](req);
+					});
+				} else {
+					console.error(FaError.pickTrace(`${value["controller"]} action not implemented: ${value["action"]}`, 2));
+				}
+			} else {
+				console.error(FaError.pickTrace(`${value["controller"]} controller not found: ${path}`, 2));
+			}
+		}
 	}
 
 	get controllerList() {
@@ -40,8 +67,21 @@ class FaModule {
 	 * @return {boolean}
 	 * @private
 	 */
-	_constrollerExist(index) {
+	_controllerFind(index) {
 		return !!this._controller_list[index];
+	}
+
+	_controllerLoad(parent, path, namespace) {
+		if (this._controllerFind(path) === false) {
+			// let ControllerHttp = FaFile.readStringSync(`${namespace}/controllers/${value["controller"]}.js`);
+			// console.log(File);
+			let ControllerClass = require(path);
+			let Controller = new ControllerClass(parent, namespace);
+			this._controllerSet(path, Controller);
+			return Controller;
+		} else {
+			return this._controllerGet(path);
+		}
 	}
 
 	/**
@@ -49,47 +89,39 @@ class FaModule {
 	 * @param FaHttpClass {FaHttpClass}
 	 * @param configuration {Object}
 	 */
-	handleHttpRoutes(FaHttpClass, configuration) {
-		for (const [key, value] of Object.entries(configuration["routes"])) {
-			let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
-			let index = `${namespace}/controllers/${value["controller"]}.js`;
-			let Controller;
-			if (this._constrollerExist(index) === false) {
-				let ControllerHttp = require(`${namespace}/controllers/${value["controller"]}.js`);
-				Controller = new ControllerHttp(FaHttpClass, namespace);
-				this._controllerSet(index, Controller);
-			}
-			Controller = this._controllerGet(index);
-			if (Controller[value["action"]]) {
-				FaHttpClass.Router.attach(key, function (req) {
-					console.error(value["action"]);
-					return Controller[value["action"]](req);
-				});
-			} else {
-				let error = FaError.pickTrace(`${Controller["name"]} action not implemented: ${value["action"]}`, 2);
-				console.error(error);
-				FaHttpClass.Router.attach(key, function () {
-					throw error;
-				});
-			}
-		}
-	}
-
-
-	handleHttpWeb(FaHttpClass, configuration) {
+	// handleHttpRoutes(FaHttpClass, configuration) {
+	// 	for (const [key, value] of Object.entries(configuration["routes"])) {
+	// 		let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
+	// 		let path = `${namespace}/controllers/${value["controller"]}.js`;
+	// 		if (FaFile.existFilename(path)) {
+	// 			let Controller = this._controllerLoad(FaHttpClass, path, namespace);
+	// 			if (Controller[value["action"]]) {
+	// 				FaHttpClass.Router.attach(key, function (req) {
+	// 					console.error(value["action"]);
+	// 					return Controller[value["action"]](req);
+	// 				});
+	// 			} else {
+	// 				console.error(FaError.pickTrace(`${value["controller"]} action not implemented: ${value["action"]}`, 2));
+	// 			}
+	// 		} else {
+	// 			console.error(FaError.pickTrace(`${value["controller"]} controller not found: ${path}`, 2));
+	// 		}
+	// 	}
+	// }
+	handleSocketRoutes(FaHttpClass, configuration) {
 		console.error(arguments);
 	}
-
 }
 
 /**
  *
- * @param path {string}
  * @return {FaModule}
+ * @param parent
+ * @param configuration
  */
-module.exports = function (path) {
-	if (arguments) {
-		return new FaModule(path);
+module.exports = function (parent, configuration) {
+	if (parent && configuration) {
+		return new FaModule(parent, configuration);
 	} else {
 		return FaModule;
 	}

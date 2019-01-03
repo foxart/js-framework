@@ -4,10 +4,6 @@ const Fs = require("fs");
 /*fa*/
 const FaError = require("./error");
 
-/**
- *
- * @type {module.FaFileClass}
- */
 class FaFileClass {
 	/**
 	 *

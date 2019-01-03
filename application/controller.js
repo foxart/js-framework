@@ -9,8 +9,6 @@ class FaController {
 	 * @param namespace {string}
 	 */
 	constructor(FaHttp, namespace) {
-		// console.warn(namespace);
-		this.name = "FaControllerHttp";
 		this.Http = FaHttp;
 		this._FaTemplateClass = new FaTemplateClass(`${namespace}/views`);
 	}
@@ -23,9 +21,7 @@ class FaController {
 		try {
 			return this._FaTemplateClass.load(template);
 		} catch (e) {
-			// console.error(e);
-			// throw e;
-			throw FaError.pickTrace(e.message,2);
+			throw FaError.pickTrace(e.message, 2);
 		}
 	}
 
@@ -41,15 +37,20 @@ class FaController {
 	}
 }
 
-// module.exports = function (path) {
-// 	if (arguments) {
-// 		return new FaControllerClass(path);
-// 	} else {
-// 		return FaControllerClass;
-// 	}
-// };
 /**
  *
  * @type {FaController}
  */
 module.exports = FaController;
+/**
+ *
+ * @param FaHttp {FaHttpClass}
+ * @param namespace {string}
+ */
+// module.exports = function (FaHttp, namespace) {
+// 	if (arguments) {
+// 		return new FaController(FaHttp, namespace);
+// 	} else {
+// 		return FaController;
+// 	}
+// };

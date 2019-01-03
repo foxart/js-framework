@@ -2,7 +2,6 @@
 /*node*/
 const SocketIo = require('socket.io');
 /*fa*/
-const FaRouterClass = require('../base/router');
 const FaError = require('../base/error');
 const FaConsoleColor = require('../console/console-color');
 
@@ -16,17 +15,8 @@ class FaSocketClass {
 	 */
 	constructor(FaHttp) {
 		this._configuration = FaHttp.Configuration;
-		this._Router = new FaRouterClass(this);
-		this._Io = this._createSocket(FaHttp);
-	}
-
-	/**
-	 *
-	 * @return {Server}
-	 * @constructor
-	 */
-	get Io() {
-		return this._Io;
+		this._Router = require('../base/router')(this);
+		this.SocketIo = this._createSocket(FaHttp);
 	}
 
 	/**
@@ -87,11 +77,9 @@ class FaSocketClass {
 		// 	this.Configuration.port,
 		// 	this.Configuration.path
 		// );
-
 		console.log(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://{host}:{port} <{path}>`.replaceAll(Object.keys(FaHttp.Configuration).map(function (key) {
 			return `{${key}}`;
 		}), Object.values(FaHttp.Configuration)));
-
 		return _SocketIo;
 	}
 
@@ -110,8 +98,9 @@ class FaSocketClass {
 			if (handler) {
 				context._handleRouter(socket, event, handler, data, callback);
 			} else {
-				let Error = new FaError(`route not found: ${event}`);
-				socket.emit('error', Error)
+				// let error = new FaError(`route not found: ${event}`);
+				// socket.emit('error', error);
+				socket.emit('error', FaError.pickTrace(`route not found: ${event}`, 1));
 			}
 		});
 	}
@@ -125,6 +114,7 @@ class FaSocketClass {
 	}
 
 	_handleRouter(socket, event, handler, data, callback) {
+		console.log(event);
 		try {
 			let result = handler.call(this, data, socket);
 			if (callback) {
@@ -133,9 +123,7 @@ class FaSocketClass {
 				socket.emit(event, result);
 			}
 		} catch (e) {
-			let Error = new FaError(e);
-			// Error.appendTrace(this.Router.trace(event));
-			socket.emit('error', Error)
+			socket.emit('error', FaError.pickTrace(e, 0));
 		}
 	}
 
