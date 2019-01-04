@@ -1,6 +1,6 @@
 "use strict";
 
-// const FaError = require('../base/error');
+// const FaError = require('../server.base/error');
 class FaControllerSocket {
 	/**
 	 *

@@ -9,7 +9,7 @@ const
 	Querystring = require('querystring'),
 	Url = require('url');
 /*services*/
-const FaBeautify = require('./beautify');
+const FaBeautify = require('./server.beautify');
 /**
  *
  * @param configuration
@@ -99,8 +99,8 @@ module.exports = function (configuration) {
 				get: {},
 				post: {},
 			};
-			// console.log(url);
-			// console.warn(body);
+			// server.console.log(url);
+			// server.console.warn(body);
 			// if (Check.empty(url.query) === false) {
 			if (url.query) {
 				data['get'] = parseParameters(url.query);
@@ -179,8 +179,8 @@ module.exports = function (configuration) {
 	// 	let search = '/train/vehicle/{a}/database/{id}';
 	// 	let regular = /({.+}).+/i;
 	// 	let found = search.match(regular);
-	// 	console.log('FOUND');
-	// 	console.log(found);
+	// 	server.console.log('FOUND');
+	// 	server.console.log(found);
 	// }
 	handler_list['file'] = new HttpRouterHandler(function (response, data) {
 		let filename = data.path;
@@ -274,7 +274,7 @@ module.exports = function (configuration) {
 		// let File = Fs.readFileSync(HttpServerApi.configuration.path + '/train/Volkswagen.jpg');
 		// let base64Image = new Buffer(File, 'binary').toString('base64');
 		let filepath = this.configuration.path + filename;
-		// console.log(filepath)
+		// server.console.log(filepath)
 		if (Fs.existsSync(filepath)) {
 			return Fs.readFileSync(filepath).toString();
 		} else {

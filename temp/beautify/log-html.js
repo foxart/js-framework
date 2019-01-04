@@ -31,15 +31,15 @@ function checkXml(xml) {
  * @returns {string}
  */
 function beautifyJson(json) {
-	return '<span class="beautify-json;">JSON</span>' +
+	return '<span class="server.beautify-json;">JSON</span>' +
 		'<span>' + beautifyObject(json) + '</span>' +
-		'<span class="beautify-json;">JSON</span>';
+		'<span class="server.beautify-json;">JSON</span>';
 }
 
 function beautifyXml(xml) {
-	return '<span class="beautify-xml;">XML</span>' +
+	return '<span class="server.beautify-xml;">XML</span>' +
 		'<span>' + beautifyObject(xml) + '</span>' +
-		'<span class="beautify-xml;">XML</span>';
+		'<span class="server.beautify-xml;">XML</span>';
 }
 
 function beautifyObject(message) {
@@ -52,13 +52,13 @@ function beautifyObject(message) {
 		// },
 		transform(object, property, original) {
 			if (typeof object[property] === 'boolean') {
-				return '<span class="beautify-boolean;">' + original + '</span>';
+				return '<span class="server.beautify-boolean;">' + original + '</span>';
 			} else if (typeof object[property] === 'function') {
-				return '<span class="beautify-function;">' + 'function' + '</span>';
+				return '<span class="server.beautify-function;">' + 'function' + '</span>';
 			} else if (object[property] === null) {
-				return '<span class="beautify-null;">' + original + '</span>';
+				return '<span class="server.beautify-null;">' + original + '</span>';
 			} else if (typeof object[property] === 'number') {
-				return '<span class="beautify-number;">' + original + '</span>';
+				return '<span class="server.beautify-number;">' + original + '</span>';
 			} else if (typeof object[property] === 'object') {
 				return original;
 			} else if (typeof object[property] === 'string') {
@@ -73,10 +73,10 @@ function beautifyObject(message) {
 					 * string
 					 */
 					// return '\x1b[2m' + object[property] + '\x1b[0m';
-					return '<span class="beautify-item;">' + original + '</span>';
+					return '<span class="server.beautify-item;">' + original + '</span>';
 				}
 			} else {
-				return '<span class="beautify-undefined;">' + typeof object[property] + '</span>';
+				return '<span class="server.beautify-undefined;">' + typeof object[property] + '</span>';
 			}
 		}
 	});
@@ -87,13 +87,13 @@ exports.beautify = function () {
 	let message;
 	let item = [].shift.call(arguments);
 	if (typeof item === 'boolean') {
-		message = '<span class="beautify-boolean;">' + item + '</span>';
+		message = '<span class="server.beautify-boolean;">' + item + '</span>';
 	} else if (typeof item === 'function') {
-		message = '<span class="beautify-function;">' + 'function' + '</span>';
+		message = '<span class="server.beautify-function;">' + 'function' + '</span>';
 	} else if (item === null) {
-		message = '<span class="beautify-null;">' + item + '</span>';
+		message = '<span class="server.beautify-null;">' + item + '</span>';
 	} else if (typeof item === 'number') {
-		message = '<span class="beautify-number;">' + item + '</span>';
+		message = '<span class="server.beautify-number;">' + item + '</span>';
 	} else if (typeof item === 'object') {
 		message = beautifyObject(item).replace(/\n/g, '<br/>');
 	} else if (typeof item === 'string') {
@@ -104,10 +104,10 @@ exports.beautify = function () {
 		} else if (xml !== false) {
 			message = beautifyXml(xml).replace(/\n/g, '<br/>').replace(/\n/g, '<br/>');
 		} else {
-			message = '<span class="beautify-item;">' + item + '</span>';
+			message = '<span class="server.beautify-item;">' + item + '</span>';
 		}
 	} else {
-		message = '<span class="beautify-undefined;">' + typeof item + '</span>';
+		message = '<span class="server.beautify-undefined;">' + typeof item + '</span>';
 	}
 	messages.push('<div>' + message + '</div>');
 	return messages.join();

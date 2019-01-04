@@ -54,7 +54,7 @@ Array.prototype.differsFrom = function (array) {
  *
  * @returns {any[]}
  */
-// Array.prototype.values = function () {
+// Array.server.prototype.values = function () {
 // 	let context = this;
 // 	return Object.keys(context).map(function (key) {
 // 		return context[key];

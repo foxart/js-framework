@@ -70,7 +70,7 @@ class FaSocketClass {
 			});
 			// socket.emit('SERVER', 'HEY');
 		});
-		// console.log(
+		// server.console.log(
 		// 	'FaServerSocket',
 		// 	'ws',
 		// 	this.Configuration.host,
@@ -149,7 +149,7 @@ class FaSocketClass {
 
 // let os = require('os');
 // let ifaces = os.networkInterfaces();
-// console.info(ifaces);
+// server.console.info(ifaces);
 // Object.keys(ifaces).forEach(function (ifname) {
 // 	let alias = 0;
 // 	ifaces[ifname].forEach(function (iface) {

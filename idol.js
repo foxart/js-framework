@@ -60,7 +60,7 @@ exports.serve = function (context, token, data) {
 // 		element = 'undefined';
 // 	}
 // 	let length = align - element.toString().length + 1;
-// 	// console.log(length);
+// 	// server.console.log(length);
 // 	if (length < 0) {
 // 		return element.toString().substring(0, align);
 // 	} else {
@@ -69,8 +69,8 @@ exports.serve = function (context, token, data) {
 // }
 // const LogHue = require('./log-hue');
 // consoleLog(!message ? '' : alignTo(message, alignCommon), {
-// 		beautify: 'plain',
-// 		template: `${LogHue.background.black}${LogHue.color.white} {timestamp} ${LogHue.effect.reset} {data} ${LogHue.effect.bold}${LogHue.color.green}${sign.exist} ${LogHue.effect.reset} ${LogHue.color.cyan}{filePath}${LogHue.color.white}:${LogHue.color.red}{lineNumber}${LogHue.effect.reset}`,
+// 		server.beautify: 'plain',
+// 		template: `${LogHue.background.black}${LogHue.server.color.white} {timestamp} ${LogHue.effect.reset} {data} ${LogHue.effect.bold}${LogHue.server.color.green}${sign.exist} ${LogHue.effect.reset} ${LogHue.server.color.cyan}{filePath}${LogHue.server.color.white}:${LogHue.server.color.red}{lineNumber}${LogHue.effect.reset}`,
 // 	}
 // );
 /**

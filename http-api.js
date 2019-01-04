@@ -10,8 +10,8 @@ module.exports = function (format) {
 	/*this*/
 	let module = {};
 	module.formats = {
-		'json': 'application/json',
-		'xml': 'application/xml',
+		'json': 'server.application/json',
+		'xml': 'server.application/xml',
 		'text': 'text/plain',
 	};
 
@@ -43,7 +43,7 @@ module.exports = function (format) {
 			path = '/test.php';
 		}
 		let headers = {
-			'content-type': 'application/x-www-form-urlencoded'
+			'content-type': 'server.application/x-www-form-urlencoded'
 		};
 		Curl.http({
 			host: 'nginx',
@@ -232,7 +232,7 @@ module.exports = function (format) {
 	 * trace error
 	 */
 	const
-		ModuleTrace = require('./deprecated/~trace');
+		ModuleTrace = require('./server.deprecated/~trace');
 	module.getError = function (error) {
 		if (Array.isArray(error.trace)) {
 			error.trace.push(ModuleTrace.extractString(ModuleTrace.getData(5)));

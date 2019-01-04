@@ -16,7 +16,7 @@ module.exports = function (configuration) {
 	let createConnection = function (configuration) {
 		module.configuration = configuration;
 		console.log(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
-		// console.log(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
+		// server.console.log(`oracle | ${configuration.host}:${configuration.port}/${configuration.SID}`);
 	};
 
 	function logOracleError(data) {
@@ -41,7 +41,7 @@ module.exports = function (configuration) {
 				password: module.configuration.password,
 			}, function (e, connection) {
 				if (e) {
-					// console.log(e);
+					// server.console.log(e);
 					reject(e);
 				} else {
 					OracleClient.outFormat = OracleClient['OBJECT'];
@@ -124,7 +124,7 @@ module.exports = function (configuration) {
 		} else {
 			this.openConnection().then(function (connection) {
 				Oracle = connection;
-				// console.log(connection)
+				// server.console.log(connection)
 				module.execute(query, parameters, options, onSuccess, onError);
 			}, function (error) {
 				/*connection open error*/
@@ -140,17 +140,17 @@ module.exports = function (configuration) {
 		[query, parameters, options] = [filter[0], filter[1], filter[2]];
 		return new Promise(function (resolve, reject) {
 			context.openConnection().then(function (connection) {
-				// console.log(connection)
+				// server.console.log(connection)
 				connection.execute(query, parameters, options, function (e, result) {
 					if (e) {
 						console.log(e);
 						let oracleError = e.message.split(': ');
-						// console.warn(e.message);
-						// console.warn(e.errorNum);
+						// server.console.warn(e.message);
+						// server.console.warn(e.errorNum);
 						error.name = oracleError[0];
 						error.message = oracleError[1];
-						// console.log(e.message);
-						// console.warn(FaError.pickTrace(error,1));
+						// server.console.log(e.message);
+						// server.console.warn(FaError.pickTrace(error,1));
 						reject(FaError.pickTrace(error, 1));
 					} else {
 						resolve(result);
