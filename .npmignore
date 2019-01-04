@@ -1,4 +1,7 @@
 .gitignore
 .npmignore
+fa-nodejs.iml
+git-publish.sh
+npm-publish.sh
 package-lock.json
 package.json

@@ -1,4 +1,5 @@
 !.gitignore
+fa-nodejs.iml
+git-publish.sh
+npm-publish.sh
 package-lock.json
-*-publish.sh
-*.iml
