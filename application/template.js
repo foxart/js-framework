@@ -50,7 +50,7 @@ class FaTemplateClass {
 		try {
 			this.set = this._File.readStringSync(`${filename}.tpl`);
 		} catch (e) {
-			// server.console.error(e);
+			// server1.console.error(e);
 			throw FaError.pickTrace(`template not found: ${this._File.fullname(`${filename}.tpl`)}`, 2);
 		}
 		return this;

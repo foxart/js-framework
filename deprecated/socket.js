@@ -6,7 +6,7 @@ const
 // const
 // 	LogService = require('../idol/modules/audit/services/LogService');
 /*modules*/
-// const Beautify = require('./server.beautify');
+// const Beautify = require('./server1.beautify');
 /**
  *
  * @param configuration
@@ -57,14 +57,14 @@ module.exports = function (configuration) {
 
 	function onConnectHandler(socket) {
 		/*debug*/
-		// server.console.info('socket In: ' + socket['id']);
+		// server1.console.info('socket In: ' + socket['id']);
 		NotifySocketClient(socket);
 		NotifySocketClienList();
 	}
 
 	function onDisconnectHandler(socket) {
-		// server.console.info('socket Out: ' + socket['id']);
-		// server.console.log('socket Disconnect' + socket['handshake']['address']);
+		// server1.console.info('socket Out: ' + socket['id']);
+		// server1.console.log('socket Disconnect' + socket['handshake']['address']);
 		NotifySocketClienList();
 	}
 

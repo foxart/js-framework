@@ -1,6 +1,6 @@
 'use strict';
 /*modules*/
-const FaBeautify = require('../beautify/index');
+const FaBeautify = require('../beautify');
 const FaConsoleColor = require('./console-color');
 const FaTrace = require('../base/trace');
 /*variables*/

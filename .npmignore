@@ -1,3 +1,4 @@
 .gitignore
+.npmignore
 package-lock.json
 package.json

@@ -147,13 +147,13 @@ function beautify(data, level, circular, color, type) {
 		return FaWrap.wrapDate(data, color, type);
 		// } else if (!isNaN(Date.parse(data))) {
 		// 	/*date*/
-		// 	return FaWrap.wrapDate(new Date(data), server.color, type);
+		// 	return FaWrap.wrapDate(new Date(data), server1.color, type);
 	} else if (typeof data === 'function') {
 		// function
 		return FaWrap.wrapFunction(data, getTab(level + 1), color, type);
 		// } else if (data instanceof FaError) {
 		// 	/*FaError*/
-		// 	return FaWrap.wrapFaError(data['name'], data['message'], data['stack'], getTab(level + 1), server.color);
+		// 	return FaWrap.wrapFaError(data['name'], data['message'], data['stack'], getTab(level + 1), server1.color);
 	} else if (data instanceof Error) {
 		/*Error*/
 		return FaWrap.wrapError(data['name'], data['message'], data['stack'], data['trace'], getTab(level ), color);
@@ -179,11 +179,11 @@ function beautify(data, level, circular, color, type) {
 		}
 		// } else if (data.byteLength) {
 		//IMAGE
-		// return FaWrap.wrapImage(data, FileType(data).mime, server.color, type);
+		// return FaWrap.wrapImage(data, FileType(data).mime, server1.color, type);
 		// } else if (FileType(Buffer.from(data, 'base64'))) {
 		//IMAGE
-		// return FaWrap.wrapImage(data, FileType(Buffer.from(data, 'base64')).mime, server.color, type);
-		// server.console.log(FileType(Buffer.from(data, 'base64')).mime)
+		// return FaWrap.wrapImage(data, FileType(Buffer.from(data, 'base64')).mime, server1.color, type);
+		// server1.console.log(FileType(Buffer.from(data, 'base64')).mime)
 	} else if (typeof data === 'string') {
 		if (checkJson(data)) {
 			// JSON

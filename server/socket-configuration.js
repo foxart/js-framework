@@ -56,11 +56,11 @@ module.exports = class FaServerConfigurationClass {
 	get _socket() {
 		return {
 			path: '/socket.io',
-			/*If value is true the attached server.server (see Server#attach) will serve the client files. Defaults to true. This method has no effect after attach is called. If no arguments are supplied this method returns the current value.*/
+			/*If value is true the attached server1.server1 (see Server#attach) will serve the client files. Defaults to true. This method has no effect after attach is called. If no arguments are supplied this method returns the current value.*/
 			serveClient: false,
 			/*name of the HTTP cookie that contains the client sid to send as part of handshake response headers. Set to false to not send one.*/
 			cookie: false,
-			/*The pingTimeout and pingInterval parameters will impact the delay before a client knows the server.server is not available anymore. For example, if the underlying TCP connection is not closed properly due to a network issue, a client may have to wait up to pingTimeout + pingInterval ms before getting a disconnect event.*/
+			/*The pingTimeout and pingInterval parameters will impact the delay before a client knows the server1.server1 is not available anymore. For example, if the underlying TCP connection is not closed properly due to a network issue, a client may have to wait up to pingTimeout + pingInterval ms before getting a disconnect event.*/
 			/*how many ms without a pong packet to consider the connection closed*/
 			pingTimeout: 2500, //default 5000
 			/*how many ms before sending a new ping packet*/

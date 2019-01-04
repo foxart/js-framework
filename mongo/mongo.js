@@ -13,7 +13,7 @@ const
 // 	LogService = require('../../idol/modules/audit/services/LogService');
 /*modules*/
 const
-	Helper = require('../helper');
+	Helper = require('../deprecated/helper');
 /**
  *
  * @param configuration
@@ -25,7 +25,7 @@ module.exports = function (configuration) {
 	let createConnection = function (configuration) {
 		module.configuration = configuration;
 		module.link = `mongodb://${configuration.host}:${configuration.port}`;
-		// LogService.check(`server.mongo | ${configuration.host}:${configuration.port}/${configuration.database}`);
+		// LogService.check(`server1.mongo | ${configuration.host}:${configuration.port}/${configuration.database}`);
 	};
 
 	/*create*/
@@ -49,8 +49,8 @@ module.exports = function (configuration) {
 			// MongoClient.connect(configuration.link).then(function (database) {
 			// 	resolve(database.db(configuration.database));
 			// }, function (error) {
-			// 	server.console.log('Mongo connect error');
-			// 	server.console.log(error);
+			// 	server1.console.log('Mongo connect error');
+			// 	server1.console.log(error);
 			// 	reject(error);
 			// });
 		})
@@ -59,7 +59,7 @@ module.exports = function (configuration) {
 		Mongo.close();
 	};
 	/**
-	 * @server.deprecated
+	 * @server1.deprecated
 	 * @param collection
 	 * @param filter
 	 * @param options
@@ -82,10 +82,10 @@ module.exports = function (configuration) {
 			}
 		});
 		// Mongo.db(this.configuration.database).collection(collection).findOne(filter, options).then(function (result) {
-		// 	server.console.log(result);
+		// 	server1.console.log(result);
 		// 	return result;
 		// }).catch(function (error) {
-		// 	server.console.log(error);
+		// 	server1.console.log(error);
 		// });
 	};
 	/**
@@ -109,7 +109,7 @@ module.exports = function (configuration) {
 		});
 	};
 	/**
-	 * @server.deprecated
+	 * @server1.deprecated
 	 * @param collection
 	 * @param filter
 	 * @param options
@@ -159,7 +159,7 @@ module.exports = function (configuration) {
 		});
 	};
 	/**
-	 * @server.deprecated
+	 * @server1.deprecated
 	 * @param collection
 	 * @param data
 	 * @param callback
@@ -261,7 +261,7 @@ module.exports = function (configuration) {
 		}
 	};
 	/**
-	 * @server.deprecated
+	 * @server1.deprecated
 	 * @param collection
 	 * @param filter
 	 * @param data
@@ -281,8 +281,8 @@ module.exports = function (configuration) {
 			});
 		}
 		this.sanitize(filter);
-		// server.console.log('UPDATE');
-		// server.console.log(JSON.stringify(filter));
+		// server1.console.log('UPDATE');
+		// server1.console.log(JSON.stringify(filter));
 		if (Mongo !== undefined) {
 			Mongo.db(this.configuration.database).collection(collection).updateOne(filter, data, options, function (error, result) {
 				assert.equal(error, null);

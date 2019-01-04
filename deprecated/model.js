@@ -53,7 +53,7 @@ class Model {
 					}
 					result[index] = result_function !== undefined ? result_function : null;
 				} else if (item) {
-					// server.console.error(index, element);
+					// server1.console.error(index, element);
 					result[index] = item[element] !== undefined ? item[element] : null;
 				} else {
 					result[index] = null;

@@ -58,7 +58,7 @@ exports.getData = function (level) {
 		}
 		return result
 	} else {
-		// server.console.log(StackTrace.extractFunction(trace[level]));
+		// server1.console.log(StackTrace.extractFunction(trace[level]));
 		return extractData(trace[level]);
 	}
 };

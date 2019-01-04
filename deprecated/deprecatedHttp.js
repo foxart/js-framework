@@ -9,7 +9,7 @@ const
 	Querystring = require('querystring'),
 	Url = require('url');
 /*services*/
-const FaBeautify = require('./server.beautify');
+const FaBeautify = require('../beautify');
 /**
  *
  * @param configuration
@@ -99,8 +99,8 @@ module.exports = function (configuration) {
 				get: {},
 				post: {},
 			};
-			// server.console.log(url);
-			// server.console.warn(body);
+			// server1.console.log(url);
+			// server1.console.warn(body);
 			// if (Check.empty(url.query) === false) {
 			if (url.query) {
 				data['get'] = parseParameters(url.query);
@@ -179,8 +179,8 @@ module.exports = function (configuration) {
 	// 	let search = '/train/vehicle/{a}/database/{id}';
 	// 	let regular = /({.+}).+/i;
 	// 	let found = search.match(regular);
-	// 	server.console.log('FOUND');
-	// 	server.console.log(found);
+	// 	server1.console.log('FOUND');
+	// 	server1.console.log(found);
 	// }
 	handler_list['file'] = new HttpRouterHandler(function (response, data) {
 		let filename = data.path;
@@ -274,7 +274,7 @@ module.exports = function (configuration) {
 		// let File = Fs.readFileSync(HttpServerApi.configuration.path + '/train/Volkswagen.jpg');
 		// let base64Image = new Buffer(File, 'binary').toString('base64');
 		let filepath = this.configuration.path + filename;
-		// server.console.log(filepath)
+		// server1.console.log(filepath)
 		if (Fs.existsSync(filepath)) {
 			return Fs.readFileSync(filepath).toString();
 		} else {

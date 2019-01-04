@@ -113,7 +113,7 @@ function requestCallback(options, data, callback, protocol) {
 }
 
 /**
- * @server.deprecated
+ * @server1.deprecated
  * @param options
  * @param data
  * @param callback
@@ -122,7 +122,7 @@ exports.http = function (options, data, callback) {
 	requestCallback(options, data, callback, "http")
 };
 /**
- * @server.deprecated
+ * @server1.deprecated
  * @param options
  * @param data
  * @param callback
@@ -132,14 +132,14 @@ exports.https = function (options, data, callback) {
 };
 
 /**
- * @server.deprecated
+ * @server1.deprecated
  * @param protocol
  * @param options
  * @param data
  * @returns {Promise<any>}
  */
 function requestPromise(protocol, options, data) {
-	// server.console.info(arguments);
+	// server1.console.info(arguments);
 	return new Promise(function (resolve, reject) {
 		let HttpRequest;
 		let RequestOptions = requestOptions(options);
@@ -170,23 +170,23 @@ function requestPromise(protocol, options, data) {
 }
 
 /**
- * @server.deprecated
+ * @server1.deprecated
  * @param options
  * @param data
  * @returns {*}
  */
 exports.httpPromise = function (options, data) {
-	// server.console.error(options);
+	// server1.console.error(options);
 	return requestPromise("http", options, data)
 };
 /**
- * @server.deprecated
+ * @server1.deprecated
  * @param options
  * @param data
  * @returns {*}
  */
 exports.httpsPromise = function (options, data) {
-	// server.console.error(options);
+	// server1.console.error(options);
 	return requestPromise("https", options, data)
 };
 /**
@@ -266,7 +266,7 @@ exports.request = function (options, data) {
 				}
 			}
 			Request.on('socket', function (Socket) {
-				// server.console.warn(model.timeout);
+				// server1.console.warn(model.timeout);
 				// model.timeout = 10;
 				Socket.setTimeout(model.timeout);
 				Socket.on('timeout', function () {
@@ -284,7 +284,7 @@ exports.request = function (options, data) {
 				});
 			});
 			Request.on('error', function (e) {
-				// server.console.warn(options, data)
+				// server1.console.warn(options, data)
 				reject(e);
 			});
 			Request.end();

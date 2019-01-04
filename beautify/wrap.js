@@ -21,10 +21,10 @@ function getType(type, length, show_color) {
 				result = `${Hue.effect.underscore}${Hue.color.yellow}${type}${length}${Hue.effect.reset} `;
 				break;
 			// case 'Error':
-			// 	result = `${Hue.effect.underscore}${Hue.server.color.red}${type}${Hue.effect.reset} `;
+			// 	result = `${Hue.effect.underscore}${Hue.server1.color.red}${type}${Hue.effect.reset} `;
 			// 	break;
 			// case 'FaError':
-			// 	result = `${Hue.effect.underscore}${Hue.server.color.red}${type}${Hue.effect.reset} `;
+			// 	result = `${Hue.effect.underscore}${Hue.server1.color.red}${type}${Hue.effect.reset} `;
 			// 	break;
 			case 'Json':
 				result = `${Hue.effect.bold}${Hue.color.green}<${type}${length}>${Hue.effect.reset} `;
@@ -323,7 +323,7 @@ exports.wrapXml = function (data, length, show_color, show_type) {
 	// return `${type}${data}`;
 	let type = show_type ? getType('Xml', length, show_color) : '';
 	// if (show_color) {
-	// 	return `${type}${Hue.background.red}${Hue.server.color.white}${type}${Hue.effect.reset} ${data}`;
+	// 	return `${type}${Hue.background.red}${Hue.server1.color.white}${type}${Hue.effect.reset} ${data}`;
 	// } else {
 	// }
 	return `${type}${data}`;

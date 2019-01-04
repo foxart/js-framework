@@ -70,7 +70,7 @@ class FaSocketClass {
 			});
 			// socket.emit('SERVER', 'HEY');
 		});
-		// server.console.log(
+		// server1.console.log(
 		// 	'FaServerSocket',
 		// 	'ws',
 		// 	this.Configuration.host,
@@ -114,9 +114,9 @@ class FaSocketClass {
 	}
 
 	_handleRouter(socket, event, handler, data, callback) {
-		console.log(event);
+		// server1.console.log(event);
 		try {
-			let result = handler.call(this, data, socket);
+			let result = handler.call(this, {data: data, socket: socket});
 			if (callback) {
 				callback(result);
 			} else if (result) {
@@ -149,7 +149,7 @@ class FaSocketClass {
 
 // let os = require('os');
 // let ifaces = os.networkInterfaces();
-// server.console.info(ifaces);
+// server1.console.info(ifaces);
 // Object.keys(ifaces).forEach(function (ifname) {
 // 	let alias = 0;
 // 	ifaces[ifname].forEach(function (iface) {

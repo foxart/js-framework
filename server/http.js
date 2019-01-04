@@ -124,7 +124,7 @@ class FaHttpClass {
 		});
 		req.on('end', function () {
 			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
-				// server.console.warn(result.headers, result.status);
+				// server1.console.warn(result.headers, result.status);
 				context._respondHttp(req, res, result);
 			});
 		});
@@ -157,7 +157,7 @@ class FaHttpClass {
 		}
 		// let accepts = require('accepts');
 		// let accept = accepts(req);
-		// server.console.log(accept.type('json'));
+		// server1.console.log(accept.type('json'));
 		switch (!FaHttpResponse.content.byteLength && FaHttpResponse.headers['Content-Type']) {
 			case this._FaHttpContentType.json:
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
@@ -180,7 +180,7 @@ class FaHttpClass {
 		if (!FaHttpResponse.content.byteLength) {
 			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
 		}
-		// server.console.error(FaHttpResponse.content);
+		// server1.console.error(FaHttpResponse.content);
 		for (let property in FaHttpResponse.headers) {
 			if (FaHttpResponse.headers.hasOwnProperty(property)) {
 				if (property === 'Content-Type' && FaHttpResponse.headers[property].indexOf('; charset=') === -1) {
@@ -251,7 +251,7 @@ class FaHttpClass {
 	 * @private
 	 */
 	_handleFile(filename, type) {
-		// server.console.error(filename, type);
+		// server1.console.error(filename, type);
 		try {
 			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this.status.ok);
 		} catch (e) {
