@@ -1,0 +1,16 @@
+{
+  "name": "fa-nodejs",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Kosenko Ivan Sergeevich"
+  ],
+  "license": "ISC",
+  "homepage": "foxart.org",
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
