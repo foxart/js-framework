@@ -1,5 +1,5 @@
 !.gitignore
-.attach_pid*
 package-lock.json
+.attach_pid*
 #*.sh
 /.idea

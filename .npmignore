@@ -2,5 +2,6 @@
 .npmignore
 package.json
 package-lock.json
+.attach_pid*
 *.sh
 /.idea
