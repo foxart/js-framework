@@ -29,7 +29,7 @@
     "uuid": "^3.3.2"
   },
   "author": "Kosenko Ivan Sergeevich",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/foxart/fa-nodejs/issues"
   },

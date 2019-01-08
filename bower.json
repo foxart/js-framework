@@ -5,8 +5,8 @@
   "authors": [
     "Kosenko Ivan Sergeevich"
   ],
-  "license": "ISC",
-  "homepage": "foxart.org",
+  "license": "MIT",
+  "homepage": "https://github.com/foxart/fa-javascript",
   "ignore": [
     "node_modules",
     "bower_components",

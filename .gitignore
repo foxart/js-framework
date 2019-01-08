@@ -3,3 +3,4 @@ package-lock.json
 .attach_pid*
 #*.sh
 /.idea
+/node_modules
