@@ -1,3 +1,4 @@
 !.gitignore
-fa-nodejs.iml
 package-lock.json
+#*.sh
+/.idea
