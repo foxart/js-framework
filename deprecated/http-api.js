@@ -10,8 +10,8 @@ module.exports = function (format) {
 	/*this*/
 	let module = {};
 	module.formats = {
-		'json': 'server.application/json',
-		'xml': 'server.application/xml',
+		'json': 'application/json',
+		'xml': 'application/xml',
 		'text': 'text/plain',
 	};
 
@@ -43,7 +43,7 @@ module.exports = function (format) {
 			path = '/test.php';
 		}
 		let headers = {
-			'content-type': 'server.application/x-www-form-urlencoded'
+			'content-type': 'application/x-www-form-urlencoded'
 		};
 		Curl.http({
 			host: 'nginx',
