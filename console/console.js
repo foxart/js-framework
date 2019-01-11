@@ -1,10 +1,9 @@
 'use strict';
 /*modules*/
 const FaBeautify = require('../beautify');
-const FaConsoleColor = require('./console-color');
+const FCH = require('./console-helper');
 const FaTrace = require('../base/trace');
 /*variables*/
-let cc = FaConsoleColor;
 let clear = console.clear;
 let log = console.log;
 let info = console.info;
@@ -14,12 +13,58 @@ let warn = console.warn;
  *
  * @type {{warn: string, log: string, error: string, info: string}}
  */
+let templateTime = {
+	log: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
+	info: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
+	warn: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
+	error: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
+};
+/**
+ *
+ * @type {{warn: string, log: string, error: string, info: string}}
+ */
+// let templateSign = {
+// 	log: `${FCH.bg.green}${FCH.color.white} ${FCH.sign.check} ${FCH.effect.reset}`,
+// 	info: `${FCH.bg.cyan}${FCH.color.white} ${FCH.sign.excl} ${FCH.effect.reset}`,
+// 	warn: `${FCH.bg.yellow}${FCH.color.white} ${FCH.sign.quest} ${FCH.effect.reset}`,
+// 	error: `${FCH.bg.red}${FCH.color.white} ${FCH.sign.cross} ${FCH.effect.reset}`,
+// };
+let templateSign = {
+	log: `[${FCH.effect.bold}${FCH.color.black}LOG${FCH.effect.reset}]`,
+	info: `[${FCH.effect.bold}${FCH.color.cyan}INF${FCH.effect.reset}]`,
+	warn: `[${FCH.effect.bold}${FCH.color.yellow}WRN${FCH.effect.reset}]`,
+	error: `[${FCH.effect.bold}${FCH.color.red}ERR${FCH.effect.reset}]`,
+};
+/**
+ *
+ * @type {{warn: string, log: string, error: string, info: string}}
+ */
+let templatePath = {
+	// log: `${FCH.color.white}{path}${FCH.effect.reset}`,
+	log: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
+	info: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
+	warn: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
+	error: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
+};
+/**
+ *
+ * @type {{warn: string, log: string, error: string, info: string}}
+ */
+let templateLine = {
+	log: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	info: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	warn: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	error: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+};
+/**
+ *
+ * @type {{warn: string, log: string, error: string, info: string}}
+ */
 let template = {
-	plainColor: `${cc.bg.black}${cc.color.white} {time} ${cc.effect.reset}${cc.bg.white}${cc.color.black} {path} ${cc.effect.reset}${cc.bg.black} ${cc.color.red}{line}${cc.color.white}:${cc.effect.dim}{column} ${cc.effect.reset} {data}`,
-	log: `${cc.bg.black}${cc.color.white} {time} ${cc.effect.reset}${cc.bg.white}${cc.color.black} {path} ${cc.effect.reset}${cc.bg.black} ${cc.color.red}{line}${cc.color.white}:${cc.effect.dim}{column} ${cc.effect.reset} {data}`,
-	info: `${cc.bg.black}${cc.color.white} {time} ${cc.effect.reset}${cc.bg.blue}${cc.color.white} {path} ${cc.effect.reset}${cc.bg.black} ${cc.color.red}{line}${cc.color.white}:${cc.effect.dim}{column} ${cc.effect.reset} {data}`,
-	warn: `${cc.bg.black}${cc.color.white} {time} ${cc.effect.reset}${cc.bg.yellow}${cc.color.black} {path} ${cc.effect.reset}${cc.bg.black} ${cc.color.red}{line}${cc.color.white}:${cc.effect.dim}{column} ${cc.effect.reset} {data}`,
-	error: `${cc.bg.black}${cc.color.white} {time} ${cc.effect.reset}${cc.bg.red}${cc.color.white} {path} ${cc.effect.reset}${cc.bg.black} ${cc.color.red}{line}${cc.color.white}:${cc.effect.dim}{column} ${cc.effect.reset} {data}`,
+	log: `${templateTime.log} ${templateSign.log} ${templatePath.log}${templateLine.log} {data}`,
+	info: `${templateTime.info} ${templateSign.info} ${templatePath.info}${templateLine.info} {data}`,
+	warn: `${templateTime.warn} ${templateSign.warn} ${templatePath.warn}${templateLine.warn} {data}`,
+	error: `${templateTime.error} ${templateSign.error} ${templatePath.error}${templateLine.error} {data}`,
 };
 
 /**
@@ -71,4 +116,3 @@ console.error = function () {
 console.write = function () {
 	log(FaBeautify.plainColor(_arguments(arguments)));
 };
-console.clear();

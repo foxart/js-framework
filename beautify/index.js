@@ -2,6 +2,7 @@
 /*node*/
 const FastXmlParser = require('fast-xml-parser');
 const FileType = require('file-type');
+// const Buffer = require("buffer").Buffer;
 /*fa*/
 const FaWrap = require('./wrap');
 
@@ -156,7 +157,7 @@ function beautify(data, level, circular, color, type) {
 		// 	return FaWrap.wrapFaError(data['name'], data['message'], data['stack'], getTab(level + 1), server1.color);
 	} else if (data instanceof Error) {
 		/*Error*/
-		return FaWrap.wrapError(data['name'], data['message'], data['stack'], data['trace'], getTab(level ), color);
+		return FaWrap.wrapError(data['name'], data['message'], data['stack'], data['trace'], getTab(level + 1), color);
 	} else if (typeof data === 'object') {
 		try {
 			if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {

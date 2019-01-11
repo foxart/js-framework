@@ -8,18 +8,16 @@ const FaFile = require("../base/file")();
  */
 class FaModule {
 	constructor(parent, configuration) {
-		// server1.console.log(parent);
-		// server1.console.log(parent instanceof FaSocketClass, parent instanceof FaHttpClass);
-		// server1.console.warn(parent.HttpServer !== undefined, parent.SocketIo !== undefined);
 		this._controller_list = {};
 		for (const [key, value] of Object.entries(configuration["routes"])) {
+			// console.warn(parent.HttpServer !== undefined, parent.SocketIo !== undefined);
 			let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
 			let path = `${namespace}/${parent.HttpServer !== undefined ? "controllers" : "sockets"}/${value["controller"]}.js`;
 			if (FaFile.existFilename(path)) {
 				let Controller = this._controllerLoad(parent, path, namespace);
 				if (Controller[value["action"]]) {
 					parent.Router.attach(key, function (req) {
-						// server1.console.info(value["action"]);
+						// console.warn(value["action"]);
 						return Controller[value["action"]](req);
 					});
 				} else {

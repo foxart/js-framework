@@ -1,5 +1,5 @@
 "use strict";
-const Hue = require('../console/console-color');
+const FCH = require('../console/console-helper');
 const FaError = require("../base/error");
 
 /**
@@ -15,10 +15,10 @@ function getType(type, length, show_color) {
 		let result;
 		switch (type) {
 			case 'Circular':
-				result = `${Hue.effect.bold}${Hue.color.magenta}<${type}${length}>${Hue.effect.reset} `;
+				result = `${FCH.effect.bold}${FCH.color.magenta}<${type}${length}>${FCH.effect.reset} `;
 				break;
 			case 'Date':
-				result = `${Hue.effect.underscore}${Hue.color.yellow}${type}${length}${Hue.effect.reset} `;
+				result = `${FCH.effect.underscore}${FCH.color.yellow}${type}${length}${FCH.effect.reset} `;
 				break;
 			// case 'Error':
 			// 	result = `${Hue.effect.underscore}${Hue.server1.color.red}${type}${Hue.effect.reset} `;
@@ -27,25 +27,25 @@ function getType(type, length, show_color) {
 			// 	result = `${Hue.effect.underscore}${Hue.server1.color.red}${type}${Hue.effect.reset} `;
 			// 	break;
 			case 'Json':
-				result = `${Hue.effect.bold}${Hue.color.green}<${type}${length}>${Hue.effect.reset} `;
+				result = `${FCH.effect.bold}${FCH.color.green}<${type}${length}>${FCH.effect.reset} `;
 				break;
 			case 'Image':
-				result = `${Hue.effect.bold}${Hue.color.blue}<${type}${length}>${Hue.effect.reset} `;
+				result = `${FCH.effect.bold}${FCH.color.blue}<${type}${length}>${FCH.effect.reset} `;
 				break;
 			case 'MongoId':
-				result = `${Hue.effect.bold}${Hue.color.cyan}<${type}${length}>${Hue.effect.reset} `;
+				result = `${FCH.effect.bold}${FCH.color.cyan}<${type}${length}>${FCH.effect.reset} `;
 				break;
 			case 'RegExp':
-				result = `${Hue.effect.bold}${Hue.color.yellow}<${type}${length}>${Hue.effect.reset} `;
+				result = `${FCH.effect.bold}${FCH.color.yellow}<${type}${length}>${FCH.effect.reset} `;
 				break;
 			case 'Undefined':
-				result = `${Hue.effect.underscore}${Hue.color.magenta}${type}${length}${Hue.effect.reset} `;
+				result = `${FCH.effect.underscore}${FCH.color.magenta}${type}${length}${FCH.effect.reset} `;
 				break;
 			case 'Xml':
-				result = `${Hue.effect.bold}${Hue.color.red}<${type}${length}>${Hue.effect.reset} `;
+				result = `${FCH.effect.bold}${FCH.color.red}<${type}${length}>${FCH.effect.reset} `;
 				break;
 			default:
-				result = `${Hue.effect.dim}${Hue.color.white}${type}${length}${Hue.effect.reset} `;
+				result = `${FCH.effect.dim}${FCH.color.white}${type}${length}${FCH.effect.reset} `;
 		}
 		return result;
 	} else {
@@ -74,9 +74,9 @@ exports.wrapArray = function (data, length, show_color, show_type) {
  */
 exports.wrapBool = function (data, show_color, show_type) {
 	let type = show_type ? getType('Bool', null, show_color) : '';
-	let color = data === true ? `${Hue.color.green}` : `${Hue.color.red}`;
+	let color = data === true ? `${FCH.color.green}` : `${FCH.color.red}`;
 	if (show_color) {
-		return `${type}${color}${Hue.effect.bold}${data}${Hue.effect.reset}`;
+		return `${type}${color}${FCH.effect.bold}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -92,7 +92,7 @@ exports.wrapBool = function (data, show_color, show_type) {
 exports.wrapCircular = function (data, length, show_color, show_type) {
 	let type = show_type ? getType('Circular', length, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.color.white}${data}${Hue.effect.reset}`;
+		return `${type}${FCH.color.white}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -107,7 +107,7 @@ exports.wrapCircular = function (data, length, show_color, show_type) {
 exports.wrapDate = function (data, show_color, show_type) {
 	let type = show_type ? getType('Date', null, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.color.white}${new Date(data.toISOString())}${Hue.effect.reset}`;
+		return `${type}${FCH.color.white}${new Date(data.toISOString())}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -127,27 +127,28 @@ exports.wrapError = function (name, message, stack, trace, tab, show_color) {
 	let trace_list = [];
 	let stack_list = [];
 	if (trace) {
-		type = `${Hue.effect.underscore}${Hue.color.red}${name}${Hue.effect.reset}`;
+		type = `${FCH.effect.underscore}${FCH.color.red}${name}${FCH.effect.reset}`;
 	} else {
 		trace = FaError.traceStack(stack);
-		type = `${Hue.effect.underscore}${Hue.effect.dim}${name}${Hue.effect.reset}`;
+		type = `${FCH.effect.underscore}${FCH.color.red}${name}${FCH.effect.reset}`;
 	}
 	trace.forEach(function (item) {
 		if (show_color) {
-			trace_list.push(`\n${tab}${Hue.color.cyan}${item['method']} ${Hue.color.yellow}${item['path']}${Hue.effect.reset}:${Hue.color.red}${item['line']}${Hue.effect.reset}:${Hue.effect.dim}${item['column']}${Hue.effect.reset}`);
+			trace_list.push(`\n${tab}${FCH.color.magenta}${item['method']} ${FCH.effect.reset}${FCH.effect.dim}${item['path']}${FCH.effect.reset}:${FCH.color.cyan}${item['line']}${FCH.effect.reset}:${FCH.color.white}${item['column']}${FCH.effect.reset}`);
 		} else {
 			trace_list.push(`\n${tab}${item['method']} ${item['path']}:${item['line']}:${item['column']}`);
 		}
 	});
 	trace = trace_list.join('');
-	stack.split('\n').forEach(function (item) {
-		if (show_color) {
-			stack_list.push(`\n${tab}| ${Hue.effect.dim}${item.trim()}${Hue.effect.reset}`);
-		} else {
-			stack_list.push(`\n${tab}| ${item.trim()}`);
-		}
-	});
-	stack = stack_list.join('');
+	// stack.split('\n').forEach(function (item) {
+	// 	if (show_color) {
+	// 		stack_list.push(`\n${tab}| ${FCH.effect.dim}${item.trim()}${FCH.effect.reset}`);
+	// 	} else {
+	// 		stack_list.push(`\n${tab}| ${item.trim()}`);
+	// 	}
+	// });
+	// stack = stack_list.join('');
+	stack = "";
 	if (show_color) {
 		return `${type} ${message}${trace}${stack}`;
 	} else {
@@ -164,7 +165,7 @@ exports.wrapError = function (name, message, stack, trace, tab, show_color) {
 exports.wrapFloat = function (data, show_color, show_type) {
 	let type = show_type ? getType('Float', null, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.color.red}${data}${Hue.effect.reset}`;
+		return `${type}${FCH.color.red}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -181,8 +182,8 @@ exports.wrapFunction = function (data, tab, show_color, show_type) {
 	let type = show_type ? getType('Function', null, show_color) : '';
 	let content;
 	if (show_color) {
-		content = data.toString().replace(/\n/g, `\n${Hue.color.cyan}${tab}`);
-		return `${type}${Hue.color.cyan}${content}${Hue.effect.reset}`;
+		content = data.toString().replace(/\n/g, `\n${FCH.color.cyan}${tab}`);
+		return `${type}${FCH.color.cyan}${content}${FCH.effect.reset}`;
 	} else {
 		content = data.toString().replace(/\n/g, `\n${tab}`);
 		return `${type}${content}`;
@@ -198,7 +199,7 @@ exports.wrapFunction = function (data, tab, show_color, show_type) {
 exports.wrapInt = function (data, show_color, show_type) {
 	let type = show_type ? getType('Int', null, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.color.green}${data}${Hue.effect.reset}`;
+		return `${type}${FCH.color.green}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -225,7 +226,7 @@ exports.wrapJson = function (data, length, show_color, show_type) {
 exports.wrapMongoId = function (data, show_color, show_type) {
 	let type = show_type ? getType('MongoId', null, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.color.white}${data}${Hue.effect.reset}`;
+		return `${type}${FCH.color.white}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -240,7 +241,7 @@ exports.wrapMongoId = function (data, show_color, show_type) {
 exports.wrapNull = function (data, show_color, show_type) {
 	let type = show_type ? getType('Null', null, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.effect.bold}${Hue.color.cyan}${data}${Hue.effect.reset}`;
+		return `${type}${FCH.effect.bold}${FCH.color.cyan}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}
@@ -290,7 +291,7 @@ exports.wrapString = function (data, length, tab, show_color, show_type) {
 	content = content.replace(/\n/g, `\n${tab}`);
 	// content = content.replace(/"/g, "\\\"");
 	if (show_color) {
-		return `${type}${Hue.effect.reset}${content}${Hue.effect.reset}`;
+		return `${type}${FCH.effect.reset}${content}${FCH.effect.reset}`;
 	} else {
 		return `${type}${content}`;
 	}
@@ -305,7 +306,7 @@ exports.wrapString = function (data, length, tab, show_color, show_type) {
 exports.wrapUndefined = function (data, show_color, show_type) {
 	let type = show_type ? getType('Undefined', null, show_color) : '';
 	if (show_color) {
-		return `${type}${Hue.color.white}${data}${Hue.effect.reset}`;
+		return `${type}${FCH.color.white}${data}${FCH.effect.reset}`;
 	} else {
 		return `${type}${data}`;
 	}

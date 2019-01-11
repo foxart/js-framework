@@ -1,9 +1,9 @@
-'use strict';
+"use strict";
 /*node*/
-const SocketIo = require('socket.io');
+const SocketIo = require("socket.io");
 /*fa*/
-const FaError = require('../base/error');
-const FaConsoleColor = require('../console/console-color');
+const FaError = require("../base/error");
+const FaConsoleColor = require("../console/console-helper");
 
 /**
  *
@@ -15,7 +15,7 @@ class FaSocketClass {
 	 */
 	constructor(FaHttp) {
 		this._configuration = FaHttp.Configuration;
-		this._Router = require('../base/router')(this);
+		this._FaRouterClass = require("../base/router")(this);
 		this.SocketIo = this._createSocket(FaHttp);
 	}
 
@@ -33,7 +33,7 @@ class FaSocketClass {
 	 * @constructor
 	 */
 	get Router() {
-		return this._Router;
+		return this._FaRouterClass;
 	}
 
 	/**
@@ -46,41 +46,35 @@ class FaSocketClass {
 		let context = this;
 		let _SocketIo;
 		_SocketIo = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
-		_SocketIo.on('connect', function (socket) {
-			// context._extendSocketListener(socket);
-			console.info(`trying: ${socket.id}`);
-			let onevent = socket.onevent;
-			socket.onevent = function (packet) {
-				let args = packet.data || [];
-				// original call
-				// onevent.call(this, packet);
-				packet.data = ["*"].concat(args);
-				// additional call to catch-all
-				onevent.call(this, packet);
-			};
+		_SocketIo.on("connect", function (socket) {
+			context._onSocket(socket);
 		});
-		_SocketIo.on('connection', function (socket) {
+		_SocketIo.on("connection", function (socket) {
 			context._onSocketConnect(socket);
-			socket.on('error', function (error) {
-				console.error(error);
-				socket.send(error);
-			});
-			socket.on('disconnect', function () {
-				context._onSocketDisconnect(socket);
-			});
-			// socket.emit('SERVER', 'HEY');
+			// socket.emit("SERVER", "HEY");
+			// context.message(socket, {a: 1, b: 2})
 		});
-		// server1.console.log(
-		// 	'FaServerSocket',
-		// 	'ws',
-		// 	this.Configuration.host,
-		// 	this.Configuration.port,
-		// 	this.Configuration.path
-		// );
 		console.log(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://{host}:{port} <{path}>`.replaceAll(Object.keys(FaHttp.Configuration).map(function (key) {
 			return `{${key}}`;
 		}), Object.values(FaHttp.Configuration)));
 		return _SocketIo;
+	}
+
+	/**
+	 * before socket connect
+	 * @param socket
+	 * @private
+	 */
+	_onSocket(socket) {
+		let onevent = socket.onevent;
+		socket.onevent = function (packet) {
+			let args = packet.data || [];
+			// original call
+			// onevent.call(this, packet);
+			packet.data = ["*"].concat(args);
+			// additional call to catch-all
+			onevent.call(this, packet);
+		};
 	}
 
 	/**
@@ -90,18 +84,23 @@ class FaSocketClass {
 	 */
 	_onSocketConnect(socket) {
 		let context = this;
-		console.info(`listening: ${socket.id}`);
-		// let cookie = require('cookie');
+		// let cookie = require("cookie");
 		// let cookies = cookie.parse(socket.handshake.headers.cookie);
-		socket.on('*', function (event, data, callback) {
+		console.info(`socket connect: ${socket.id}`);
+		socket.on("*", function (event, data, callback) {
 			let handler = context.Router.find(event);
 			if (handler) {
 				context._handleRouter(socket, event, handler, data, callback);
 			} else {
-				// let error = new FaError(`route not found: ${event}`);
-				// socket.emit('error', error);
-				socket.emit('error', FaError.pickTrace(`route not found: ${event}`, 1));
+				socket.emit("error", FaError.pickTrace(`undefined handler for route: ${event}`, 1));
 			}
+		});
+		socket.on("error", function (error) {
+			console.error(error);
+			socket.send(error);
+		});
+		socket.on("disconnect", function () {
+			context._onSocketDisconnect(socket);
 		});
 	}
 
@@ -110,30 +109,30 @@ class FaSocketClass {
 	 * @private
 	 */
 	_onSocketDisconnect(socket) {
-		console.info(`disconnect: ${socket.id}`);
+		console.info(`socket disconnect: ${socket.id}`);
 	}
 
+	/**
+	 *
+	 * @param socket
+	 * @param event
+	 * @param handler
+	 * @param data
+	 * @param callback
+	 * @private
+	 */
 	_handleRouter(socket, event, handler, data, callback) {
-		// server1.console.log(event);
 		try {
-			let result = handler.call(this, {data: data, socket: socket});
+			console.info(`socket event: ${event}`);
+			let result = handler.apply(this, [data, socket]);
 			if (callback) {
 				callback(result);
 			} else if (result) {
 				socket.emit(event, result);
 			}
 		} catch (e) {
-			socket.emit('error', FaError.pickTrace(e, 0));
+			socket.emit("error", FaError.pickTrace(e, 0));
 		}
-	}
-
-	/**
-	 *
-	 * @param socket {object}
-	 * @param data {*}
-	 */
-	message(socket, data) {
-		socket.send(data);
 	}
 
 	/**
@@ -145,21 +144,30 @@ class FaSocketClass {
 	emit(socket, event, data) {
 		socket.emit(event, data);
 	}
+
+	/**
+	 *
+	 * @param socket {object}
+	 * @param data {*}
+	 */
+	message(socket, data) {
+		socket.send(data);
+	}
 }
 
-// let os = require('os');
+// let os = require("os");
 // let ifaces = os.networkInterfaces();
 // server1.console.info(ifaces);
 // Object.keys(ifaces).forEach(function (ifname) {
 // 	let alias = 0;
 // 	ifaces[ifname].forEach(function (iface) {
-// 		if ('IPv4' !== iface.family || iface.internal !== false) {
+// 		if ("IPv4" !== iface.family || iface.internal !== false) {
 // 			// skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
 // 			return;
 // 		}
 // 		if (alias >= 1) {
 // 			// this single interface has multiple ipv4 addresses
-// 			consoleLog(ifname + ':' + alias, iface.address);
+// 			consoleLog(ifname + ":" + alias, iface.address);
 // 		} else {
 // 			// this interface has only one ipv4 adress
 // 			consoleLog(ifname, iface.address);

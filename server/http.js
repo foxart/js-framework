@@ -6,7 +6,7 @@ const MimeTypes = require('mime-types');
 const Url = require('url');
 /*fa*/
 const FaError = require('../base/error');
-const FaConsoleColor = require('../console/console-color');
+const FaConsoleColor = require('../console/console-helper');
 const FaConverterClass = require('../base/converter');
 const FaHttpRequestClass = require('./http-request');
 const FaHttpResponseClass = require('./http-response');
@@ -24,6 +24,11 @@ class FaHttpClass {
 		this._FaFileClass = require('../base/file')(this.Configuration.path);
 		this._FaAssetsRouterClass = require('../base/router')(this);
 		this._FaRouterClass = require('../base/router')(this);
+		/**
+		 *
+		 * @type {module.FaHttpRequestClass}
+		 * @private
+		 */
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpStatusCode = new FaHttpStatusCode();
@@ -124,7 +129,7 @@ class FaHttpClass {
 		});
 		req.on('end', function () {
 			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
-				// server1.console.warn(result.headers, result.status);
+				// console.warn(result.headers, result.status);
 				context._respondHttp(req, res, result);
 			});
 		});
@@ -140,35 +145,34 @@ class FaHttpClass {
 	_respondHttp(req, res, FaHttpResponse) {
 		if (FaHttpResponse.headers['Content-Type'] === null) {
 			if (req.headers.accept) {
-				if (req.headers.accept.indexOf(this._FaHttpContentType.json) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.json;
-				} else if (req.headers.accept.indexOf(this._FaHttpContentType.html) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.html;
-				} else if (req.headers.accept.indexOf(this._FaHttpContentType.urlencoded) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.urlencoded;
-				} else if (req.headers.accept.indexOf(this._FaHttpContentType.xml) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.xml;
+				if (req.headers.accept.indexOf(this.type.json) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this.type.json;
+				} else if (req.headers.accept.indexOf(this.type.html) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this.type.html;
+				} else if (req.headers.accept.indexOf(this.type.urlencoded) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this.type.urlencoded;
+				} else if (req.headers.accept.indexOf(this.type.xml) !== -1) {
+					FaHttpResponse.headers['Content-Type'] = this.type.xml;
 				} else {
-					FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.html;
+					FaHttpResponse.headers['Content-Type'] = this.type.html;
 				}
 			} else {
-				FaHttpResponse.headers['Content-Type'] = this._FaHttpContentType.html;
+				FaHttpResponse.headers['Content-Type'] = this.type.html;
 			}
 		}
 		// let accepts = require('accepts');
 		// let accept = accepts(req);
-		// server1.console.log(accept.type('json'));
 		switch (!FaHttpResponse.content.byteLength && FaHttpResponse.headers['Content-Type']) {
-			case this._FaHttpContentType.json:
+			case this.type.json:
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
 				break;
-			case this._FaHttpContentType.html:
+			case this.type.html:
 				FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
 				break;
-			case this._FaHttpContentType.urlencoded:
+			case this.type.urlencoded:
 				FaHttpResponse.content = this.Converter.toUrlencoded(FaHttpResponse.content);
 				break;
-			case this._FaHttpContentType.xml:
+			case this.type.xml:
 				FaHttpResponse.content = this.Converter.toXml(FaHttpResponse.content);
 				break;
 			// default:
