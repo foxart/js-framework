@@ -19,6 +19,8 @@ const FaHttpStatusCode = require("./http-status-code");
  */
 class FaHttpClass {
 	constructor(configuration) {
+		this.name = "FaHttp";
+		this.folder = "controllers";
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		this._FaFileClass = require('../base/file')(this.Configuration.path);

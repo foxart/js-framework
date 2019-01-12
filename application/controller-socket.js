@@ -1,6 +1,5 @@
 "use strict";
 
-// const FaError = require('../server1.base/error');
 class FaControllerSocket {
 	/**
 	 *
@@ -8,6 +7,7 @@ class FaControllerSocket {
 	 * @param namespace {string}
 	 */
 	constructor(SocketIo, namespace) {
+		this.name = "FaControllerSocket";
 		/**
 		 *
 		 * @type {FaSocketClass}

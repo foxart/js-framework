@@ -134,9 +134,9 @@ exports.wrapError = function (name, message, stack, trace, tab, show_color) {
 	}
 	trace.forEach(function (item) {
 		if (show_color) {
-			trace_list.push(`\n${tab}${FCH.color.magenta}${item['method']} ${FCH.effect.reset}${FCH.effect.dim}${item['path']}${FCH.effect.reset}:${FCH.color.cyan}${item['line']}${FCH.effect.reset}:${FCH.color.white}${item['column']}${FCH.effect.reset}`);
+			trace_list.push(`\n${tab}| ${FCH.color.magenta}${item['method']} ${FCH.effect.reset}${FCH.effect.dim}${item['path']}${FCH.effect.reset}:${FCH.color.cyan}${item['line']}${FCH.effect.reset}:${FCH.color.white}${item['column']}${FCH.effect.reset}`);
 		} else {
-			trace_list.push(`\n${tab}${item['method']} ${item['path']}:${item['line']}:${item['column']}`);
+			trace_list.push(`\n| ${tab}${item['method']} ${item['path']}:${item['line']}:${item['column']}`);
 		}
 	});
 	trace = trace_list.join('');

@@ -14,8 +14,10 @@ class FaSocketClass {
 	 * @param FaHttp {FaHttpClass}
 	 */
 	constructor(FaHttp) {
-		this._configuration = FaHttp.Configuration;
-		this._FaRouterClass = require("../base/router")(this);
+		this.name = "FaSocket";
+		this.folder = "sockets";
+		this._FaSocketConfigurationClass = FaHttp.Configuration;
+		this._FaRouterClass = require("fa-nodejs/base/router")(this);
 		this.SocketIo = this._createSocket(FaHttp);
 	}
 
@@ -24,7 +26,7 @@ class FaSocketClass {
 	 * @return {{path: string, serveClient: boolean, cookie: boolean, pingInterval: number, pingTimeout: number}}
 	 */
 	get Configuration() {
-		return this._configuration;
+		return this._FaSocketConfigurationClass;
 	};
 
 	/**
@@ -34,6 +36,18 @@ class FaSocketClass {
 	 */
 	get Router() {
 		return this._FaRouterClass;
+	}
+
+	_logConfiguration() {
+		console.info(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://${this.Configuration.host}:${this.Configuration.port} <${this.Configuration.path}>`);
+	}
+
+	_logMessage(socket, message) {
+		if (socket.id) {
+			console.log(`socket ${message}: ${FaConsoleColor.effect.bold}${socket.id}${FaConsoleColor.effect.reset}`);
+		} else {
+			console.log(`socket ${message}`);
+		}
 	}
 
 	/**
@@ -47,16 +61,20 @@ class FaSocketClass {
 		let _SocketIo;
 		_SocketIo = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
 		_SocketIo.on("connect", function (socket) {
-			context._onSocket(socket);
+			context._extendSocket(socket);
 		});
 		_SocketIo.on("connection", function (socket) {
 			context._onSocketConnect(socket);
+			socket.on("error", function (error) {
+				context._onSocketError(socket, error)
+			});
+			socket.on("disconnect", function () {
+				context._onSocketDisconnect(socket);
+			});
 			// socket.emit("SERVER", "HEY");
 			// context.message(socket, {a: 1, b: 2})
 		});
-		console.log(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://{host}:{port} <{path}>`.replaceAll(Object.keys(FaHttp.Configuration).map(function (key) {
-			return `{${key}}`;
-		}), Object.values(FaHttp.Configuration)));
+		this._logConfiguration();
 		return _SocketIo;
 	}
 
@@ -65,51 +83,22 @@ class FaSocketClass {
 	 * @param socket
 	 * @private
 	 */
-	_onSocket(socket) {
+	_extendSocket(socket) {
+		let context = this;
 		let onevent = socket.onevent;
 		socket.onevent = function (packet) {
 			let args = packet.data || [];
-			// original call
-			// onevent.call(this, packet);
 			packet.data = ["*"].concat(args);
-			// additional call to catch-all
 			onevent.call(this, packet);
 		};
-	}
-
-	/**
-	 *
-	 * @param socket {object}
-	 * @private
-	 */
-	_onSocketConnect(socket) {
-		let context = this;
-		// let cookie = require("cookie");
-		// let cookies = cookie.parse(socket.handshake.headers.cookie);
-		console.info(`socket connect: ${socket.id}`);
 		socket.on("*", function (event, data, callback) {
 			let handler = context.Router.find(event);
 			if (handler) {
 				context._handleRouter(socket, event, handler, data, callback);
 			} else {
-				socket.emit("error", FaError.pickTrace(`undefined handler for route: ${event}`, 1));
+				context._onSocketError(socket, FaError.pickTrace(`undefined handler for event: ${event}`, 1));
 			}
 		});
-		socket.on("error", function (error) {
-			console.error(error);
-			socket.send(error);
-		});
-		socket.on("disconnect", function () {
-			context._onSocketDisconnect(socket);
-		});
-	}
-
-	/**
-	 * @param socket {object}
-	 * @private
-	 */
-	_onSocketDisconnect(socket) {
-		console.info(`socket disconnect: ${socket.id}`);
 	}
 
 	/**
@@ -122,8 +111,8 @@ class FaSocketClass {
 	 * @private
 	 */
 	_handleRouter(socket, event, handler, data, callback) {
+		// console.info(`socket event: ${event}`);
 		try {
-			console.info(`socket event: ${event}`);
 			let result = handler.apply(this, [data, socket]);
 			if (callback) {
 				callback(result);
@@ -131,8 +120,37 @@ class FaSocketClass {
 				socket.emit(event, result);
 			}
 		} catch (e) {
-			socket.emit("error", FaError.pickTrace(e, 0));
+			this._onSocketError(socket, FaError.pickTrace(e, 0));
 		}
+	}
+
+	/**
+	 *
+	 * @param socket {object}
+	 * @private
+	 */
+	_onSocketConnect(socket) {
+		this._logMessage(socket, "connect");
+	}
+
+	/**
+	 *
+	 * @param socket {object}
+	 * @private
+	 */
+	_onSocketDisconnect(socket) {
+		this._logMessage(socket, "disconnect");
+	}
+
+	/**
+	 *
+	 * @param socket {object}
+	 * @param error
+	 * @private
+	 */
+	_onSocketError(socket, error) {
+		console.error(error);
+		socket.send(error);
 	}
 
 	/**

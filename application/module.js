@@ -7,29 +7,32 @@ const FaFile = require("../base/file")();
  * @type {FaModule}
  */
 class FaModule {
+	/**
+	 *
+	 * @param parent {FaHttpClass | FaSocketClass}
+	 * @param configuration
+	 */
 	constructor(parent, configuration) {
 		this._controller_list = {};
 		for (const [key, value] of Object.entries(configuration["routes"])) {
-			// console.warn(parent.HttpServer !== undefined, parent.SocketIo !== undefined);
 			let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
-			let path = `${namespace}/${parent.HttpServer !== undefined ? "controllers" : "sockets"}/${value["controller"]}.js`;
+			let path = `${namespace}/${parent.folder}/${value["controller"]}.js`;
 			if (FaFile.existFilename(path)) {
-				let Controller = this._controllerLoad(parent, path, namespace);
+				let Controller = this._load(parent, path, namespace);
 				if (Controller[value["action"]]) {
-					parent.Router.attach(key, function (req) {
-						// console.warn(value["action"]);
-						return Controller[value["action"]](req);
+					parent.Router.attach(key, function () {
+						return Controller[value["action"]].apply(Controller, arguments);
 					});
 				} else {
-					console.error(FaError.pickTrace(`${value["controller"]} action not implemented: ${value["action"]}`, 2));
+					console.error(FaError.pickTrace(`not implemented controller action: <${path}->${value["action"]}()>`, 3));
 				}
 			} else {
-				console.error(FaError.pickTrace(`${value["controller"]} controller not found: ${path}`, 2));
+				console.error(FaError.pickTrace(`not found controller: <${path}>`, 2));
 			}
 		}
 	}
 
-	get controllerList() {
+	get list() {
 		return Object.keys(this._controller_list);
 	}
 
@@ -39,7 +42,7 @@ class FaModule {
 	 * @return {*}
 	 * @private
 	 */
-	_controllerGet(index) {
+	_get(index) {
 		return this._controller_list[index];
 	}
 
@@ -49,7 +52,7 @@ class FaModule {
 	 * @param controller {FaControllerClass}
 	 * @private
 	 */
-	_controllerSet(index, controller) {
+	_set(index, controller) {
 		this._controller_list[index] = controller;
 	}
 
@@ -59,49 +62,19 @@ class FaModule {
 	 * @return {boolean}
 	 * @private
 	 */
-	_controllerFind(index) {
+	_find(index) {
 		return !!this._controller_list[index];
 	}
 
-	_controllerLoad(parent, path, namespace) {
-		if (this._controllerFind(path) === false) {
-			// let ControllerHttp = FaFile.readStringSync(`${namespace}/controllers/${value["controller"]}.js`);
-			// server1.console.log(File);
+	_load(parent, path, namespace) {
+		if (this._find(path) === false) {
 			let ControllerClass = require(path);
 			let Controller = new ControllerClass(parent, namespace);
-			this._controllerSet(path, Controller);
+			this._set(path, Controller);
 			return Controller;
 		} else {
-			return this._controllerGet(path);
+			return this._get(path);
 		}
-	}
-
-	/**
-	 *
-	 * @param FaHttpClass {FaHttpClass}
-	 * @param configuration {Object}
-	 */
-	// handleHttpRoutes(FaHttpClass, configuration) {
-	// 	for (const [key, value] of Object.entries(configuration["routes"])) {
-	// 		let namespace = value['namespace'] ? `${process.cwd()}/${value["namespace"]}` : `${process.cwd()}/${configuration["namespace"]}`;
-	// 		let path = `${namespace}/controllers/${value["controller"]}.js`;
-	// 		if (FaFile.existFilename(path)) {
-	// 			let Controller = this._controllerLoad(FaHttpClass, path, namespace);
-	// 			if (Controller[value["action"]]) {
-	// 				FaHttpClass.Router.attach(key, function (req) {
-	// 					server1.console.error(value["action"]);
-	// 					return Controller[value["action"]](req);
-	// 				});
-	// 			} else {
-	// 				server1.console.error(FaError.pickTrace(`${value["controller"]} action not implemented: ${value["action"]}`, 2));
-	// 			}
-	// 		} else {
-	// 			server1.console.error(FaError.pickTrace(`${value["controller"]} controller not found: ${path}`, 2));
-	// 		}
-	// 	}
-	// }
-	handleSocketRoutes(FaHttpClass, configuration) {
-		console.error(arguments);
 	}
 }
 

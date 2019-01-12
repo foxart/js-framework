@@ -47,6 +47,7 @@ class FaTemplateClass {
 	 * @return {FaTemplateClass}
 	 */
 	load(filename) {
+		// console.error(this._File.fullname(filename));
 		try {
 			this.set = this._File.readStringSync(`${filename}.tpl`);
 		} catch (e) {
