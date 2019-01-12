@@ -1,6 +1,6 @@
 !.gitignore
 package-lock.json
 .attach_pid*
-#*.sh
+*.iml
 /.idea
 /node_modules

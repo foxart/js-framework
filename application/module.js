@@ -27,7 +27,7 @@ class FaModule {
 					console.error(FaError.pickTrace(`not implemented controller action: <${path}->${value["action"]}()>`, 3));
 				}
 			} else {
-				console.error(FaError.pickTrace(`not found controller: <${path}>`, 2));
+				console.error(FaError.pickTrace(`not found controller: <${path}>`, 3));
 			}
 		}
 	}
