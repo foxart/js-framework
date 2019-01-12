@@ -22,7 +22,6 @@
     "qs": "^6.6.0",
     "sharp": "^0.20.8",
     "socket.io": "^2.1.1",
-    "socket.io-client": "^2.1.1",
     "stack-trace": "0.0.10",
     "targz": "^1.0.1",
     "utils-extend": "^1.0.8",
