@@ -182,6 +182,7 @@ exports.wrapFunction = function (data, tab, show_color, show_type) {
 	let type = show_type ? getType('Function', null, show_color) : '';
 	let content;
 	if (show_color) {
+		// data = data.toString().replace(/\t/g, `${tab}`);
 		content = data.toString().replace(/\n/g, `\n${FCH.color.cyan}${tab}`);
 		return `${type}${FCH.color.cyan}${content}${FCH.effect.reset}`;
 	} else {
