@@ -1,9 +1,11 @@
 .gitignore
 .npmignore
+##FOLDERS
+.idea
+node_modules
+##FILES
 package.json
 package-lock.json
 .attach_pid*
 *.iml
 *.sh
-/.idea
-/node_modules

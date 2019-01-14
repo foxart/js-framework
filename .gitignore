@@ -1,6 +1,7 @@
 !.gitignore
-package-lock.json
+##FOLDERS
+.idea
+node_modules
+##FILES
 .attach_pid*
 *.iml
-/.idea
-/node_modules
