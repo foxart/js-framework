@@ -178,5 +178,4 @@ exports.wrapHtml = function (data) {
 //type
 //typeConsole
 //typeHtml
-
-
+// alert(1);
