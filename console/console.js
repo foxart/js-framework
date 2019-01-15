@@ -3,44 +3,37 @@
 const FaBeautify = require('../beautify');
 const FCH = require('./console-helper');
 const FaTrace = require('../base/trace');
-/*variables*/
-let clear = console.clear;
-let log = console.log;
-let info = console.info;
-let error = console.error;
-let warn = console.warn;
 /**
  *
  * @type {{warn: string, log: string, error: string, info: string}}
  */
 let templateTime = {
-	log: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
-	info: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
-	warn: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
-	error: `[${FCH.effect.dim}{time}${FCH.effect.reset}]`,
+	log: `${FCH.color.white}[${FCH.effect.dim}{time}${FCH.effect.reset}${FCH.color.white}]`,
+	info: `${FCH.color.white}[${FCH.effect.dim}{time}${FCH.effect.reset}${FCH.color.white}]`,
+	warn: `${FCH.color.white}[${FCH.effect.dim}{time}${FCH.effect.reset}${FCH.color.white}]`,
+	error: `${FCH.color.white}[${FCH.effect.dim}{time}${FCH.effect.reset}${FCH.color.white}]`,
 };
 /**
  *
  * @type {{warn: string, log: string, error: string, info: string}}
  */
-// let templateSign = {
+// let templateType = {
 // 	log: `${FCH.bg.green}${FCH.color.white} ${FCH.sign.check} ${FCH.effect.reset}`,
 // 	info: `${FCH.bg.cyan}${FCH.color.white} ${FCH.sign.excl} ${FCH.effect.reset}`,
 // 	warn: `${FCH.bg.yellow}${FCH.color.white} ${FCH.sign.quest} ${FCH.effect.reset}`,
 // 	error: `${FCH.bg.red}${FCH.color.white} ${FCH.sign.cross} ${FCH.effect.reset}`,
 // };
-let templateSign = {
-	log: `[${FCH.effect.bold}${FCH.color.black}LOG${FCH.effect.reset}]`,
-	info: `[${FCH.effect.bold}${FCH.color.cyan}INF${FCH.effect.reset}]`,
-	warn: `[${FCH.effect.bold}${FCH.color.yellow}WRN${FCH.effect.reset}]`,
-	error: `[${FCH.effect.bold}${FCH.color.red}ERR${FCH.effect.reset}]`,
+let templateType = {
+	log: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.white}LOG${FCH.effect.reset}${FCH.color.white}]`,
+	info: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.cyan}INF${FCH.effect.reset}${FCH.color.white}]`,
+	warn: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.yellow}WRN${FCH.effect.reset}${FCH.color.white}]`,
+	error: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.red}ERR${FCH.effect.reset}${FCH.color.white}]`,
 };
 /**
  *
  * @type {{warn: string, log: string, error: string, info: string}}
  */
 let templatePath = {
-	// log: `${FCH.color.white}{path}${FCH.effect.reset}`,
 	log: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
 	info: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
 	warn: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
@@ -61,58 +54,120 @@ let templateLine = {
  * @type {{warn: string, log: string, error: string, info: string}}
  */
 let template = {
-	log: `${templateTime.log} ${templateSign.log} ${templatePath.log}${templateLine.log} {data}`,
-	info: `${templateTime.info} ${templateSign.info} ${templatePath.info}${templateLine.info} {data}`,
-	warn: `${templateTime.warn} ${templateSign.warn} ${templatePath.warn}${templateLine.warn} {data}`,
-	error: `${templateTime.error} ${templateSign.error} ${templatePath.error}${templateLine.error} {data}`,
+	log: `${templateTime.log} ${templateType.log} ${templatePath.log}${templateLine.log} {data}`,
+	info: `${templateTime.info} ${templateType.info} ${templatePath.info}${templateLine.info} {data}`,
+	warn: `${templateTime.warn} ${templateType.warn} ${templatePath.warn}${templateLine.warn} {data}`,
+	error: `${templateTime.error} ${templateType.error} ${templatePath.error}${templateLine.error} {data}`,
 };
-
-/**
- *
- * @param data
- * @return {*}
- * @private
- */
-function _arguments(data) {
-	return data.length === 1 ? data[0] : data
-}
-
-/**
- *
- * @param data {*}
- * @param template {string}
- * @private
- */
-function _console(data, template) {
-	let trace = FaTrace.get(new Error().stack, 2);
-	let time = new Date().toLocaleTimeString();
-	let path = trace['path'] ? trace['path'].replace(process.cwd(), '') : trace['path'];
-	let line = trace["line"];
-	let column = trace["column"];
-	let string = template.replaceAll([
-			'{time}', '{path}', '{line}', '{column}', '{data}',
-		], [
-			time, path, line, column, data,
-		]
-	);
-	log(string);
-}
-
+const Console = {
+	log: console.log,
+	info: console.info,
+	warn: console.warn,
+	error: console.error,
+};
 console.clear = function () {
 	process.stdout.write('\x1Bc');
 };
-console.log = function () {
-	_console(FaBeautify.extendedColor(_arguments(arguments)), template.log);
-};
-console.info = function () {
-	_console(FaBeautify.extendedColor(_arguments(arguments)), template.info);
-};
-console.warn = function () {
-	_console(FaBeautify.extendedColor(_arguments(arguments)), template.warn);
-};
-console.error = function () {
-	_console(FaBeautify.extendedColor(_arguments(arguments)), template.error);
-};
-console.write = function () {
-	log(FaBeautify.plainColor(_arguments(arguments)));
+
+console.write = console.log;
+
+class FaConsoleClass {
+	/**
+	 *
+	 * @param type {string|null}
+	 */
+	constructor(type = null) {
+		this._wrapConsole(this._getWrapper(type))
+	}
+
+	/**
+	 *
+	 * @param wrapper {function}
+	 * @private
+	 */
+	_wrapConsole(wrapper) {
+		let context = this;
+		console.log = function () {
+			context._log(wrapper.call(this, context._extractArguments(arguments)), template.log);
+		};
+		console.info = function () {
+			context._log(wrapper.call(this, context._extractArguments(arguments)), template.info);
+		};
+		console.warn = function () {
+			context._log(wrapper.call(this, context._extractArguments(arguments)), template.warn);
+		};
+		console.error = function () {
+			context._log(wrapper.call(this, context._extractArguments(arguments)), template.error);
+		};
+
+	}
+
+	/**
+	 *
+	 * @param data
+	 * @return {*}
+	 * @private
+	 */
+	_extractArguments(data) {
+		return data.length === 1 ? data[0] : data
+	}
+
+	/**
+	 *
+	 * @param type
+	 * @return {function}
+	 * @private
+	 */
+	_getWrapper(type) {
+		switch (type) {
+			case "wrap":
+				return FaBeautify.wrap;
+			case "wrap-console":
+				return FaBeautify.wrapConsole;
+			case "wrap-console-type":
+				return FaBeautify.wrapConsoleType;
+			case "wrap-html":
+				return FaBeautify.wrapHtml;
+			case "wrap-html-type":
+				return FaBeautify.wrapHtmlType;
+			default:
+				return FaBeautify.wrap;
+		}
+	}
+
+	/**
+	 *
+	 * @param data
+	 * @param template
+	 * @private
+	 */
+	_log(data, template) {
+		let trace = FaTrace.get(new Error().stack, 2);
+		let time = new Date().toLocaleTimeString();
+		let path = trace['path'] ? trace['path'].replace(process.cwd(), '') : trace['path'];
+		let line = trace["line"];
+		let column = trace["column"];
+		let string = template.replaceAll([
+				'{time}', '{path}', '{line}', '{column}', '{data}',
+			], [
+				time, path, line, column, data,
+			]
+		);
+		Console.log(string);
+	}
+
+
+}
+
+/**
+ *
+ * @param type {string|null}
+ * @return {FaConsoleClass}
+ */
+module.exports = function (type = null) {
+	if (type) {
+		return new FaConsoleClass(type);
+	} else {
+		return FaConsoleClass;
+	}
 };
