@@ -2,9 +2,9 @@
 /*node*/
 const FastXmlParser = require('fast-xml-parser');
 const FileType = require('file-type');
-// const Buffer = require("buffer").Buffer;
+const Buffer = require("buffer").Buffer;
 /*fa*/
-const wrapper = require('./wrap');
+const wrapper = require('./wrapDeprecated');
 
 /**
  *
@@ -148,7 +148,7 @@ function beautify(data, level, circular, color, type) {
 		return wrapper.wrapDate(data, color, type);
 		// } else if (!isNaN(Date.parse(data))) {
 		// 	/*date*/
-		// 	return wrapper.wrapDate(new Date(data), server1.color, type);
+		// 	return wrapper.date(new Date(data), server1.color, type);
 	} else if (typeof data === 'function') {
 		// function
 		return wrapper.wrapFunction(data, getTab(level), color, type);
@@ -260,7 +260,7 @@ function newStringify(object, level, wrapper) {
 	let bl = Array.isArray(object) ? "[" : "{";
 	let br = Array.isArray(object) ? "]" : "}";
 	let nl = '\r\n';
-	let tab = getTab(level + 1);
+	let tab = wrapper.getTab(level);
 	let result = `${bl}${nl}${tab}`;
 	level++;
 	for (let keys = Object.keys(object), i = 0, end = keys.length - 1; i <= end; i++) {
@@ -270,11 +270,9 @@ function newStringify(object, level, wrapper) {
 			result += `${keys[i]}: ${newBeautify(object[keys[i]], level, false, wrapper)}`;
 		}
 		if (i !== end) {
-			// result = `${result},${nl}${tab}`;
 			result += `,${nl}${tab}`;
 		}
 	}
-	// result = `${result}${nl}${getTab(level - 1)}${br}`;
 	result += `${nl}${getTab(level - 1)}${br}`;
 	return result;
 }
@@ -282,79 +280,89 @@ function newStringify(object, level, wrapper) {
 function newBeautify(data, level, circular, wrapper) {
 	level = level === undefined ? 0 : level;
 	if (circular === true) {
-		return wrapper.wrapCircular(data, Object.keys(data).length);
+		return wrapper.circular(data, Object.keys(data).length);
 	} else if (data === null) {
 		/*null*/
-		return wrapper.wrapNull(data);
+		return wrapper.null(data);
 	} else if (Array.isArray(data)) {
-		return wrapper.wrapArray(newStringify(data, level, wrapper), data.length);
+		return wrapper.array(newStringify(data, level, wrapper), data.length);
 	} else if (typeof data === 'boolean') {
 		/*bool*/
-		return wrapper.wrapBool(data);
+		return wrapper.bool(data);
 	} else if (typeof data === 'number' && data % 1 === 0) {
 		/*int*/
-		return wrapper.wrapInt(data);
+		return wrapper.int(data);
 	} else if (typeof data === 'number' && data % 1 !== 0) {
 		/*float*/
-		return wrapper.wrapFloat(data);
+		return wrapper.float(data);
 	} else if (data instanceof Date) {
 		/*date*/
-		return wrapper.wrapDate(data);
+		return wrapper.date(data);
 		// } else if (!isNaN(Date.parse(data))) {
 		// 	/*date*/
-		// 	return wrapper.wrapDate(new Date(data), server1.color);
+		// 	return wrapper.date(new Date(data), server1.color);
 	} else if (typeof data === 'function') {
 		/*function*/
-		return wrapper.wrapFunction(data, level);
+		return wrapper.function(data, data.toString().length, level);
 	} else if (data instanceof Error) {
 		/*error*/
-		return wrapper.wrapError( data, level + 1);
+		return wrapper.error(data, level );
 	} else if (typeof data === 'object') {
 		try {
 			if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {
 				/*mongo*/
-				return wrapper.wrapMongoId(data);
+				return wrapper.mongo(data);
 			} else if (data instanceof RegExp) {
 				/*regexp*/
-				return wrapper.wrapRegExp(data.toString());
+				return wrapper.regular(data.toString());
 			} else if (data.byteLength) {
 				//todo rewrite to true type detection
 				/*image*/
-				return wrapper.wrapImage(FileType(data).mime, data.byteLength);
+				return wrapper.file(FileType(data).mime, data.byteLength);
 			} else {
 				/*object*/
-				return wrapper.wrapObject(newStringify(data, level, wrapper), Object.keys(data).length);
+				return wrapper.object(newStringify(data, level, wrapper), Object.keys(data).length);
 			}
 		} catch (e) {
 			/*object*/
-			return wrapper.wrapObject(newStringify(data, level, wrapper), Object.keys(data).length);
+			return wrapper.object(newStringify(data, level, wrapper), Object.keys(data).length);
 		}
 	} else if (typeof data === 'string') {
 		if (checkJson(data)) {
 			/*json*/
-			return wrapper.wrapJson(newBeautify(JSON.parse(data), level, false, wrapper), data.length);
+			return wrapper.json(newBeautify(JSON.parse(data), level, false, wrapper), data.length);
 		} else if (checkXml(data)) {
 			/*xml*/
-			return wrapper.wrapXml(newBeautify(FastXmlParser.parse(data, {}), level, false, wrapper), data.length);
+			return wrapper.xml(newBeautify(FastXmlParser.parse(data, {}), level, false, wrapper), data.length);
 		} else if (FileType(Buffer.from(data, 'base64'))) {
-			/*image*/
-			return wrapper.wrapFile(FileType(Buffer.from(data, 'base64')).mime, data.length);
+			/*file*/
+			let file = Buffer.from(data, 'base64');
+			return wrapper.file(FileType(file).mime, file.byteLength);
 		} else {
 			/*string*/
-			return wrapper.wrapString(data, level);
+			return wrapper.string(data, data.length, level);
 		}
 	} else {
 		/*undefined*/
-		return wrapper.wrapUndefined(data);
+		return wrapper.undefined(data);
 	}
 }
 
-const PlainConsole = require("./plain-console");
-const TypeConsole = require("./type-console");
+const Wrap = require("./wrap");
+const WrapConsole = require("./wrap-console");
+const WrapConsoleType = require("./wrap-console-type");
 /*new*/
-exports.plainConsole = function (data) {
-	return newBeautify(data, 1, false, TypeConsole);
+
+exports.wrap = function (data) {
+	return newBeautify(data, 1, false, new Wrap());
 };
+exports.wrapConsole = function (data) {
+	return newBeautify(data, 1, false, new WrapConsole());
+};
+exports.wrapConsoleType = function (data) {
+	return newBeautify(data, 1, false, new WrapConsoleType());
+};
+
 //plain
 //plainConsole
 //plainHtml

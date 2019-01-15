@@ -231,18 +231,20 @@ module.exports = function (format) {
 	/**
 	 * trace error
 	 */
-	const
-		ModuleTrace = require('./~trace');
+	// const
+	// 	ModuleTrace = require('./~trace');
 	module.getError = function (error) {
-		if (Array.isArray(error.trace)) {
-			error.trace.push(ModuleTrace.extractString(ModuleTrace.getData(5)));
-		} else {
-			error.trace = [ModuleTrace.extractString(ModuleTrace.getData(5))];
-		}
+		// if (Array.isArray(error.trace)) {
+		// 	error.trace.push(ModuleTrace.extractString(ModuleTrace.getData(5)));
+		// } else {
+		// 	error.trace = [ModuleTrace.extractString(ModuleTrace.getData(5))];
+		// }
+		console.error(error);
 		return ({
 			name: error.name,
 			message: error.message,
-			trace: error.trace.reverse(),
+			// trace: error.trace.reverse(),
+			trace: error.message.stack,
 		});
 	};
 	/**
