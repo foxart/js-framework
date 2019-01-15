@@ -139,9 +139,11 @@ function beautify(data, level, circular, wrapper) {
 		} else if (checkXml(data)) {
 			/*xml*/
 			return wrapper.xml(beautify(FastXmlParser.parse(data, {}), level, false, wrapper), data.length);
-		} else if (FileType(Buffer.from(data, "base64"))) {
+		// } else if (FileType(Buffer.from(data, "base64"))) {
+		} else if (FileType(new Buffer(data, "base64"))) {
 			/*file*/
-			let file = Buffer.from(data, "base64");
+			// let file = Buffer.from(data, "base64");
+			let file = new Buffer(data, "base64");
 			return wrapper.file(FileType(file).mime, file.byteLength);
 		} else {
 			/*string*/
