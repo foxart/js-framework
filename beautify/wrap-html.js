@@ -49,12 +49,13 @@ class FaBeautifyWrapHtml extends FaBeautifyWrap {
 	};
 
 	int(data) {
-		return `${FCH.color.green}${super.int(data)}${FCH.effect.reset}`;
+		return `<span class="fa-beautify-int">${super.int(data)}</span>`;
 	};
 
 	mongo(data) {
-		return `${FCH.bg.blue} ${super.mongo(data)} ${FCH.effect.reset}`;
+		return `<span class="fa-beautify-mongo">${super.mongo(data)} ${FCH.effect.reset}`;
 	};
+	
 
 	null(data) {
 		return `${FCH.effect.bold}${FCH.color.white}${super.null(data)}${FCH.effect.reset}`;
@@ -69,7 +70,7 @@ class FaBeautifyWrapHtml extends FaBeautifyWrap {
 	};
 
 	string(data, length, level) {
-		return `${FCH.effect.reset}${FCH.color.white}${super.string(data, length, level)}${FCH.effect.reset}`;
+		return `<span class="fa-beautify-string">${super.string(data, length, level)}</span>`;
 	};
 
 	undefined(data) {

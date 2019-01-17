@@ -2,7 +2,7 @@
 /*modules*/
 const FaBeautify = require('../beautify');
 const FCH = require('./console-helper');
-const FaTrace = require('../base/trace');
+const FaError = require('../base/error');
 /**
  *
  * @type {{warn: string, log: string, error: string, info: string}}
@@ -34,10 +34,10 @@ let templateType = {
  * @type {{warn: string, log: string, error: string, info: string}}
  */
 let templatePath = {
-	log: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
-	info: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
-	warn: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
-	error: `${FCH.effect.dim}{path}${FCH.effect.reset}`,
+	log: `${FCH.color.white}{path}${FCH.effect.reset}`,
+	info: `${FCH.color.white}{path}${FCH.effect.reset}`,
+	warn: `${FCH.color.white}{path}${FCH.effect.reset}`,
+	error: `${FCH.color.white}{path}${FCH.effect.reset}`,
 };
 /**
  *
@@ -142,7 +142,7 @@ class FaConsoleClass {
 	 * @private
 	 */
 	_log(data, template) {
-		let trace = FaTrace.get(new Error().stack, 2);
+		let trace = FaError.pickTrace("console", 3).trace[0];
 		let time = new Date().toLocaleTimeString();
 		let path = trace['path'] ? trace['path'].replace(process.cwd(), '') : trace['path'];
 		let line = trace["line"];
