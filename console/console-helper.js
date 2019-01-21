@@ -1,3 +1,4 @@
+/*https://www.compart.com/en/unicode/category/So*/
 "use strict";
 /**
  *

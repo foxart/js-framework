@@ -55,7 +55,7 @@ exports.serve = function (context, token, data) {
 		console.log('unregistered idol handler: ' + token);
 	}
 };
-// function alignTo(element, align) {
+// function messageBody(element, align) {
 // 	if (element === undefined) {
 // 		element = 'undefined';
 // 	}
@@ -68,7 +68,7 @@ exports.serve = function (context, token, data) {
 // 	}
 // }
 // const LogHue = require('./log-hue');
-// consoleLog(!message ? '' : alignTo(message, alignCommon), {
+// consoleLog(!message ? '' : messageBody(message, alignCommon), {
 // 		server1.beautify: 'plain',
 // 		template: `${LogHue.background.black}${LogHue.server1.color.white} {timestamp} ${LogHue.effect.reset} {data} ${LogHue.effect.bold}${LogHue.server1.color.green}${sign.exist} ${LogHue.effect.reset} ${LogHue.server1.color.cyan}{filePath}${LogHue.server1.color.white}:${LogHue.server1.color.red}{lineNumber}${LogHue.effect.reset}`,
 // 	}

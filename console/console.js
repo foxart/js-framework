@@ -120,18 +120,18 @@ class FaConsoleClass {
 	 */
 	_getWrapper(type) {
 		switch (type) {
-			case "wrap":
-				return FaBeautify.wrap;
-			case "wrap-console":
-				return FaBeautify.wrapConsole;
-			case "wrap-console-type":
-				return FaBeautify.wrapConsoleType;
-			case "wrap-html":
-				return FaBeautify.wrapHtml;
-			case "wrap-html-type":
-				return FaBeautify.wrapHtmlType;
+			case "plain":
+				return FaBeautify.plain;
+			case "console":
+				return FaBeautify.console;
+			case "console-type":
+				return FaBeautify.consoleType;
+			case "html":
+				return FaBeautify.html;
+			case "html-type":
+				return FaBeautify.htmlType;
 			default:
-				return FaBeautify.wrap;
+				return FaBeautify.plain;
 		}
 	}
 

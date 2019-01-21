@@ -1,8 +1,10 @@
 "use strict";
 /*node*/
-const Buffer = require("buffer").Buffer;
+// const Buffer = require("buffer").Buffer;
 const FastXmlParser = require("fast-xml-parser");
 const FileType = require("file-type");
+/*fa*/
+const FaError = require("fa-nodejs/base/error");
 
 /**
  *
@@ -42,7 +44,6 @@ function checkXml(xml) {
 function stringify(object, level, wrapper) {
 	let memory = [];
 
-// console.log(callback);
 	function circular(object) {
 		if (object && typeof object === "object") {
 			if (memory.indexOf(object) !== -1) {
@@ -111,12 +112,12 @@ function beautify(data, level, circular, wrapper) {
 		return wrapper.function(data, data.toString().length, level);
 	} else if (data instanceof Error) {
 		/*error*/
-		return wrapper.error(data, level);
+		return wrapper.error(data, data["trace"] = data["trace"] ? data["trace"] : FaError.traceStack(data["stack"]), level);
 	} else if (typeof data === "object") {
 		try {
 			if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {
 				/*mongo*/
-				return wrapper.mongo(data);
+				return wrapper.mongoId(data);
 			} else if (data instanceof RegExp) {
 				/*regexp*/
 				return wrapper.regular(data.toString());
@@ -139,7 +140,7 @@ function beautify(data, level, circular, wrapper) {
 		} else if (checkXml(data)) {
 			/*xml*/
 			return wrapper.xml(beautify(FastXmlParser.parse(data, {}), level, false, wrapper), data.length);
-		// } else if (FileType(Buffer.from(data, "base64"))) {
+			// } else if (FileType(Buffer.from(data, "base64"))) {
 		} else if (FileType(new Buffer(data, "base64"))) {
 			/*file*/
 			// let file = Buffer.from(data, "base64");
@@ -155,27 +156,20 @@ function beautify(data, level, circular, wrapper) {
 	}
 }
 
-const Wrap = require("./wrap");
-const WrapConsole = require("./wrap-console");
-const WrapConsoleType = require("./wrap-console-type");
-const WrapHtml = require("./wrap-html");
+const FaBeautifyPlain = require("./plain");
+const FaBeautifyConsole = require("./console");
+const FaBeautifyConsoleType = require("./console-type");
+const FaBeautifyHtml = require("./html");
 /*new*/
-exports.wrap = function (data) {
-	return beautify(data, 1, false, new Wrap());
+exports.plain = function (data) {
+	return beautify(data, 1, false, new FaBeautifyPlain());
 };
-exports.wrapConsole = function (data) {
-	return beautify(data, 1, false, new WrapConsole());
+exports.console = function (data) {
+	return beautify(data, 1, false, new FaBeautifyConsole());
 };
-exports.wrapConsoleType = function (data) {
-	return beautify(data, 1, false, new WrapConsoleType());
+exports.consoleType = function (data) {
+	return beautify(data, 1, false, new FaBeautifyConsoleType());
 };
-exports.wrapHtml = function (data) {
-	return beautify(data, 1, false, new WrapHtml());
+exports.html = function (data) {
+	return beautify(data, 1, false, new FaBeautifyHtml());
 };
-//plain
-//plainConsole
-//plainHtml
-//type
-//typeConsole
-//typeHtml
-// alert(1);

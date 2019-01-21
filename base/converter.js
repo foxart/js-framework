@@ -125,7 +125,7 @@ class FaConverterClass {
 	 * @return {string}
 	 */
 	toHtml(data) {
-		return this.isString(data) ? data : FaBeautify.wrapHtml(data);
+		return this.isString(data) ? data : FaBeautify.html(data);
 	}
 }
 
