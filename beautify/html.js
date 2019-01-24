@@ -1,6 +1,6 @@
 "use strict";
 const FaBeautifyWrap = require("./wrap");
-const FaError = require("../base/error");
+// const FaError = require("../base/error");
 const FCH = require('../console/console-helper');
 
 class FaBeautifyWrapHtml extends FaBeautifyWrap {
@@ -85,17 +85,17 @@ class FaBeautifyWrapHtml extends FaBeautifyWrap {
 		return this.wrapData("date", data);
 	};
 
-	error(data, trace, level) {
-		// let context = this;
-		// let trace_list = [];
-		// let trace = data["trace"] ? data["trace"] : FaError.traceStack(data["stack"]);
-		// for (let keys = Object.keys(trace), i = 0, end = keys.length - 1; i <= end; i++) {
-		// 	// trace_list.push(`\n${context.getTab(level)}| ${FCH.color.white}${trace[keys[i]]['method']} </span>${FCH.effect.dim}${trace[keys[i]]['path']}</span>:${FCH.color.cyan}${trace[keys[i]]['line']}</span>:${FCH.color.white}${trace[keys[i]]['column']}</span>`);
-		// }
-		// trace = trace_list.join('');
-		// return `<span> ${data["message"]} </span>${trace}`;
-		return `${super.errorMessage(data["message"])}${super.errorTrace(trace, level)}`;
-	};
+	// error(data, trace, level) {
+	// 	// let context = this;
+	// 	// let trace_list = [];
+	// 	// let trace = data["trace"] ? data["trace"] : FaError.traceStack(data["stack"]);
+	// 	// for (let keys = Object.keys(trace), i = 0, end = keys.length - 1; i <= end; i++) {
+	// 	// 	// trace_list.push(`\n${context.getTab(level)}| ${FCH.color.white}${trace[keys[i]]['method']} </span>${FCH.effect.dim}${trace[keys[i]]['path']}</span>:${FCH.color.cyan}${trace[keys[i]]['line']}</span>:${FCH.color.white}${trace[keys[i]]['column']}</span>`);
+	// 	// }
+	// 	// trace = trace_list.join('');
+	// 	// return `<span> ${data["message"]} </span>${trace}`;
+	// 	return `${super.errorMessage(data["message"])}${super.errorTrace(trace, level)}`;
+	// };
 
 	file(data) {
 		return this.wrapData("file", data);

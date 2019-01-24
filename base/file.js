@@ -50,9 +50,14 @@ class FaFileClass {
 		return !!(Fs.existsSync(fullname) && Fs.lstatSync(fullname).isFile());
 	};
 
-	createPathSync(path, recursive = false) {
+	/**
+	 *
+	 * @param path {string}
+	 * @param options {Object}
+	 */
+	createPathSync(path, options) {
 		try {
-			Fs.mkdirSync(path, {recursive: recursive});
+			Fs.mkdirSync(path, options);
 		} catch (e) {
 			// if (e.code !== 'EEXIST') {
 			// }

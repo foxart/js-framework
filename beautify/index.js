@@ -4,7 +4,7 @@
 const FastXmlParser = require("fast-xml-parser");
 const FileType = require("file-type");
 /*fa*/
-const FaError = require("fa-nodejs/base/error");
+// const FaError = require("fa-nodejs/base/error");
 
 /**
  *
@@ -87,7 +87,7 @@ function getType(data) {
 			return "json";
 		} else if (isXml(data)) {
 			return "xml";
-		} else if (FileType(new Buffer(data, "base64"))) {
+		} else if (FileType(Buffer.from(data, "base64"))) {
 			return "file";
 		} else {
 			return "string";
@@ -155,7 +155,7 @@ function beautifyObject(data, type, wrapper, level) {
 			result += `${tab}${wrapper.wrapDataKey(keys[i], objectType, objectLength)}${beautify(object[keys[i]], wrapper, level)}`;
 		}
 		if (i === end) {
-			result += `${nl}${wrapper.getTab(level-1)}`;
+			result += `${nl}${wrapper.getTab(level - 1)}`;
 		} else {
 			result += `,${nl}`;
 		}
