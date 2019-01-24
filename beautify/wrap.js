@@ -1,43 +1,72 @@
 "use strict";
+const FileType = require("file-type");
 
 class FaBeautifyWrap {
 	getTab(level) {
-		return Array(level + 1).join("    ");
+		let result = "";
+		let tab = `    `;
+		for (let i = 0; i <= level - 1; i++) {
+			result += tab;
+		}
+		return result;
 	};
 
-	wrapType(type, length) {
-		// length = !length ? '' : `(${length})`;
-		// return `${type.capitalize()}${length} `;
+	wrapData(type, data, length) {
+		// return `${this.wrapDataType(type, length)}${this.wrapDataValue(type, data)}`;
+		// return `${this.wrapDataKey(data)}${this.wrapDataValue(type, data)}`;
+		return `${this.wrapDataValue(type, data)}`;
+	}
+
+	wrapDataKey(data) {
+		return `${data}: `;
+	}
+
+	wrapDataType(type, length) {
 		return "";
 	}
 
-	wrapData(type, data) {
-		let result = "";
+	wrapDataValue(type, data) {
 		switch (type) {
 			case "array":
-				result = `<[ ${data} ]>`;
-				break;
+				return `[${data}]`;
 			case "circular":
-				return `(circular)`;
+				return `<${type}>`;
+			case "buffer":
+				return `<${type}>`;
 			case "file":
-				result = `(${data})`;
-				break;
+				return `<${data}>`;
+			case "json":
+				return `{${data}}`;
 			case "object":
-				result = `<{ ${data} }>`;
-				break;
+				return `{${data}}`;
+			case "xml":
+				return `{${data}}`;
 			default:
-				result = `${data}`;
+				return `${data}`;
 		}
-		return result;
 	}
 
 	wrapError(type, data) {
 		let result = "";
 		switch (type) {
 			case "name":
-				return "";
+				result = `${data}: `;
+				break;
 			case "message":
-				return `<${data}>`;
+				result = `${data}`;
+				break;
+			case "method":
+				result = `${data}`;
+				break;
+			case "path":
+				result = `${data}`;
+				break;
+			case "line":
+				result = `${data}`;
+				break;
+			case "column":
+				result = `${data}`;
+				break;
 			default:
 				result = `${data}`;
 		}
@@ -48,26 +77,28 @@ class FaBeautifyWrap {
 		return data.toString().replaceAll(["\t", "\n"], [this.getTab(1), `\n${this.getTab(level)}`]);
 	};
 
-	array(data) {
-		return `${this.wrapType("array")}${this.wrapData("array", data)}`;
+	array(data, length) {
+		return this.wrapData("array", data, length);
 	};
 
 	bool(data) {
-		return `${this.wrapType("bool")}${this.wrapData("bool", data)}`;
+		return this.wrapData("bool", data);
+	};
+
+	buffer(data, length) {
+		return this.wrapData("buffer", data, length);
 	};
 
 	circular(data, length) {
-		return `${this.wrapType("circular", length)}${this.wrapData("circular", data)}`;
+		return this.wrapData("circular", data, length);
 	};
 
 	date(data) {
-		return `${this.wrapType("date")}${this.wrapData("date", data)}`;
+		return this.wrapData("date", data);
 	};
 
-	error(data, trace, level) {
-		let context = this;
-
-		function wrapTrace(data, level) {
+	error(data, level) {
+		function wrapTrace(trace, level) {
 			let result = [];
 			for (let keys = Object.keys(trace), i = 0, end = keys.length - 1; i <= end; i++) {
 				result.push(`\n${context.getTab(level)}| ${context.wrapError("method", trace[keys[i]]["method"])} ${context.wrapError("path", trace[keys[i]]["path"])}:${context.wrapError("line", trace[keys[i]]["line"])}:${context.wrapError("column", trace[keys[i]]["column"])}`);
@@ -75,55 +106,72 @@ class FaBeautifyWrap {
 			return result.join();
 		}
 
-		return `${this.wrapType("error", data["name"])}${this.wrapData("error", data["message"])}${wrapTrace(trace, level)}`;
+		let context = this;
+		let trace = data["trace"] ? data["trace"] : FaError.traceStack(data["stack"]);
+		// return `${this.wrapError("name", data["name"])}${this.wrapData("error", data["message"])}${wrapTrace(trace, level)}`;
+		return `${this.wrapError("name", data["name"])}${this.wrapError("message", data["message"])}${wrapTrace(trace, level)}`;
 	};
 
 	file(data) {
-		return `${this.wrapType("file")}${this.wrapData("file", data)}`;
+		let fileMime;
+		let fileLength;
+		if (data.byteLength) {
+			fileMime = FileType(data).mime;
+			fileLength = data.byteLength;
+		} else {
+			fileMime = FileType(Buffer.from(data, "base64")).mime;
+			fileLength = data.length;
+		}
+		return this.wrapData("file", fileMime, fileLength);
 	};
 
 	float(data) {
-		return `${this.wrapType("float")}${this.wrapData("float", data)}`;
+		return this.wrapData("float", data);
 	};
 
 	function(data, length, level) {
-		return `${this.wrapType("function", length)}${this.wrapData("function", this.wrapText(data, level))}`;
+		return this.wrapData("function", this.wrapText(data, level), length);
 	};
 
 	json(data, length) {
-		return `${this.wrapType("json", length)}${this.wrapData("json", data)}`;
+		return this.wrapData("json", data, length);
 	};
 
 	int(data) {
-		return `${this.wrapType("int")}${this.wrapData("int", data)}`;
+		return this.wrapData("int", data);
 	};
 
 	mongoId(data) {
-		return `${this.wrapType("mongoId")}${this.wrapData("mongoId", data)}`;
+		return this.wrapData("mongoId", data);
 	};
 
 	null(data) {
-		return `${this.wrapType("null")}${this.wrapData("null", data)}`;
+		return this.wrapData("null", data);
 	};
 
 	object(data, length) {
-		return `${this.wrapType("object", length)}${this.wrapData("object", data)}`;
+		return this.wrapData("object", data, length);
 	};
 
-	regular(data) {
-		return `${this.wrapType("regular")}${this.wrapData("regular", data)}`;
+	regExp(data) {
+		return this.wrapData("regExp", data);
 	};
 
 	string(data, length, level) {
-		return `${this.wrapType("string", length)}${this.wrapData("string", this.wrapText(data, level))}`;
+		return this.wrapData("string", this.wrapText(data, level), length);
 	};
 
 	undefined(data) {
-		return `${this.wrapType("undefined")}${this.wrapData("undefined", data)}`;
+		return this.wrapData("undefined", data);
 	};
 
 	xml(data, length) {
-		return `${this.wrapType("xml", length)}${this.wrapData("xml", data)}`;
+		return this.wrapData("xml", data, length);
+	};
+
+	default(data) {
+		return this.wrapData("default", data);
+		// return `/* ${data} */`;
 	};
 }
 

@@ -47,12 +47,12 @@ class FaTemplateClass {
 	 * @return {FaTemplateClass}
 	 */
 	load(filename) {
-		// console.error(this._File.fullname(filename));
+		// console.error(this._File.path(filename));
 		try {
 			this.set = this._File.readStringSync(`${filename}.tpl`);
 		} catch (e) {
 			// server1.console.error(e);
-			throw FaError.pickTrace(`template not found: ${this._File.fullname(`${filename}.tpl`)}`, 2);
+			throw FaError.pickTrace(`template not found: ${this._File.path(`${filename}.tpl`)}`, 2);
 		}
 		return this;
 	}

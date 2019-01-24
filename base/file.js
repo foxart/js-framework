@@ -17,30 +17,19 @@ class FaFileClass {
 	 *
 	 * @return {string}
 	 */
-	get path() {
-		return this._path;
-	}
-
+	// get path() {
+	// 	return this._path;
+	// }
 	/**
 	 *
 	 * @param filename {string}
 	 * @returns {string}
 	 */
-	fullname(filename) {
+	path(filename) {
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
 		return this._path ? `${this._path}/${filename}` : filename;
 	}
-
-	/**
-	 *
-	 * @param filename {string}
-	 * @returns {boolean}
-	 */
-	existFilename(filename) {
-		let fullname = this.fullname(filename);
-		return !!(Fs.existsSync(fullname) && Fs.lstatSync(fullname).isFile());
-	};
 
 	/**
 	 *
@@ -51,14 +40,27 @@ class FaFileClass {
 		return !!(Fs.existsSync(path) && Fs.lstatSync(path).isDirectory());
 	};
 
-	createPathSync(path) {
+	/**
+	 *
+	 * @param filename {string}
+	 * @returns {boolean}
+	 */
+	existFilename(filename) {
+		let fullname = this.path(filename);
+		return !!(Fs.existsSync(fullname) && Fs.lstatSync(fullname).isFile());
+	};
+
+	createPathSync(path, recursive = false) {
 		try {
-			Fs.mkdirSync(path);
+			Fs.mkdirSync(path, {recursive: recursive});
 		} catch (e) {
 			// if (e.code !== 'EEXIST') {
 			// }
 			throw FaError.pickTrace(e, 2);
 		}
+	}
+
+	writeByteAsync(filename, data) {
 	}
 
 	/**
@@ -67,7 +69,7 @@ class FaFileClass {
 	 * @param data
 	 */
 	writeByteSync(filename, data) {
-		let fileStream = Fs.createWriteStream(`${this.fullname(filename)}`, {
+		let fileStream = Fs.createWriteStream(`${this.path(filename)}`, {
 			flags: 'w'
 		});
 		fileStream.write(data);
@@ -83,7 +85,7 @@ class FaFileClass {
 		let context = this;
 		let error = new FaError('');
 		return new Promise(function (resolve, reject) {
-			Fs.readFile(context.fullname(filename), function (e, buffer) {
+			Fs.readFile(context.path(filename), function (e, buffer) {
 				if (e) {
 					error.message = e.message;
 					reject(FaError.pickTrace(error, 1));
@@ -101,7 +103,7 @@ class FaFileClass {
 	 */
 	readByteSync(filename) {
 		try {
-			return Fs.readFileSync(this.fullname(filename));
+			return Fs.readFileSync(this.path(filename));
 		} catch (e) {
 			throw FaError.pickTrace(e, 3);
 		}
@@ -116,7 +118,7 @@ class FaFileClass {
 		let context = this;
 		let error = new FaError('');
 		return new Promise(function (resolve, reject) {
-			Fs.readFile(context.fullname(filename), function (e, buffer) {
+			Fs.readFile(context.path(filename), function (e, buffer) {
 				if (e) {
 					error.message = e.message;
 					reject(FaError.pickTrace(error, 1));
@@ -134,7 +136,7 @@ class FaFileClass {
 	 */
 	readStringSync(filename) {
 		try {
-			return Fs.readFileSync(this.fullname(filename)).toString();
+			return Fs.readFileSync(this.path(filename)).toString();
 		} catch (e) {
 			throw FaError.pickTrace(e, 3);
 		}

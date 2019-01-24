@@ -8,19 +8,10 @@ const FaError = require("fa-nodejs/base/error");
 
 /**
  *
- * @param count
- * @returns {string}
- */
-function getTab(count) {
-	return Array(count).join("    ");
-}
-
-/**
- *
  * @param json
  * @returns {boolean}
  */
-function checkJson(json) {
+function isJson(json) {
 	try {
 		return typeof JSON.parse(json) === "object";
 	} catch (error) {
@@ -33,7 +24,7 @@ function checkJson(json) {
  * @param xml
  * @returns {boolean}
  */
-function checkXml(xml) {
+function isXml(xml) {
 	try {
 		return FastXmlParser.validate(xml) === true;
 	} catch (error) {
@@ -41,118 +32,184 @@ function checkXml(xml) {
 	}
 }
 
-function stringify(object, level, wrapper) {
-	let memory = [];
-
-	function circular(object) {
-		if (object && typeof object === "object") {
-			if (memory.indexOf(object) !== -1) {
+function isCircular(object, circular) {
+	if (object && typeof object === "object") {
+		if (circular.indexOf(object) !== -1) {
+			return true;
+		}
+		circular.push(object);
+		for (let key in object) {
+			// try {
+			if (object.hasOwnProperty(key) && isCircular(object[key], circular)) {
 				return true;
 			}
-			memory.push(object);
-			for (let key in object) {
-				try {
-					if (object.hasOwnProperty(key) && circular(object[key])) {
-						return true;
-					}
-				} catch (e) {
-					return false
-				}
-			}
+			// } catch (e) {
+			// 	return false;
+			// }
 		}
-		return false;
 	}
+	return false;
+}
 
-	let bl = Array.isArray(object) ? "[" : "{";
-	let br = Array.isArray(object) ? "]" : "}";
-	let nl = '\r\n';
-	let tab = wrapper.getTab(level);
-	let result = `${bl}${nl}${tab}`;
-	level++;
-	for (let keys = Object.keys(object), i = 0, end = keys.length - 1; i <= end; i++) {
-		if (circular(object[keys[i]]) === true) {
-			result += `${keys[i]}: ${beautify(object[keys[i]], level, true, wrapper)}`;
+function getType(data) {
+	if (data === null) {
+		return "null";
+	} else if (Array.isArray(data)) {
+		return "array";
+	} else if (typeof data === "boolean") {
+		return "bool";
+	} else if (typeof data === 'number' && data % 1 === 0) {
+		return "int";
+	} else if (typeof data === "number" && data % 1 !== 0) {
+		return "float";
+	} else if (data instanceof Date) {
+		return "date";
+	} else if (typeof data === "function") {//!isNaN(Date.parse(data))
+		return "function";
+	} else if (data instanceof Error) {
+		return "error";
+	} else if (typeof data === "object") {
+		if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {
+			return "mongoId";
+		} else if (data instanceof RegExp) {
+			return "regExp";
+		} else if (data.byteLength) {
+			if (FileType(data)) {
+				return "file";
+			} else {
+				return "buffer";
+			}
 		} else {
-			result += `${keys[i]}: ${beautify(object[keys[i]], level, false, wrapper)}`;
+			return "object";
 		}
-		if (i !== end) {
-			result += `,${nl}${tab}`;
+	} else if (typeof data === "string") {
+		if (isJson(data)) {
+			return "json";
+		} else if (isXml(data)) {
+			return "xml";
+		} else if (FileType(new Buffer(data, "base64"))) {
+			return "file";
+		} else {
+			return "string";
+		}
+	} else {
+		return "undefined";
+	}
+}
+
+function getLength(data, type) {
+	if (type === "array") {
+		return data.length;
+	} else if (type === "buffer") {
+		return data.byteLength;
+	} else if (type === "file") {
+		return data.byteLength ? data.byteLength : Buffer.from(data, "base64").byteLength;
+	} else if (type === "function") {
+		return data.toString().length;
+	} else if (type === "json") {
+		return data.length;
+	} else if (type === "object") {
+		return Object.keys(data).length;
+	} else if (type === "string") {
+		return data.length;
+	} else if (type === "xml") {
+		return data.length;
+	} else {
+		return null;
+	}
+}
+
+function parseObject(data, type) {
+	if (type === "json") {
+		return JSON.parse(data);
+	} else if (type === "xml") {
+		return FastXmlParser.parse(data, {});
+	} else {
+		return data;
+	}
+}
+
+function beautifyObject(data, type, wrapper, level) {
+	let circular = [];
+	let nl = '\r\n';
+	let object = parseObject(data, type);
+	let result = `${nl}`;
+	let tab = "";
+	// let result = `${nl}${wrapper.getTab(level)}`;
+	// let type = getType(data);
+	// let length = getLength(data, type);
+	// console.write(getLength(data, type));
+	// console.write("xxx");
+	for (let keys = Object.keys(object), i = 0, end = keys.length - 1; i <= end; i++) {
+		let objectType = getType(object[keys[i]]);
+		let objectLength = getLength(object[keys[i]], objectType);
+		// console.write(objectType, objectLength);
+		if (i === end) {
+			tab = wrapper.getTab(level);
+		} else {
+			tab = wrapper.getTab(level);
+		}
+		if (isCircular(object[keys[i]], circular)) {
+			result += `${tab}${wrapper.wrapDataKey(keys[i], objectType, objectLength)}${wrapper.circular(object[keys[i]], Object.keys(object[keys[i]]).length)}`;
+		} else {
+			result += `${tab}${wrapper.wrapDataKey(keys[i], objectType, objectLength)}${beautify(object[keys[i]], wrapper, level)}`;
+		}
+		if (i === end) {
+			result += `${nl}${wrapper.getTab(level-1)}`;
+		} else {
+			result += `,${nl}`;
+		}
+		if (i === 0) {
+			// result += `===${nl}${wrapper.getTab(level)}`;
+		} else if (i === end) {
+			// result += `${nl}${wrapper.getTab(level - 1)}`;
+		} else {
+			// result += `,${nl}${wrapper.getTab(level)}`;
 		}
 	}
-	result += `${nl}${getTab(level - 1)}${br}`;
 	return result;
 }
 
-function beautify(data, level, circular, wrapper) {
-	level = level === undefined ? 0 : level;
-	if (circular === true) {
-		return wrapper.circular(data, Object.keys(data).length);
-	} else if (data === null) {
-		/*null*/
-		return wrapper.null(data);
-	} else if (Array.isArray(data)) {
-		return wrapper.array(stringify(data, level, wrapper), data.length);
-	} else if (typeof data === "boolean") {
-		/*bool*/
-		return wrapper.bool(data);
-	} else if (typeof data === 'number' && data % 1 === 0) {
-		/*int*/
-		return wrapper.int(data);
-	} else if (typeof data === "number" && data % 1 !== 0) {
-		/*float*/
-		return wrapper.float(data);
-	} else if (data instanceof Date) {
-		/*date*/
-		return wrapper.date(data);
-		// } else if (!isNaN(Date.parse(data))) {
-		// 	/*date*/
-		// 	return wrapper.date(new Date(data), server1.color);
-	} else if (typeof data === "function") {
-		/*function*/
-		return wrapper.function(data, data.toString().length, level);
-	} else if (data instanceof Error) {
-		/*error*/
-		return wrapper.error(data, data["trace"] = data["trace"] ? data["trace"] : FaError.traceStack(data["stack"]), level);
-	} else if (typeof data === "object") {
-		try {
-			if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {
-				/*mongo*/
-				return wrapper.mongoId(data);
-			} else if (data instanceof RegExp) {
-				/*regexp*/
-				return wrapper.regular(data.toString());
-			} else if (data.byteLength) {
-				//todo rewrite to true type detection
-				/*image*/
-				return wrapper.file(FileType(data).mime, data.byteLength);
-			} else {
-				/*object*/
-				return wrapper.object(stringify(data, level, wrapper), Object.keys(data).length);
-			}
-		} catch (e) {
-			/*object*/
-			return wrapper.object(stringify(data, level, wrapper), Object.keys(data).length);
-		}
-	} else if (typeof data === "string") {
-		if (checkJson(data)) {
-			/*json*/
-			return wrapper.json(beautify(JSON.parse(data), level, false, wrapper), data.length);
-		} else if (checkXml(data)) {
-			/*xml*/
-			return wrapper.xml(beautify(FastXmlParser.parse(data, {}), level, false, wrapper), data.length);
-			// } else if (FileType(Buffer.from(data, "base64"))) {
-		} else if (FileType(new Buffer(data, "base64"))) {
-			/*file*/
-			// let file = Buffer.from(data, "base64");
-			let file = new Buffer(data, "base64");
-			return wrapper.file(FileType(file).mime, file.byteLength);
-		} else {
-			/*string*/
-			return wrapper.string(data, data.length, level);
-		}
-	} else {
-		/*undefined*/
-		return wrapper.undefined(data);
+function beautify(data, wrapper, level = 0) {
+	let type = getType(data);
+	// console.write(level)
+	switch (type) {
+		case "array":
+			return wrapper.array(beautifyObject(data, type, wrapper, level + 1), data.length);
+		case "bool":
+			return wrapper.bool(data);
+		case "buffer":
+			return wrapper.buffer(data, data.length);
+		case "date":
+			return wrapper.date(data);
+		case "error":
+			return wrapper.error(data, level + 1);
+		case "file":
+			return wrapper.file(data);
+		case "float":
+			return wrapper.float(data);
+		case "function":
+			return wrapper.function(data, data.toString().length, level + 1);
+		case "json":
+			return wrapper.json(beautifyObject(data, type, wrapper, level + 1), data.length);
+		case "int":
+			return wrapper.int(data);
+		case "mongoId":
+			return wrapper.mongoId(data);
+		case "null":
+			return wrapper.null(data);
+		case "object":
+			return wrapper.object(beautifyObject(data, type, wrapper, level + 1), Object.keys(data).length);
+		case "regExp":
+			return wrapper.regExp(data.toString());
+		case "string":
+			return wrapper.string(data, data.length, level + 1);
+		case "undefined":
+			return wrapper.undefined(data);
+		case "xml":
+			return wrapper.xml(beautifyObject(data, type, wrapper, level + 1), data.length);
+		default:
+			return wrapper.default(data);
 	}
 }
 
@@ -162,14 +219,15 @@ const FaBeautifyConsoleType = require("./console-type");
 const FaBeautifyHtml = require("./html");
 /*new*/
 exports.plain = function (data) {
-	return beautify(data, 1, false, new FaBeautifyPlain());
+	return beautify(data, new FaBeautifyPlain());
 };
 exports.console = function (data) {
-	return beautify(data, 1, false, new FaBeautifyConsole());
+	return beautify(data, new FaBeautifyConsole());
 };
 exports.consoleType = function (data) {
-	return beautify(data, 1, false, new FaBeautifyConsoleType());
+	return beautify(data, new FaBeautifyConsoleType());
 };
 exports.html = function (data) {
-	return beautify(data, 1, false, new FaBeautifyHtml());
+	return beautify(data, new FaBeautifyHtml());
 };
+
