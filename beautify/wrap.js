@@ -3,26 +3,23 @@ const FileType = require("file-type");
 
 class FaBeautifyWrap {
 	getTab(level) {
-		let result = "";
 		let tab = `    `;
-		for (let i = 0; i <= level - 1; i++) {
+		// let tab = `___`;
+		let result = "";
+		let count = level ? level : 0;
+		for (let i = 0; i <= count - 1; i++) {
 			result += tab;
 		}
 		return result;
 	};
 
-	wrapData(type, data, length) {
-		// return `${this.wrapDataType(type, length)}${this.wrapDataValue(type, data)}`;
-		// return `${this.wrapDataKey(data)}${this.wrapDataValue(type, data)}`;
-		return `${this.wrapDataValue(type, data)}`;
-	}
-
+	// wrapDataValue(type, data, length) {
+	// 	// return `${this.wrapDataValueType(type, length)}${this.wrapDataValueValue(type, data)}`;
+	// 	// return `${this.wrapDataValueKey(data)}${this.wrapDataValueValue(type, data)}`;
+	// 	return `${this.wrapDataValueValue(type, data)}`;
+	// }
 	wrapDataKey(data) {
 		return `${data}: `;
-	}
-
-	wrapDataType(type, length) {
-		return "";
 	}
 
 	wrapDataValue(type, data) {
@@ -73,28 +70,33 @@ class FaBeautifyWrap {
 		return result;
 	}
 
+	wrapObject(data, level) {
+		return data;
+	}
+
 	wrapText(data, level) {
 		return data.toString().replaceAll(["\t", "\n"], [this.getTab(1), `\n${this.getTab(level)}`]);
 	};
 
-	array(data, length) {
-		return this.wrapData("array", data, length);
+	/**/
+	array(data, level) {
+		return this.wrapDataValue("array", data, level);
 	};
 
-	bool(data) {
-		return this.wrapData("bool", data);
+	bool(data, level) {
+		return this.wrapDataValue("bool", data, level);
 	};
 
-	buffer(data, length) {
-		return this.wrapData("buffer", data, length);
+	buffer(data, level) {
+		return this.wrapDataValue("buffer", data, level);
 	};
 
-	circular(data, length) {
-		return this.wrapData("circular", data, length);
+	circular(data, level) {
+		return this.wrapDataValue("circular", data, level);
 	};
 
 	date(data) {
-		return this.wrapData("date", data);
+		return this.wrapDataValue("date", data);
 	};
 
 	error(data, level) {
@@ -108,11 +110,11 @@ class FaBeautifyWrap {
 
 		let context = this;
 		let trace = data["trace"] ? data["trace"] : FaError.traceStack(data["stack"]);
-		// return `${this.wrapError("name", data["name"])}${this.wrapData("error", data["message"])}${wrapTrace(trace, level)}`;
+		// return `${this.wrapError("name", data["name"])}${this.wrapDataValue("error", data["message"])}${wrapTrace(trace, level)}`;
 		return `${this.wrapError("name", data["name"])}${this.wrapError("message", data["message"])}${wrapTrace(trace, level)}`;
 	};
 
-	file(data) {
+	file(data, level) {
 		let fileMime;
 		let fileLength;
 		if (data.byteLength) {
@@ -122,55 +124,55 @@ class FaBeautifyWrap {
 			fileMime = FileType(Buffer.from(data, "base64")).mime;
 			fileLength = data.length;
 		}
-		return this.wrapData("file", fileMime, fileLength);
+		return this.wrapDataValue("file", fileMime, level);
 	};
 
-	float(data) {
-		return this.wrapData("float", data);
+	float(data, level) {
+		return this.wrapDataValue("float", data, level);
 	};
 
-	function(data, length, level) {
-		return this.wrapData("function", this.wrapText(data, level), length);
+	function(data, level) {
+		return this.wrapDataValue("function", this.wrapText(data, level), level);
 	};
 
-	json(data, length) {
-		return this.wrapData("json", data, length);
+	json(data, level) {
+		return this.wrapDataValue("json", data, level);
 	};
 
-	int(data) {
-		return this.wrapData("int", data);
+	int(data, level) {
+		return this.wrapDataValue("int", data, level);
 	};
 
-	mongoId(data) {
-		return this.wrapData("mongoId", data);
+	mongoId(data, level) {
+		return this.wrapDataValue("mongoId", data, level);
 	};
 
-	null(data) {
-		return this.wrapData("null", data);
+	null(data, level) {
+		return this.wrapDataValue("null", data, level);
 	};
 
-	object(data, length) {
-		return this.wrapData("object", data, length);
+	object(data, level) {
+		return this.wrapDataValue("object", data, level);
 	};
 
 	regExp(data) {
-		return this.wrapData("regExp", data);
+		return this.wrapDataValue("regExp", data);
 	};
 
-	string(data, length, level) {
-		return this.wrapData("string", this.wrapText(data, level), length);
+	string(data, level) {
+		return this.wrapDataValue("string", this.wrapText(data, level), level);
 	};
 
-	undefined(data) {
-		return this.wrapData("undefined", data);
+	undefined(data, level) {
+		return this.wrapDataValue("undefined", data, level);
 	};
 
-	xml(data, length) {
-		return this.wrapData("xml", data, length);
+	xml(data, level) {
+		return this.wrapDataValue("xml", data, level);
 	};
 
-	default(data) {
-		return this.wrapData("default", data);
+	default(data, level) {
+		return this.wrapDataValue("default", data, level);
 		// return `/* ${data} */`;
 	};
 }

@@ -3,14 +3,20 @@ const FaBeautifyWrap = require("./wrap");
 const FCH = require("../console/console-helper");
 
 class FaBeautifyConsole extends FaBeautifyWrap {
-	wrapDataKey(data) {
-		return `${FCH.effect.bold}${FCH.color.white}${data}${FCH.effect.reset}: `;
+	wrapDataKey(data, type, length, level) {
+		let tab = this.getTab(level);
+		// let tab = "";
+		return `${tab}${FCH.effect.bold}${FCH.color.white}${data}${FCH.effect.reset}: `;
 	}
 
-	wrapDataValue(type, data) {
+	wrapDataValue(type, data, level) {
+		// console.write(level, this.getTab(level));
+		let tab = this.getTab(level);
+		// let tab = "";
+		let nl = "\n";
 		switch (type) {
 			case "array":
-				return `${FCH.color.white}[${FCH.effect.reset}${data}${FCH.color.white}]${FCH.effect.reset}`;
+				return `${FCH.color.white}[${nl}${tab}${FCH.effect.reset}${data}${FCH.color.white}${nl}${tab}]${FCH.effect.reset}`;
 			case "bool":
 				return `${FCH.effect.bold}${data === true ? FCH.color.green : FCH.color.red}${data}${FCH.effect.reset}`;
 			case "buffer":
@@ -34,7 +40,7 @@ class FaBeautifyConsole extends FaBeautifyWrap {
 			case "null":
 				return `${FCH.effect.bold}${FCH.color.cyan}${data}${FCH.effect.reset}`;
 			case "object":
-				return `${FCH.color.white}{${FCH.effect.reset}${data}${FCH.color.white}}${FCH.effect.reset}`;
+				return `${FCH.color.white}{${nl}${FCH.effect.reset}${data}${FCH.color.white}${tab}}${FCH.effect.reset}`;
 			case "regExp":
 				return `${FCH.effect.bold}${FCH.color.yellow}${data}${FCH.effect.reset}`;
 			case "string":
