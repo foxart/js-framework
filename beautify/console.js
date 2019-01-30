@@ -3,83 +3,71 @@ const FaBeautifyWrap = require("./wrap");
 const FCH = require("../console/console-helper");
 
 class FaBeautifyConsole extends FaBeautifyWrap {
-	wrapDataKey(data, type, length, level) {
-		let tab = this.getTab(level);
-		// let tab = "";
-		return `${tab}${FCH.effect.bold}${FCH.color.white}${data}${FCH.effect.reset}: `;
+	wrapDataKey(key, type, length, level) {
+		return `${this.getTab(level)}${FCH.effect.bold}${FCH.color.white}${key}${FCH.effect.reset}: `;
 	}
 
-	wrapDataValue(type, data, level) {
-		// console.write(level, this.getTab(level));
+	wrapDataValue(value, type, length, level) {
 		let tab = this.getTab(level);
-		// let tab = "";
 		let nl = "\n";
 		switch (type) {
 			case "array":
-				return `${FCH.color.white}[${nl}${tab}${FCH.effect.reset}${data}${FCH.color.white}${nl}${tab}]${FCH.effect.reset}`;
+				return `${FCH.effect.dim}${FCH.color.white}[${FCH.effect.reset}${nl}${value}${tab}${FCH.effect.dim}${FCH.color.white}]${FCH.effect.reset}`;
 			case "bool":
-				return `${FCH.effect.bold}${data === true ? FCH.color.green : FCH.color.red}${data}${FCH.effect.reset}`;
+				return `${FCH.effect.bold}${value === true ? FCH.color.green : FCH.color.red}${value}${FCH.effect.reset}`;
 			case "buffer":
-				return `${FCH.effect.bold}${FCH.color.white}<${FCH.color.blue}${type}${FCH.color.white}>${FCH.effect.reset}`;
+				return `${FCH.effect.dim}<${FCH.effect.reset}${FCH.effect.bold}${FCH.color.blue}${type}${FCH.effect.reset}${FCH.effect.dim}>${FCH.effect.reset}`;
 			case "circular":
-				return `${FCH.effect.bold}${FCH.color.white}<${FCH.color.cyan}${type}${FCH.color.white}>${FCH.effect.reset}`;
+				return `${FCH.effect.dim}<${FCH.effect.reset}${FCH.effect.bold}${FCH.color.cyan}${type}${FCH.effect.reset}${FCH.effect.dim}>${FCH.effect.reset}`;
 			case "date":
-				return `${FCH.color.yellow}${data}${FCH.effect.reset}`;
+				return `${FCH.color.yellow}${value}${FCH.effect.reset}`;
 			case "file":
-				return `${FCH.effect.bold}${FCH.color.white}<${FCH.color.blue}${data}${FCH.color.white}>${FCH.effect.reset}`;
+				return `${FCH.effect.dim}<${FCH.effect.reset}${FCH.effect.bold}${FCH.color.blue}${value}${FCH.effect.reset}${FCH.effect.dim}>${FCH.effect.reset}`;
 			case "float":
-				return `${FCH.color.red}${data}${FCH.effect.reset}`;
+				return `${FCH.color.red}${value}${FCH.effect.reset}`;
 			case "function":
-				return `${FCH.color.cyan}${data}${FCH.effect.reset}`;
+				return `${FCH.color.cyan}${value}${FCH.effect.reset}`;
 			case "json":
-				return `${FCH.effect.bold}{${FCH.effect.reset}${data}${FCH.effect.bold}}${FCH.effect.reset}`;
+				return `${FCH.bg.green}{${FCH.effect.reset}${nl}${value}${tab}${FCH.bg.green}}${FCH.effect.reset}`;
 			case "int":
-				return `${FCH.color.green}${data}${FCH.effect.reset}`;
+				return `${FCH.color.green}${value}${FCH.effect.reset}`;
 			case "mongoId":
-				return `${FCH.bg.cyan} ${data} ${FCH.effect.reset}`;
+				return `${FCH.color.white}<${FCH.effect.reset}${FCH.effect.bold}${FCH.color.white}${value}${FCH.effect.reset}${FCH.color.white}>${FCH.effect.reset}`;
 			case "null":
-				return `${FCH.effect.bold}${FCH.color.cyan}${data}${FCH.effect.reset}`;
+				return `${FCH.effect.bold}${FCH.color.cyan}${value}${FCH.effect.reset}`;
 			case "object":
-				return `${FCH.color.white}{${nl}${FCH.effect.reset}${data}${FCH.color.white}${tab}}${FCH.effect.reset}`;
+				return `${FCH.effect.dim}${FCH.color.white}{${FCH.effect.reset}${nl}${value}${tab}${FCH.effect.dim}${FCH.color.white}}${FCH.effect.reset}`;
 			case "regExp":
-				return `${FCH.effect.bold}${FCH.color.yellow}${data}${FCH.effect.reset}`;
+				return `${FCH.effect.bold}${FCH.color.yellow}${value}${FCH.effect.reset}`;
 			case "string":
-				return `${FCH.color.white}${data}${FCH.effect.reset}`;
+				return `${FCH.effect.dim}${FCH.color.white}"${FCH.effect.reset}${FCH.color.white}${value}${FCH.effect.reset}${FCH.effect.dim}${FCH.color.white}"${FCH.effect.reset}`;
 			case "undefined":
-				return `${FCH.effect.bold}${FCH.color.magenta}${data}${FCH.effect.reset}`;
+				return `${FCH.effect.bold}${FCH.color.magenta}${value}${FCH.effect.reset}`;
 			case "xml":
-				return `${FCH.effect.bold}{${FCH.effect.reset}${data}${FCH.effect.bold}}${FCH.effect.reset}`;
+				return `${FCH.bg.red}{${FCH.effect.reset}${nl}${value}${tab}${FCH.bg.red}}${FCH.effect.reset}`;
 			default:
-				return `${FCH.effect.bold}${FCH.bg.magenta}${data}${FCH.effect.reset}`;
+				return `${FCH.bg.magenta}/*${type}*/${FCH.effect.reset}`;
 		}
 	}
 
-	wrapError(type, data) {
-		let result = "";
+	wrapError(data, type) {
 		switch (type) {
 			case "name":
-				result = `${FCH.bg.red} ${data}: ${FCH.effect.reset}`;
-				break;
+				return `${FCH.effect.underscore}${FCH.color.white}${data}${FCH.effect.reset}: `;
+				// return "";
 			case "message":
-				result = `${FCH.bg.red}${data} ${FCH.effect.reset}`;
-				break;
+				return `${FCH.effect.bold}${FCH.effect.underscore}${FCH.color.red}${data}${FCH.effect.reset}`;
 			case "method":
-				result = `${FCH.color.white}${data}${FCH.effect.reset}`;
-				break;
+				return `${FCH.color.white}${data}${FCH.effect.reset}`;
 			case "path":
-				result = `${FCH.effect.dim}${data}${FCH.effect.reset}`;
-				break;
+				return `${FCH.effect.dim}${data}${FCH.effect.reset}`;
 			case "line":
-				result = `${FCH.color.cyan}${data}${FCH.effect.reset}`;
-				break;
+				return `${FCH.color.cyan}${data}${FCH.effect.reset}`;
 			case "column":
-				result = `${FCH.color.white}${data}${FCH.effect.reset}`;
-				break;
+				return `${FCH.color.white}${data}${FCH.effect.reset}`;
 			default:
-				result = `${FCH.bg.magenta} ${data} ${FCH.effect.reset}`;
-				break;
+				return `${FCH.bg.magenta}/*${data}*/${FCH.effect.reset}`;
 		}
-		return result;
 	}
 }
 

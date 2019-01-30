@@ -1,4 +1,9 @@
 "use strict";
+/*nodejs*/
+/**
+ * @type {Object}
+ */
+const DateAndTime = require("date-and-time");
 /*modules*/
 const FaBeautify = require("../beautify");
 const FCH = require("./console-helper");
@@ -17,17 +22,11 @@ let templateTime = {
  *
  * @type {{warn: string, log: string, error: string, info: string}}
  */
-// let templateType = {
-// 	log: `${FCH.bg.green}${FCH.color.white} ${FCH.sign.check} ${FCH.effect.reset}`,
-// 	info: `${FCH.bg.cyan}${FCH.color.white} ${FCH.sign.excl} ${FCH.effect.reset}`,
-// 	warn: `${FCH.bg.yellow}${FCH.color.white} ${FCH.sign.quest} ${FCH.effect.reset}`,
-// 	error: `${FCH.bg.red}${FCH.color.white} ${FCH.sign.cross} ${FCH.effect.reset}`,
-// };
 let templateType = {
-	log: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.white}LOG${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
-	info: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.cyan}INF${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
-	warn: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.yellow}WRN${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
-	error: `${FCH.color.white}[${FCH.effect.bold}${FCH.color.red}ERR${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
+	log: `${FCH.color.white}[${FCH.effect.reset}${FCH.bg.white}${FCH.color.black}LOG${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
+	info: `${FCH.color.white}[${FCH.effect.reset}${FCH.bg.cyan}${FCH.color.white}INF${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
+	warn: `${FCH.color.white}[${FCH.effect.reset}${FCH.bg.yellow}${FCH.color.black}WRN${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
+	error: `${FCH.color.white}[${FCH.effect.reset}${FCH.bg.red}${FCH.color.white}ERR${FCH.effect.reset}${FCH.color.white}]${FCH.effect.reset}`,
 };
 /**
  *
@@ -44,10 +43,10 @@ let templatePath = {
  * @type {{warn: string, log: string, error: string, info: string}}
  */
 let templateLine = {
-	log: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
-	info: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
-	warn: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
-	error: `${FCH.effect.reset}:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	log: `:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	info: `:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	warn: `:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
+	error: `:${FCH.color.cyan}{line}${FCH.effect.reset}:${FCH.color.white}{column}${FCH.effect.reset}`,
 };
 /**
  *
@@ -76,27 +75,19 @@ class FaConsoleClass {
 	 * @param type {string|null}
 	 */
 	constructor(type = null) {
-		this._wrapConsole(this._getWrapper(type))
-	}
-
-	/**
-	 *
-	 * @param wrapper {function}
-	 * @private
-	 */
-	_wrapConsole(wrapper) {
+		this._wrapper = this._getWrapper(type);
 		let context = this;
 		console.log = function () {
-			context._log(wrapper.call(this, context._extractArguments(arguments)), template.log);
+			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.log);
 		};
 		console.info = function () {
-			context._log(wrapper.call(this, context._extractArguments(arguments)), template.info);
+			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.info);
 		};
 		console.warn = function () {
-			context._log(wrapper.call(this, context._extractArguments(arguments)), template.warn);
+			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.warn);
 		};
 		console.error = function () {
-			context._log(wrapper.call(this, context._extractArguments(arguments)), template.error);
+			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.error);
 		};
 	}
 
@@ -140,8 +131,8 @@ class FaConsoleClass {
 	 * @private
 	 */
 	_log(data, template) {
+		let time = DateAndTime.format(new Date(new Date().setUTCHours(new Date().getUTCHours() + 2)), "H:mm:ss");
 		let trace = FaError.pickTrace("console", 3).trace[0];
-		let time = new Date().toLocaleTimeString();
 		let path = trace["path"] ? trace["path"].replace(process.cwd(), "") : trace["path"];
 		let line = trace["line"];
 		let column = trace["column"];
