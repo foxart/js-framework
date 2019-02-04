@@ -12,7 +12,20 @@ const FileType = require("file-type");
 function isJson(json) {
 	try {
 		return typeof JSON.parse(json) === "object";
-	} catch (error) {
+	} catch (e) {
+		return false;
+	}
+}
+
+/**
+ *
+ * @param mongoId
+ * @returns {boolean}
+ */
+function isMongoId(mongoId) {
+	try {
+		return new RegExp("^[0-9a-fA-F]{24}$").test(mongoId.toString());
+	} catch (e) {
 		return false;
 	}
 }
@@ -25,7 +38,7 @@ function isJson(json) {
 function isXml(xml) {
 	try {
 		return FastXmlParser.validate(xml) === true;
-	} catch (error) {
+	} catch (e) {
 		return false;
 	}
 }
@@ -37,13 +50,10 @@ function isCircular(object, circular) {
 		}
 		circular.push(object);
 		for (let key in object) {
-			// try {
-			if (object.hasOwnProperty(key) && isCircular(object[key], circular)) {
+			// if (object.hasOwnProperty(key) && isCircular(object[key], circular)) {
+			if (object[key] && isCircular(object[key], circular)) {
 				return true;
 			}
-			// } catch (e) {
-			// 	return false;
-			// }
 		}
 	}
 	return false;
@@ -67,7 +77,7 @@ function getType(data) {
 	} else if (data instanceof Error) {
 		return "error";
 	} else if (typeof data === "object") {
-		if (new RegExp("^[0-9a-fA-F]{24}$").test(data.toString())) {
+		if (isMongoId(data)) {
 			return "mongoId";
 		} else if (data instanceof RegExp) {
 			return "regExp";

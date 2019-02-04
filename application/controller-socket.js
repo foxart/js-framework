@@ -1,6 +1,9 @@
 "use strict";
-
-class FaControllerSocket {
+/**
+ *
+ * @type {module.FaControllerSocket}
+ */
+module.exports = class FaControllerSocket {
 	/**
 	 *
 	 * @param SocketIo {FaSocketClass}
@@ -24,10 +27,4 @@ class FaControllerSocket {
 		console.log(this);
 		console.log(data);
 	}
-}
-
-/**
- *
- * @type {FaControllerSocket}
- */
-module.exports = FaControllerSocket;
+};

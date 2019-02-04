@@ -2,6 +2,7 @@
 /*node*/
 const Buffer = require('buffer').Buffer;
 const Http = require('http');
+const Https = require('https');
 const MimeTypes = require('mime-types');
 const Url = require('url');
 /*fa*/
@@ -12,12 +13,11 @@ const FaHttpRequestClass = require('./http-request');
 const FaHttpResponseClass = require('./http-response');
 const FaHttpContentType = require("./http-content-type");
 const FaHttpStatusCode = require("./http-status-code");
-
 /**
  *
- * @type {FaHttpClass}
+ * @type {module.FaHttpClass}
  */
-class FaHttpClass {
+module.exports = class FaHttpClass {
 	constructor(configuration) {
 		this.name = "FaHttp";
 		this.folder = "controllers";
@@ -105,12 +105,24 @@ class FaHttpClass {
 		let context = this;
 		let _HttpServer = Http.createServer(function (req, res) {
 			context._listenHttp(req, res);
-		});
-		_HttpServer.listen(configuration.port, function () {
+		}).listen(configuration.port, function () {
 			console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
 				return `{${key}}`;
 			}), Object.values(configuration)));
 		});
+		let File = require('../base/file')();
+		// const options = {
+		// 	key: File.readFileSync("/usr/src/ssl/server.key"),
+		// 	cert: File.readFileSync("/usr/src/ssl/server.cert")
+		// };
+		// let _HttpsServer = Https.createServer(options, function (req, res) {
+		// 	console.error("XXX");
+		// 	context._listenHttp(req, res);
+		// }).listen(443, function () {
+		// 	console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
+		// 		return `{${key}}`;
+		// 	}), Object.values(configuration)));
+		// });
 		return _HttpServer;
 	}
 
@@ -259,7 +271,7 @@ class FaHttpClass {
 	_handleFile(filename, type) {
 		// server1.console.error(filename, type);
 		try {
-			return this.response(this.File.readByteSync(filename.replace(/^\/?/, "")), type, this.status.ok);
+			return this.response(this.File.readFileSync(filename.replace(/^\/?/, "")), type, this.status.ok);
 		} catch (e) {
 			return this.response(e.message, null, this.status.notFound);
 		}
@@ -274,18 +286,5 @@ class FaHttpClass {
 	 */
 	response(content, type = null, status = null) {
 		return new FaHttpResponseClass(content, type, status);
-	}
-}
-
-/**
- *
- * @param configuration {Object}
- * @return {FaHttpClass}
- */
-module.exports = function (configuration = null) {
-	if (configuration) {
-		return new FaHttpClass(configuration);
-	} else {
-		return FaHttpClass;
 	}
 };

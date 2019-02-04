@@ -49,9 +49,8 @@ class FaTemplateClass {
 	load(filename) {
 		// console.error(this._File.path(filename));
 		try {
-			this.set = this._File.readStringSync(`${filename}.tpl`);
+			this.set = this._File.readFileSync(`${filename}.tpl`).toString();
 		} catch (e) {
-			// server1.console.error(e);
 			throw FaError.pickTrace(`template not found: ${this._File.path(`${filename}.tpl`)}`, 2);
 		}
 		return this;

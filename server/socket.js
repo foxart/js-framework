@@ -4,14 +4,14 @@ const SocketIo = require("socket.io");
 /*fa*/
 const FaError = require("../base/error");
 const FaConsoleColor = require("../console/console-helper");
-
 /**
  *
+ * @type {module.FaSocketClass}
  */
-class FaSocketClass {
+module.exports = class FaSocketClass {
 	/**
 	 *
-	 * @param FaHttp {FaHttpClass}
+	 * @param FaHttp {module.FaHttpClass}
 	 */
 	constructor(FaHttp) {
 		this.name = "FaSocket";
@@ -171,8 +171,7 @@ class FaSocketClass {
 	message(socket, data) {
 		socket.send(data);
 	}
-}
-
+};
 // let os = require("os");
 // let ifaces = os.networkInterfaces();
 // server1.console.info(ifaces);
@@ -193,10 +192,10 @@ class FaSocketClass {
 // 		++alias;
 // 	});
 // });
-module.exports = function (FaHttpServer, configuration = null) {
-	if (arguments) {
-		return new FaSocketClass(FaHttpServer, configuration);
-	} else {
-		return FaSocketClass;
-	}
-};
+// module.exports = function (FaHttpServer, configuration = null) {
+// 	if (arguments) {
+// 		return new FaSocketClass(FaHttpServer, configuration);
+// 	} else {
+// 		return FaSocketClass;
+// 	}
+// };

@@ -333,6 +333,12 @@ module.exports = function (configuration) {
 	module.newId = function () {
 		return new ObjectID();
 	};
+
+
+	module.toId = function (id) {
+		return new ObjectID(id);
+	};
+
 	/**
 	 *
 	 * @param id

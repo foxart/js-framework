@@ -11,15 +11,8 @@ class FaFileClass {
 	 */
 	constructor(path = null) {
 		this._path = path;
-	}
+	};
 
-	/**
-	 *
-	 * @return {string}
-	 */
-	// get path() {
-	// 	return this._path;
-	// }
 	/**
 	 *
 	 * @param filename {string}
@@ -29,16 +22,20 @@ class FaFileClass {
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
 		return this._path ? `${this._path}/${filename}` : filename;
-	}
+	};
 
 	/**
 	 *
-	 * @param path {string}
+	 * @param directory {string}
 	 * @return {boolean}
 	 */
-	existPath(path) {
-		return !!(Fs.existsSync(path) && Fs.lstatSync(path).isDirectory());
+	existDirectory(directory) {
+		return !!(Fs.existsSync(this.path(directory)) && this.isDirectory(directory));
 	};
+
+	isDirectory(directory) {
+		return Fs.lstatSync(this.path(directory)).isDirectory();
+	}
 
 	/**
 	 *
@@ -46,47 +43,60 @@ class FaFileClass {
 	 * @returns {boolean}
 	 */
 	existFilename(filename) {
-		let fullname = this.path(filename);
-		return !!(Fs.existsSync(fullname) && Fs.lstatSync(fullname).isFile());
+		return !!(Fs.existsSync(this.path(filename)) && this.isFilename(filename));
 	};
+
+	isFilename(filename) {
+		return Fs.lstatSync(this.path(filename)).isFile();
+	}
 
 	/**
 	 *
-	 * @param path {string}
+	 * @param directory {string}
 	 * @param options {Object}
 	 */
-	createPathSync(path, options) {
+	createDirectorySync(directory, options) {
 		try {
-			Fs.mkdirSync(path, options);
+			Fs.mkdirSync(this.path(directory), options);
 		} catch (e) {
-			// if (e.code !== 'EEXIST') {
-			// }
 			throw FaError.pickTrace(e, 2);
 		}
 	}
 
-	writeByteAsync(filename, data) {
-	}
+	readDirectoryAsync(directory = "") {
+		let context = this;
+		let error = FaError.pickTrace("error", 2);
+		return new Promise(function (resolve, reject) {
+			Fs.readdir(context.path(directory), function (e, files) {
+				if (e) {
+					error.name = e.message;
+					reject(error);
+				} else {
+					resolve(files);
+				}
+			})
+		});
+	};
 
 	/**
 	 *
-	 * @param filename {string}
-	 * @param data
+	 * @param directory
+	 * @return {string[]}
 	 */
-	writeByteSync(filename, data) {
-		let fileStream = Fs.createWriteStream(`${this.path(filename)}`, {
-			flags: 'w'
-		});
-		fileStream.write(data);
-		fileStream.end();
-	}
+	readDirectorySync(directory = "") {
+		try {
+			return Fs.readdirSync(this.path(directory));
+		} catch (e) {
+			throw FaError.pickTrace(e, 2);
+		}
+	};
 
 	/**
 	 *
 	 * @param filename {string}
 	 * @return {Promise<Buffer>}
 	 */
-	readByteAsync(filename) {
+	readFileAsync(filename) {
 		let context = this;
 		let error = new FaError('');
 		return new Promise(function (resolve, reject) {
@@ -101,50 +111,33 @@ class FaFileClass {
 		});
 	};
 
+	writeFileAsync(filename, data) {
+	};
+
 	/**
 	 *
 	 * @param filename {string}
 	 * @return {Buffer}
 	 */
-	readByteSync(filename) {
+	readFileSync(filename) {
 		try {
 			return Fs.readFileSync(this.path(filename));
 		} catch (e) {
-			throw FaError.pickTrace(e, 3);
+			throw FaError.pickTrace(e, 2);
 		}
-	};
-
-	/**
-	 *
-	 * @param filename
-	 * @return {Promise<string>}
-	 */
-	readStringAsync(filename) {
-		let context = this;
-		let error = new FaError('');
-		return new Promise(function (resolve, reject) {
-			Fs.readFile(context.path(filename), function (e, buffer) {
-				if (e) {
-					error.message = e.message;
-					reject(FaError.pickTrace(error, 1));
-				} else {
-					resolve(buffer.toString());
-				}
-			});
-		});
 	};
 
 	/**
 	 *
 	 * @param filename {string}
-	 * @return {string}
+	 * @param data
 	 */
-	readStringSync(filename) {
-		try {
-			return Fs.readFileSync(this.path(filename)).toString();
-		} catch (e) {
-			throw FaError.pickTrace(e, 3);
-		}
+	writeFileSync(filename, data) {
+		let fileStream = Fs.createWriteStream(`${this.path(filename)}`, {
+			flags: 'w'
+		});
+		fileStream.write(data);
+		fileStream.end();
 	};
 }
 
