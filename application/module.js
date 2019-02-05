@@ -27,10 +27,10 @@ module.exports = class FaModule {
 		let modules;
 		let type;
 		if (this._server instanceof FaHttpClass) {
-			modules = require(`${process.cwd()}/${path}/config/FaHttp.js`);
+			modules = require(`${path}/config/FaHttp.js`);
 			type = "controller";
 		} else if (this._server instanceof FaSocketClass) {
-			modules = require(`${process.cwd()}/${path}/config/FaSocket.js`);
+			modules = require(`${path}/config/FaSocket.js`);
 			type = "socket";
 		} else {
 			throw new Error(`wrong server type: ${this._server}`);
@@ -40,15 +40,14 @@ module.exports = class FaModule {
 			if (Object.keys(routes).length) {
 				// console.warn(module_keys[i]);
 				for (let routes_keys = Object.keys(routes), j = 0, end = routes_keys.length - 1; j <= end; j++) {
-					this.attach(`${process.cwd()}/${path}/modules/${module_keys[i]}`, type, routes_keys[j], routes[routes_keys[j]]["controller"], routes[routes_keys[j]]["action"])
+					this.attach(`${path}/modules/${module_keys[i]}`, type, routes_keys[j], routes[routes_keys[j]]["controller"], routes[routes_keys[j]]["action"])
 				}
 			} else {
 				console.warn(module_keys[i], `${process.cwd()}/${path}/modules/${module_keys[i]}`);
-				this.auto(`${process.cwd()}/${path}/modules/${module_keys[i]}`)
+				// this.auto(`${process.cwd()}/${path}/modules/${module_keys[i]}`)
 			}
 		}
 	}
-
 
 	auto(namespace) {
 		let context = this;
