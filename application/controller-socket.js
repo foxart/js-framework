@@ -7,9 +7,8 @@ module.exports = class FaControllerSocket {
 	/**
 	 *
 	 * @param SocketIo {FaSocketClass}
-	 * @param namespace {string}
 	 */
-	constructor(SocketIo, namespace) {
+	constructor(SocketIo) {
 		this.name = "FaControllerSocket";
 		/**
 		 *

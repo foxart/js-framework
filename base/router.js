@@ -56,7 +56,6 @@ class FaRouterClass {
 			this._handler_list[route] = new this._constructor(callback);
 		} else {
 			throw new FaError(`duplicate handler for route: ${route}`);
-			// throw FaError.pickTrace(`route exist: ${route}`,2);
 		}
 	};
 
@@ -68,7 +67,7 @@ class FaRouterClass {
 		if (this.exist(route) === true) {
 			delete this._handler_list[route];
 		} else {
-			throw new FaError(`not found handler for route: ${route}`);
+			throw new FaError(`no handler for route: ${route}`);
 		}
 	};
 }

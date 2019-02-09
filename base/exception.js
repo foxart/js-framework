@@ -51,7 +51,7 @@ function formatError(title, error) {
 
 const log = console.log;
 process.on('unhandledRejection', function (rejection) {
-	log(formatError(`${new Date()}.toLocaleTimeString()} \u2502 Uncaught Rejection`, rejection));
+	log(formatError(`${new Date().toLocaleTimeString()} \u2502 Uncaught Rejection`, rejection));
 });
 process.on('uncaughtException', function (exception) {
 	log(formatError(`${new Date().toLocaleTimeString()} \u2502 Uncaught Exception`, exception));

@@ -39,7 +39,7 @@ module.exports = class FaSocketClass {
 	}
 
 	_logConfiguration() {
-		console.info(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://${this.Configuration.host}:${this.Configuration.port} <${this.Configuration.path}>`);
+		console.log(`FaServerSocket ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} ws://${this.Configuration.host}:${this.Configuration.port} <${this.Configuration.path}>`);
 	}
 
 	_logMessage(socket, message) {

@@ -29,26 +29,18 @@ class FaFileClass {
 	 * @param directory {string}
 	 * @return {boolean}
 	 */
-	existDirectory(directory) {
-		return !!(Fs.existsSync(this.path(directory)) && this.isDirectory(directory));
-	};
-
 	isDirectory(directory) {
-		return Fs.lstatSync(this.path(directory)).isDirectory();
-	}
+		return !!(Fs.existsSync(this.path(directory)) && Fs.lstatSync(this.path(directory)).isDirectory());
+	};
 
 	/**
 	 *
 	 * @param filename {string}
 	 * @returns {boolean}
 	 */
-	existFilename(filename) {
-		return !!(Fs.existsSync(this.path(filename)) && this.isFilename(filename));
+	isFile(filename) {
+		return !!(Fs.existsSync(this.path(filename)) && Fs.lstatSync(this.path(filename)).isFile());
 	};
-
-	isFilename(filename) {
-		return Fs.lstatSync(this.path(filename)).isFile();
-	}
 
 	/**
 	 *
@@ -85,6 +77,7 @@ class FaFileClass {
 	 */
 	readDirectorySync(directory = "") {
 		try {
+			// console.error(`READ: ${directory}`);
 			return Fs.readdirSync(this.path(directory));
 		} catch (e) {
 			throw FaError.pickTrace(e, 2);

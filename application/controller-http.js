@@ -9,12 +9,12 @@ module.exports = class FaControllerHttp {
 	/**
 	 *
 	 * @param FaHttp {FaHttpClass}
-	 * @param views {string}
+	 * @param namespace_view {string}
 	 */
-	constructor(FaHttp, views) {
+	constructor(FaHttp, namespace_view) {
 		this.name = "FaControllerHttp";
 		this.Http = FaHttp;
-		this._FaTemplateClass = new FaTemplateClass(views);
+		this._FaTemplateClass = new FaTemplateClass(namespace_view);
 	}
 
 	/**
