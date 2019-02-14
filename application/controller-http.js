@@ -13,8 +13,20 @@ module.exports = class FaControllerHttp {
 	 */
 	constructor(FaHttp, namespace_view) {
 		this.name = "FaControllerHttp";
+		/**
+		 *
+		 * @type {module.FaHttpClass}
+		 */
 		this.Http = FaHttp;
 		this._FaTemplateClass = new FaTemplateClass(namespace_view);
+	}
+
+	/**
+	 *
+	 * @return {module.FaHttpClass}
+	 */
+	get http(){
+		return this.Http;
 	}
 
 	/**

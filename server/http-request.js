@@ -15,7 +15,7 @@ module.exports = class FaHttpRequestClass {
 	 * @return {{path: string, headers: *, request: {}, input: *, method: string, post, get}}
 	 */
 	constructor(configuration, method, headers, url, body) {
-		this._FaConverterClass = require('../base/converter')(configuration);
+		this._FaConverterClass = require("../base/converter")(configuration);
 		this._FaHeadersContentType = new HttpHeadersContentTypeModule();
 	}
 
@@ -52,7 +52,7 @@ module.exports = class FaHttpRequestClass {
 			get = this._converter.fromUrlEncoded(url.query);
 		}
 		if (["PATCH", "POST", "PUT"].hasElement(method)) {
-			switch (headers['content-type']) {
+			switch (headers["content-type"]) {
 				case this._contentType.json:
 					post = this._converter.fromJson(body);
 					break;
@@ -72,8 +72,8 @@ module.exports = class FaHttpRequestClass {
 			headers: headers,
 			get: get,
 			post: post,
-			// request: (typeof get === 'object' && typeof post === 'object') ? Object.assign({}, get, post) : {},
-			request: (typeof get === 'object' || typeof post === 'object') ? Object.assign({}, get, post) : {},
+			request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
+			// request: (typeof get === "object" || typeof post === "object") ? Object.assign({}, get, post) : {},
 			input: body,
 		};
 	}

@@ -40,7 +40,7 @@ module.exports = class FaModule {
 	}
 
 	controllerFilenameToName(controller) {
-		let pattern_filename = new RegExp(`^([A-Z].+)${this._server_type.capitalize()}\.js$`);
+		let pattern_filename = new RegExp(`^([A-Z][^-]+)${this._server_type.capitalize()}\.js$`);
 		let pattern_name = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_filename = controller.match(pattern_filename);
 		if (match_filename) {
@@ -52,9 +52,8 @@ module.exports = class FaModule {
 		}
 	}
 
-
 	controllerNameToFilename(controller) {
-		let pattern = /[^-]+/g;
+		let pattern = new RegExp("[^-]+", "g");
 		let match = controller.match(pattern);
 		if (match) {
 			return `${match.map(item => item.capitalize()).join("")}${this._server_type.capitalize()}.js`;
@@ -64,8 +63,8 @@ module.exports = class FaModule {
 	}
 
 	controllerMethodToAction(method) {
-		let pattern_method = new RegExp(`^action([A-Z].+)$`);
-		let pattern_action = /[A-Z][^A-Z]*/g;
+		let pattern_method = new RegExp("^action([A-Z][^-]+)$");
+		let pattern_action = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_method = method.match(pattern_method);
 		if (match_method) {
 			let match_name = match_method[1].match(pattern_action);
@@ -81,7 +80,7 @@ module.exports = class FaModule {
 	}
 
 	controllerActionToMethod(action) {
-		let pattern = /[^-]+/g;
+		let pattern = new RegExp("[^-]+", "g");
 		let match = action.match(pattern);
 		if (match) {
 			return `action${match.map(item => item.capitalize()).join("")}`;
@@ -180,19 +179,22 @@ module.exports = class FaModule {
 	}
 
 	_loadFromConfiguration() {
-		let configuration = require(`${this._path}/config/${this._server_type}s.js`);
-		for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
-			let module = modules[i];
-			if (!this._routes_list[module]) {
-				this._routes_list[module] = {};
-			}
-			for (let routes = Object.keys(configuration[modules[i]]), j = 0, end = routes.length - 1; j <= end; j++) {
-				let route = routes[j];
-				if (!this._routes_list[module][route]) {
-					this._routes_list[module][route] = {
-						controller: configuration[module][route]["controller"],
-						action: configuration[module][route]["action"],
-					};
+		let path = `${this._path}/config/${this._server_type}s.js`;
+		if (FaFile.isFile(path)) {
+			let configuration = require(path);
+			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
+				let module = modules[i];
+				if (!this._routes_list[module]) {
+					this._routes_list[module] = {};
+				}
+				for (let routes = Object.keys(configuration[modules[i]]), j = 0, end = routes.length - 1; j <= end; j++) {
+					let route = routes[j];
+					if (!this._routes_list[module][route]) {
+						this._routes_list[module][route] = {
+							controller: configuration[module][route]["controller"],
+							action: configuration[module][route]["action"],
+						};
+					}
 				}
 			}
 		}

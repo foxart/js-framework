@@ -49,6 +49,7 @@ exports.getHandler = function (token) {
  * @param data
  */
 exports.serve = function (context, token, data) {
+	// console.warn(token);
 	if (handler_list[token] !== undefined) {
 		handler_list[token].process.call(context, data);
 	} else {

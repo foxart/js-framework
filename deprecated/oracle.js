@@ -52,22 +52,33 @@ module.exports = function (configuration) {
 			});
 		})
 	};
+	module.closeConnection = function () {
+		Oracle.close(function (e) {
+			if (e) {
+				console.error(e);
+			}
+		});
+	};
 	/**
 	 *
 	 * @param callback {Function}
 	 * @param result
 	 */
 	module.executeCallback = function (callback, result) {
-		if (this.configuration.persistent) {
+		// console.info({"persistent": this.configuration.persistent});
+		if (this.configuration.persistent === "1") {
+			// console.warn(["PERSISTENT"]);
 			callback.call(this, result);
 		} else {
-			Oracle.close(function (e) {
-				if (e) {
-					/*connection close error*/
-					logOracleError(new FaError(e));
-				}
-				callback.call(this, result);
-			});
+			// console.warn(["STATELESS"]);
+			callback.call(this, result);
+			// Oracle.close(function (e) {
+			// 	console.error(e);
+			// 	if (e) {
+			// 		console.error(e);
+			// 	} else {
+			// 	}
+			// });
 		}
 	};
 	module.isConnected = function () {
@@ -75,6 +86,7 @@ module.exports = function (configuration) {
 	};
 	module.execute = function (query, parameters, options, onSuccess, onError) {
 		Oracle.execute(query, parameters, options, function (error, result) {
+			// console.error("execute", query, Object.keys(result).length);
 			if (error) {
 				/*query execute error*/
 				module.executeCallback(onError, error);
@@ -99,10 +111,10 @@ module.exports = function (configuration) {
 			parameter_list[1] === undefined ? [] : parameter_list[1],
 			parameter_list[2] === undefined ? [] : parameter_list[2],
 			function_list[0] === undefined ? function (data) {
-				logOracleResponse(data);
+				// logOracleResponse(data);
 			} : function_list[0],
 			function_list[1] === undefined ? function (e) {
-				logOracleError(new FaError(e));
+				console.error(e);
 			} : function_list[1]
 		];
 	}
@@ -121,10 +133,11 @@ module.exports = function (configuration) {
 		if (this.isConnected()) {
 			// module.execute("alter session set time_zone='America/New_York'", query, parameters, options, onSuccess, onError);
 			module.execute(query, parameters, options, onSuccess, onError);
+			// this.closeConnection();
 		} else {
+			console.info(`${module.configuration.host}:${module.configuration.port}/${module.configuration.SID}`);
 			this.openConnection().then(function (connection) {
 				Oracle = connection;
-				// server1.console.log(connection)
 				module.execute(query, parameters, options, onSuccess, onError);
 			}, function (error) {
 				/*connection open error*/
@@ -133,6 +146,7 @@ module.exports = function (configuration) {
 		}
 	};
 	module.queryPromise = function () {
+		// console.error("queryPromise");
 		let context = this;
 		let query, parameters, options;
 		let filter = filterArguments(arguments);

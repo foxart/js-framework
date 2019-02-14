@@ -58,10 +58,10 @@ String.prototype.replaceAll = function (search, replace, count) {
 	let ra = Object.prototype.toString.call(r) === '[object Array]';
 	let sa = Object.prototype.toString.call(s) === '[object Array]';
 	s = [].concat(s);
-	let $global = (typeof window !== 'undefined' ? window : global);
-	$global.$locutus = $global.$locutus || {};
-	let $locutus = $global.$locutus;
-	$locutus.php = $locutus.php || {};
+	// let $global = (typeof window !== 'undefined' ? window : global);
+	// $global.$locutus = $global.$locutus || {};
+	// let $locutus = $global.$locutus;
+	// $locutus.php = $locutus.php || {};
 	if (typeof (search) === 'object' && typeof (replace) === 'string') {
 		temp = replace;
 		replace = [];

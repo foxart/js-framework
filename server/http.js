@@ -11,7 +11,15 @@ const FaConsoleColor = require('../console/console-helper');
 const FaConverterClass = require('../base/converter');
 const FaHttpRequestClass = require('./http-request');
 const FaHttpResponseClass = require('./http-response');
+/**
+ *
+ * @type {module.FaHttpContentType}
+ */
 const FaHttpContentType = require("./http-content-type");
+/**
+ *
+ * @type {module.FaHttpStatusCode}
+ */
 const FaHttpStatusCode = require("./http-status-code");
 /**
  *
@@ -33,6 +41,11 @@ module.exports = class FaHttpClass {
 		 */
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
+		/**
+		 *
+		 * @type {module.FaHttpStatusCode}
+		 * @private
+		 */
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this.HttpServer = this._createHttp(this.Configuration);
 	}
