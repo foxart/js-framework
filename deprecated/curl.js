@@ -27,7 +27,7 @@ const
 // 	FaPromise = require('./promise/index');
 /*models*/
 const
-	Model = require('./model');
+	Model = require('./deprecatedModel');
 
 /**
  *

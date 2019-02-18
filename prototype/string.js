@@ -1,8 +1,16 @@
 "use strict";
-
+const ObjectId = require('mongodb').ObjectID;
+/**
+ *
+ * @return {string}
+ */
 String.prototype.capitalize = function () {
 	return this.charAt(0).toUpperCase() + this.slice(1)
 };
+/**
+ *
+ * @return {string}
+ */
 String.prototype.decapitalize = function () {
 	return this.charAt(0).toLowerCase() + this.slice(1)
 };
@@ -21,6 +29,13 @@ String.prototype.escapeHtml = function () {
 	return this.replace(/[&<>"']/g, function (m) {
 		return map[m];
 	});
+};
+/**
+ *
+ * @return {Object}
+ */
+String.prototype.toMongoId = function () {
+	return new ObjectId(this);
 };
 /**
  *

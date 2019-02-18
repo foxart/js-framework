@@ -2,7 +2,7 @@
 /*node*/
 const Buffer = require('buffer').Buffer;
 const Http = require('http');
-const Https = require('https');
+// const Https = require('https');
 const MimeTypes = require('mime-types');
 const Url = require('url');
 /*fa*/
@@ -27,12 +27,11 @@ const FaHttpStatusCode = require("./http-status-code");
  */
 module.exports = class FaHttpClass {
 	constructor(configuration) {
-		this.name = "FaHttp";
-		this.folder = "controllers";
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		this._FaFileClass = require('../base/file')(this.Configuration.path);
 		this._FaAssetsRouterClass = require('../base/router')(this);
+		this._FaHttpResponseClass = FaHttpResponseClass;
 		this._FaRouterClass = require('../base/router')(this);
 		/**
 		 *
@@ -116,14 +115,14 @@ module.exports = class FaHttpClass {
 	 */
 	_createHttp(configuration) {
 		let context = this;
-		let _HttpServer = Http.createServer(function (req, res) {
+		return Http.createServer(function (req, res) {
 			context._listenHttp(req, res);
 		}).listen(configuration.port, function () {
 			console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
 				return `{${key}}`;
 			}), Object.values(configuration)));
 		});
-		let File = require('../base/file')();
+		// let File = require('../base/file')();
 		// const options = {
 		// 	key: File.readFileSync("/usr/src/ssl/server.key"),
 		// 	cert: File.readFileSync("/usr/src/ssl/server.cert")
@@ -136,7 +135,7 @@ module.exports = class FaHttpClass {
 		// 		return `{${key}}`;
 		// 	}), Object.values(configuration)));
 		// });
-		return _HttpServer;
+		// return _HttpServer;
 	}
 
 	/**
@@ -252,11 +251,13 @@ module.exports = class FaHttpClass {
 		});
 	}
 
+	 /*@return {Promise<any | never | module.FaHttpResponseClass>}*/
 	/**
 	 *
 	 * @param route {function | string}
 	 * @param data {*}
 	 * @return {Promise<any>}
+	 * @private
 	 */
 	_handeRoute(route, data) {
 		let context = this;
@@ -298,6 +299,6 @@ module.exports = class FaHttpClass {
 	 * @return {module.FaHttpResponseClass}
 	 */
 	response(content, type = null, status = null) {
-		return new FaHttpResponseClass(content, type, status);
+		return new this._FaHttpResponseClass(content, type, status);
 	}
 };

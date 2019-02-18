@@ -1,8 +1,11 @@
 "use strict";
 const FaTemplateClass = require('./template');
 const FaError = require('../base/error');
-
-class FaController {
+/**
+ *
+ * @type {module.FaController}
+ */
+module.exports = class FaController {
 	/**
 	 *
 	 * @param FaHttp {FaHttpClass}
@@ -10,12 +13,17 @@ class FaController {
 	 */
 	constructor(FaHttp, namespace) {
 		this.Http = FaHttp;
+		/**
+		 *
+		 * @type {module.FaTemplateClass}
+		 * @private
+		 */
 		this._FaTemplateClass = new FaTemplateClass(`${namespace}/views`);
 	}
 
 	/**
 	 * @param template {string}
-	 * @return {FaTemplateClass}
+	 * @return {module.FaTemplateClass}
 	 */
 	template(template) {
 		try {
@@ -35,22 +43,4 @@ class FaController {
 			xml: data
 		}, this.Http.type.xml);
 	}
-}
-
-/**
- *
- * @type {FaController}
- */
-module.exports = FaController;
-/**
- *
- * @param FaHttp {FaHttpClass}
- * @param namespace {string}
- */
-// module.exports = function (FaHttp, namespace) {
-// 	if (arguments) {
-// 		return new FaController(FaHttp, namespace);
-// 	} else {
-// 		return FaController;
-// 	}
-// };
+};

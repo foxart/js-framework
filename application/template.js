@@ -1,28 +1,18 @@
 "use strict";
 const FaError = require("../base/error");
 const FaFileClass = require("../base/file");
-
 /**
  *
- * @type {FaTemplateClass}
+ * @type {module.FaTemplateClass}
  */
-class FaTemplateClass {
+module.exports = class FaTemplateClass {
 	/**
 	 *
 	 * @param path {string|null}
 	 */
 	constructor(path = null) {
-		this._FaFileClass = new FaFileClass(path);
-		this._template = '';
-	}
-
-	/**
-	 *
-	 * @return {FaFileClass}
-	 * @private
-	 */
-	get _File() {
-		return this._FaFileClass;
+		this._FaFile = new FaFileClass(path);
+		this._template = "";
 	}
 
 	/**
@@ -44,28 +34,15 @@ class FaTemplateClass {
 	/**
 	 *
 	 * @param filename {string}
-	 * @return {FaTemplateClass}
+	 * @return {module.FaTemplateClass}
 	 */
 	load(filename) {
-		// console.error(this._File.path(filename));
+		// console.error(this._FaFile.path(filename));
 		try {
-			this.set = this._File.readFileSync(`${filename}.tpl`).toString();
+			this.set = this._FaFile.readFileSync(`${filename}.tpl`).toString();
 		} catch (e) {
-			throw FaError.pickTrace(`template not found: ${this._File.path(`${filename}.tpl`)}`, 2);
+			throw FaError.pickTrace(`template not found: ${this._FaFile.path(`${filename}.tpl`)}`, 2);
 		}
 		return this;
-	}
-}
-
-/**
- *
- * @param path {string|null}
- * @return {FaTemplateClass}
- */
-module.exports = function (path = null) {
-	if (arguments) {
-		return new FaTemplateClass(path);
-	} else {
-		return FaTemplateClass;
 	}
 };

@@ -1,6 +1,10 @@
-'use strict';
-
-class Model {
+"use strict";
+/**
+ *
+ * @type {module.deprecatedModel}
+ * @deprecated
+ */
+module.exports = class deprecatedModel {
 	constructor(name) {
 		this.class_name = name;
 		this.adapter = {};
@@ -72,10 +76,4 @@ class Model {
 			this.data = this.adapterFunction([this.data], this.getAdapter, options)[0]
 		}
 	}
-}
-
-/**
- *
- * @type {Model}
- */
-module.exports = Model;
+};

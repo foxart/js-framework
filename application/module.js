@@ -1,4 +1,5 @@
 "use strict";
+
 const FaError = require("../base/error");
 const FaFile = require("../base/file")();
 const FaHttpClass = require("../server/http");
@@ -14,7 +15,6 @@ module.exports = class FaModule {
 	 * @param path {string}
 	 */
 	constructor(server, path) {
-		this.name = "FaModule";
 		this._server = server;
 		if (server instanceof FaHttpClass) {
 			this._server_type = "controller";
@@ -39,6 +39,7 @@ module.exports = class FaModule {
 		return Object.keys(this._controller_list);
 	}
 
+
 	controllerFilenameToName(controller) {
 		let pattern_filename = new RegExp(`^([A-Z][^-]+)${this._server_type.capitalize()}\.js$`);
 		let pattern_name = new RegExp("[A-Z][^A-Z]*", "g");
@@ -51,7 +52,6 @@ module.exports = class FaModule {
 			return null;
 		}
 	}
-
 	controllerNameToFilename(controller) {
 		let pattern = new RegExp("[^-]+", "g");
 		let match = controller.match(pattern);
@@ -141,7 +141,8 @@ module.exports = class FaModule {
 			return this._find(path);
 		} else if (FaFile.isFile(path)) {
 			let ControllerClass = require(path);
-			this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
+			// this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
+			this._controller_list[path] = new ControllerClass(this._server);
 			return this._find(path);
 		} else {
 			throw new FaError(`controller not found: ${path}`);

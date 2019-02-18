@@ -8,30 +8,42 @@ const FaTemplateClass = require('./template');
 module.exports = class FaControllerHttp {
 	/**
 	 *
-	 * @param FaHttp {FaHttpClass}
-	 * @param namespace_view {string}
+	 * @param FaHttp {module.FaHttpClass}
+	 * @param views_path {string | null}
 	 */
-	constructor(FaHttp, namespace_view) {
-		this.name = "FaControllerHttp";
+	constructor(FaHttp, views_path = null) {
+		this._FaHttp = FaHttp;
+		let path_template = views_path === null ? this._getTemplatePath(FaError.pickTrace(new Error(), 1)["trace"][0]["path"]) : views_path;
 		/**
 		 *
-		 * @type {module.FaHttpClass}
+		 * @type {module.FaTemplateClass}
+		 * @private
 		 */
-		this.Http = FaHttp;
-		this._FaTemplateClass = new FaTemplateClass(namespace_view);
+		this._FaTemplateClass = new FaTemplateClass(path_template);
+	}
+
+	_getTemplatePath(controller) {
+		let regular_filename = new RegExp(`^(.+/)controllers/([A-Z][^-]+)Controller.js$`);
+		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
+		let match_filename = controller.match(regular_filename);
+		if (match_filename) {
+			return `${match_filename[1]}views/${match_filename[2].match(regular_name).join("-").toLowerCase()}`;
+		} else {
+			return null;
+		}
 	}
 
 	/**
 	 *
 	 * @return {module.FaHttpClass}
 	 */
-	get http(){
-		return this.Http;
+	get http() {
+		return this._FaHttp;
 	}
 
 	/**
 	 * @param template {string}
-	 * @return {FaTemplateClass}
+	 * @return {module.FaTemplateClass}
 	 */
 	template(template) {
 		try {
@@ -47,8 +59,8 @@ module.exports = class FaControllerHttp {
 	 * @return {*}
 	 */
 	actionIndex(data) {
-		return this.Http.response({
+		return this.http.response({
 			xml: data
-		}, this.Http.type.xml);
+		}, this.http.type.xml);
 	}
 };
