@@ -3,31 +3,32 @@
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const assert = require('assert');
+/*fa-nodejs*/
+const Model = require("fa-nodejs/base/model");
 /**
  *
- * @param configuration
+ * @type {module.MongoModel}
  */
-module.exports = function (configuration) {
-	let module = {};
-	let Mongo;
-	let createConnection = function (configuration) {
+module.exports = class MongoModel extends Model {
+
+	createConnection (configuration) {
 		module.configuration = configuration;
 		module.link = `mongodb://${configuration.host}:${configuration.port}`;
 		console.log(`MongoModel ${configuration.database}://${configuration.host}:${configuration.port}`);
 	};
 	/*create*/
-	new createConnection(configuration);
+	// new createConnection(configuration);
 	/**
 	 *
 	 * @return {Promise<any>}
 	 */
-	module.openConnection = function () {
+	openConnection () {
 		return new Promise(function (resolve, reject) {
 			MongoClient.connect(module.link, {
 				useNewUrlParser: true
 			}, function (error, client) {
 				if (error === null) {
-					Mongo = client;
+					// Mongo = client;
 					resolve(client);
 				} else {
 					reject(error);
@@ -38,8 +39,8 @@ module.exports = function (configuration) {
 	/**
 	 *
 	 */
-	module.closeConnection = function () {
-		Mongo.close();
+	closeConnection () {
+		// Mongo.close();
 	};
 	/**
 	 * @deprecated
@@ -48,7 +49,7 @@ module.exports = function (configuration) {
 	 * @param callback
 	 * @returns {Promise<void>}
 	 */
-	module.aggregateDocument = async function (collection, options, callback) {
+	aggregateDocument (collection, options, callback) {
 		if (typeof options === 'function') {
 			callback = options;
 		}
@@ -56,6 +57,8 @@ module.exports = function (configuration) {
 			Mongo = await this.openConnection().catch(function (error) {
 				console.error(error)
 			});
+
+
 		}
 		if (Mongo !== undefined) {
 			Mongo.db(this.configuration.database).collection(collection).aggregate(options, function (error, result) {
