@@ -3,8 +3,11 @@
 const Fs = require("fs");
 /*fa*/
 const FaError = require("./error");
-
-class FaFileClass {
+/**
+ *
+ * @type {module.FaFileClass}
+ */
+module.exports = class FaFileClass {
 	/**
 	 *
 	 * @param path {string|null}
@@ -132,17 +135,4 @@ class FaFileClass {
 		fileStream.write(data);
 		fileStream.end();
 	};
-}
-
-/**
- *
- * @param path {string|null}
- * @return {FaFileClass}
- */
-module.exports = function (path = null) {
-	if (arguments) {
-		return new FaFileClass(path);
-	} else {
-		return FaFileClass;
-	}
 };

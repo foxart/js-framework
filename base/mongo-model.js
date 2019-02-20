@@ -1,47 +1,62 @@
 "use strict";
 /*node*/
-const MongoClient = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
-const assert = require('assert');
+const MongoClient = require("mongodb").MongoClient;
+const ObjectID = require("mongodb").ObjectID;
+const assert = require("assert");
 /*fa-nodejs*/
-const Model = require("fa-nodejs/base/model");
+const ModelClass = require("fa-nodejs/base/model");
+const FaFileClass = require("fa-nodejs/base/file");
+const FaErrorStack = require("fa-nodejs/base/error-stack");
+/*variables*/
+let FaFile = new FaFileClass();
 /**
  *
- * @type {module.MongoModel}
+ * @type {module.MongoModelClass}
  */
-module.exports = class MongoModel extends Model {
+module.exports = class MongoModelClass extends ModelClass {
+	constructor() {
+		super();
+		this._MongoClient = null;
+		this._connectorName = `${this._connector.split("-").map(item => item.capitalize()).join("")}Connector`;
+		this._connectorPath = this._getConnectorPath;
+	};
 
-	createConnection (configuration) {
-		module.configuration = configuration;
-		module.link = `mongodb://${configuration.host}:${configuration.port}`;
-		console.log(`MongoModel ${configuration.database}://${configuration.host}:${configuration.port}`);
-	};
-	/*create*/
-	// new createConnection(configuration);
+	get _collection() {
+		return null;
+	}
+
+	get _getConnectorPath() {
+		console.error(FaErrorStack.pick(new Error().stack, 2));
+		let model_path = FaErrorStack.pick(new Error().stack, 2)[0]["path"];
+		let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
+		let match_path = model_path.match(regular_path);
+		if (match_path) {
+			return `${match_path[1]}/config/connectors/${this._connectorName}.js`;
+		} else {
+			return null;
+		}
+	}
+
 	/**
 	 *
-	 * @return {Promise<any>}
+	 * @return {module.MongoConnectorClass}
 	 */
-	openConnection () {
-		return new Promise(function (resolve, reject) {
-			MongoClient.connect(module.link, {
-				useNewUrlParser: true
-			}, function (error, client) {
-				if (error === null) {
-					// Mongo = client;
-					resolve(client);
-				} else {
-					reject(error);
-				}
-			});
-		});
-	};
-	/**
-	 *
-	 */
-	closeConnection () {
-		// Mongo.close();
-	};
+	get connector() {
+		if (global[this._connectorName]) {
+			console.log(["FOUND"]);
+			return global[this._connectorName];
+		} else {
+			console.log(["NOT"]);
+			if (FaFile.isFile(this._connectorPath)) {
+				let ConnectorClass = require(this._connectorPath);
+				global[this._connectorName] = new ConnectorClass();
+			} else {
+				throw new FaErrorStack(`connector not found: ${this._connectorPath}`);
+			}
+			return global[this._connectorName];
+		}
+	}
+
 	/**
 	 * @deprecated
 	 * @param collection
@@ -49,16 +64,14 @@ module.exports = class MongoModel extends Model {
 	 * @param callback
 	 * @returns {Promise<void>}
 	 */
-	aggregateDocument (collection, options, callback) {
-		if (typeof options === 'function') {
+	aggregateDocument(collection, options, callback) {
+		if (typeof options === "function") {
 			callback = options;
 		}
 		if (Mongo === undefined || Mongo.isConnected() === false) {
-			Mongo = await this.openConnection().catch(function (error) {
-				console.error(error)
-			});
-
-
+			// Mongo = await this.openConnection().catch(function (error) {
+			// 	console.error(error)
+			// });
 		}
 		if (Mongo !== undefined) {
 			Mongo.db(this.configuration.database).collection(collection).aggregate(options, function (error, result) {
@@ -71,59 +84,72 @@ module.exports = class MongoModel extends Model {
 			});
 		}
 	};
+
 	/**
-	 *
-	 * @param collection
 	 * @param filter
 	 * @param options
 	 * @return {Promise<any>}
 	 */
-	module.findOne = function (collection, filter, options) {
+
+	findOne(filter, options) {
+		let context = this;
 		return new Promise(async function (resolve, reject) {
-			if (Mongo === undefined || Mongo.isConnected() === false) {
-				Mongo = await module.openConnection();
-			}
-			module.sanitize(filter);
-			Mongo.db(module.configuration.database).collection(collection).findOne(filter, options).then(function (result) {
-				resolve(result);
+			/**/
+			context.connector.collection(context._collection).then(function (collection) {
+				resolve(collection.findOne(filter, options));
 			}).catch(function (e) {
 				reject(e);
 			});
+			/**/
+			// context.connector.database("ula-central").then(function (database) {
+			// 	resolve(database.collection("ula_clients").findOne(filter, options));
+			// }).catch(function (e) {
+			// 	reject(e);
+			// });
 		});
 	};
+
 	/**
 	 *
-	 * @param collection
 	 * @param filter
 	 * @param options
 	 * @return {Promise<any>}
 	 */
-	module.findMany = function (collection, filter, options) {
+	findMany(filter, options) {
+		let context = this;
+		let stack = FaErrorStack.pick(new Error().stack, 1);
+		// console.error(stack);
+		// console.error(new FaError("e").setTrace(stack));
 		return new Promise(async function (resolve, reject) {
-			if (Mongo === undefined || Mongo.isConnected() === false) {
-				Mongo = await module.openConnection();
-			}
-			module.sanitize(filter);
-			Mongo.db(module.configuration.database).collection(collection).find(filter, options).toArray(function (e, result) {
-				if (e) {
-					reject(new FaError(e));
-				} else {
-					resolve(result);
-				}
+			// if (Mongo === undefined || Mongo.isConnected() === false) {
+			// 	Mongo = await module.openConnection();
+			// }
+			context.connector.collection(context._collection).then(function (collection) {
+				collection.find(filter, options).toArray(function (e, result) {
+					// console.error(arguments)
+					if (e) {
+console.error(new FaError(e).setTrace(stack))
+						reject(new FaError(e).setTrace(stack));
+					} else {
+						resolve(result);
+					}
+				});
 			});
 		});
 	};
+
 	/**
 	 *
 	 * @param collection
 	 * @param data
 	 * @return {Promise<any>}
 	 */
-	module.insertOne = function (collection, data) {
+
+	insertOne(collection, data) {
 		return new Promise(async function (resolve, reject) {
-			if (Mongo === undefined || Mongo.isConnected() === false) {
-				Mongo = await module.openConnection();
-			}
+			// if (Mongo === undefined || Mongo.isConnected() === false) {
+			// 	Mongo = await module.openConnection();
+			// }
 			Mongo.db(module.configuration.database).collection(collection).insertOne(data).then(function (result) {
 				if (result.result.n === 1 && result.ops.length === 1) {
 					resolve(result.ops[0]);
@@ -135,6 +161,7 @@ module.exports = class MongoModel extends Model {
 			});
 		});
 	};
+
 	/**
 	 * @deprecated
 	 * @param collection
@@ -142,11 +169,12 @@ module.exports = class MongoModel extends Model {
 	 * @param callback
 	 * @returns {Promise<void>}
 	 */
-	module.insertMany = async function (collection, data, callback) {
+
+	insertMany(collection, data, callback) {
 		if (Mongo === undefined || Mongo.isConnected() === false) {
-			Mongo = await this.openConnection().catch(function (error) {
-				console.error(error)
-			});
+			// Mongo = await this.openConnection().catch(function (error) {
+			// 	console.error(error)
+			// });
 		}
 		if (Mongo !== undefined) {
 			Mongo.db(this.configuration.database).collection(collection).insertMany(data, function (error, result) {
@@ -159,6 +187,7 @@ module.exports = class MongoModel extends Model {
 			});
 		}
 	};
+
 	/**
 	 *
 	 * @param collection
@@ -167,11 +196,12 @@ module.exports = class MongoModel extends Model {
 	 * @param options
 	 * @returns {Promise<module.FaPromise>}
 	 */
-	module.updateOne = function (collection, filter, data, options) {
+
+	updateOne(collection, filter, data, options) {
 		return new Promise(async function (resolve, reject) {
-			if (Mongo === undefined || Mongo.isConnected() === false) {
-				Mongo = await module.openConnection();
-			}
+			// if (Mongo === undefined || Mongo.isConnected() === false) {
+			// 	Mongo = await module.openConnection();
+			// }
 			module.sanitize(filter);
 			Mongo.db(module.configuration.database).collection(collection).updateOne(filter, data, options).then(function (result) {
 				if (result.result.n === 1) {
@@ -184,12 +214,13 @@ module.exports = class MongoModel extends Model {
 			});
 		});
 	};
+
 	/**
 	 *
 	 * @returns {*}
 	 */
-	module.newId = function () {
+
+	newId() {
 		return new ObjectID();
 	};
-	return module;
 };

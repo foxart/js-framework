@@ -7,6 +7,7 @@ const MimeTypes = require('mime-types');
 const Url = require('url');
 /*fa*/
 const FaError = require('../base/error');
+const FaFileClass = require('../base/file');
 const FaConsoleColor = require('../console/console-helper');
 const FaConverterClass = require('../base/converter');
 const FaHttpRequestClass = require('./http-request');
@@ -29,7 +30,7 @@ module.exports = class FaHttpClass {
 	constructor(configuration) {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
-		this._FaFileClass = require('../base/file')(this.Configuration.path);
+		this._FaFile = new FaFileClass(this.Configuration.path);
 		this._FaAssetsRouterClass = require('../base/router')(this);
 		this._FaHttpResponseClass = FaHttpResponseClass;
 		this._FaRouterClass = require('../base/router')(this);
@@ -69,10 +70,11 @@ module.exports = class FaHttpClass {
 
 	/**
 	 *
-	 * @returns {FaFileClass}
+	 * @return {module.FaFileClass}
+	 * @constructor
 	 */
 	get File() {
-		return this._FaFileClass;
+		return this._FaFile;
 	}
 
 	/**

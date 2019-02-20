@@ -12,6 +12,7 @@ module.exports = class FaController {
 	 * @param namespace {string}
 	 */
 	constructor(FaHttp, namespace) {
+		throw new Error("deprecated");
 		this.Http = FaHttp;
 		/**
 		 *

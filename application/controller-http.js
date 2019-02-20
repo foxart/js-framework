@@ -9,25 +9,25 @@ module.exports = class FaControllerHttp {
 	/**
 	 *
 	 * @param FaHttp {module.FaHttpClass}
-	 * @param views_path {string | null}
+	 * @param views_path {string|null}
 	 */
 	constructor(FaHttp, views_path = null) {
 		this._FaHttp = FaHttp;
-		let path_template = views_path === null ? this._getTemplatePath(FaError.pickTrace(new Error(), 1)["trace"][0]["path"]) : views_path;
 		/**
 		 *
 		 * @type {module.FaTemplateClass}
 		 * @private
 		 */
-		this._FaTemplateClass = new FaTemplateClass(path_template);
+		this._FaTemplateClass = new FaTemplateClass(views_path === null ? this._templatePath : views_path);
 	}
 
-	_getTemplatePath(controller) {
-		let regular_filename = new RegExp(`^(.+/)controllers/([A-Z][^-]+)Controller.js$`);
+	get _templatePath() {
+		let controller_path = FaError.pickTrace(new Error(), 2)["trace"][0]["path"];
+		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Controller.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
-		let match_filename = controller.match(regular_filename);
-		if (match_filename) {
-			return `${match_filename[1]}views/${match_filename[2].match(regular_name).join("-").toLowerCase()}`;
+		let match_path = controller_path.match(regular_path);
+		if (match_path) {
+			return `${match_path[1]}/views/${match_path[2].match(regular_name).join("-").toLowerCase()}`;
 		} else {
 			return null;
 		}

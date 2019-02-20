@@ -1,7 +1,7 @@
 "use strict";
-
+/*fa-nodejs*/
 const FaError = require("../base/error");
-const FaFile = require("../base/file")();
+const FaFileClass = require("../base/file");
 const FaHttpClass = require("../server/http");
 const FaSocketClass = require("../server/socket");
 /**
@@ -23,6 +23,7 @@ module.exports = class FaModule {
 		} else {
 			throw new FaError(`wrong server type`);
 		}
+		this._FaFile = new FaFileClass();
 		this._path = path;
 		this._controller_list = {};
 		this._routes_list = {};
@@ -39,19 +40,25 @@ module.exports = class FaModule {
 		return Object.keys(this._controller_list);
 	}
 
+	/**
+	 *
+	 * @return {module.FaFileClass}
+	 */
+	get file() {
+		return this._FaFile;
+	}
 
 	controllerFilenameToName(controller) {
 		let pattern_filename = new RegExp(`^([A-Z][^-]+)${this._server_type.capitalize()}\.js$`);
 		let pattern_name = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_filename = controller.match(pattern_filename);
 		if (match_filename) {
-			let match_name = match_filename[1].match(pattern_name);
-			// console.warn({[controller]: match_name.join("-").toLowerCase()});
-			return match_name.join("-").toLowerCase();
+			return match_filename[1].match(pattern_name).join("-").toLowerCase();
 		} else {
 			return null;
 		}
 	}
+
 	controllerNameToFilename(controller) {
 		let pattern = new RegExp("[^-]+", "g");
 		let match = controller.match(pattern);
@@ -67,13 +74,7 @@ module.exports = class FaModule {
 		let pattern_action = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_method = method.match(pattern_method);
 		if (match_method) {
-			let match_name = match_method[1].match(pattern_action);
-			// console.warn({[method]: match_name.join("-").toLowerCase()});
-			if (match_name) {
-				return match_name.join("-").toLowerCase();
-			} else {
-				return null;
-			}
+			return match_method[1].match(pattern_action).join("-").toLowerCase();
 		} else {
 			return null
 		}
@@ -89,10 +90,17 @@ module.exports = class FaModule {
 		}
 	}
 
+	/**
+	 *
+	 * @param path
+	 * @return {*}
+	 * @private
+	 */
 	_readModules(path) {
-		if (FaFile.isDirectory(path)) {
-			return FaFile.readDirectorySync(path).reduce(function (result, item) {
-				if (FaFile.isDirectory(`${path}/${item}`)) {
+		let context = this;
+		if (this.file.isDirectory(path)) {
+			return this.file.readDirectorySync(path).reduce(function (result, item) {
+				if (context.file.isDirectory(`${path}/${item}`)) {
 					result.push(item);
 				}
 				return result;
@@ -102,12 +110,18 @@ module.exports = class FaModule {
 		}
 	}
 
+	/**
+	 *
+	 * @param path
+	 * @return {*}
+	 * @private
+	 */
 	_readControllers(path) {
 		let context = this;
-		if (FaFile.isDirectory(path)) {
-			return FaFile.readDirectorySync(path).reduce(function (result, item) {
+		if (this.file.isDirectory(path)) {
+			return this.file.readDirectorySync(path).reduce(function (result, item) {
 				let controller = context.controllerFilenameToName(item);
-				if (FaFile.isFile(`${path}/${item}`) && controller) {
+				if (context.file.isFile(`${path}/${item}`) && controller) {
 					result.push(controller);
 				}
 				return result;
@@ -117,9 +131,15 @@ module.exports = class FaModule {
 		}
 	}
 
-	_readMethods(Controller) {
+	/**
+	 *
+	 * @param controller
+	 * @return {Array}
+	 * @private
+	 */
+	_readMethods(controller) {
 		let context = this;
-		return Reflect.ownKeys(Reflect.getPrototypeOf(Controller)).reduce(function (result, item) {
+		return Reflect.ownKeys(Reflect.getPrototypeOf(controller)).reduce(function (result, item) {
 			let method = context.controllerMethodToAction(item);
 			if (method) {
 				result.push(method);
@@ -139,7 +159,7 @@ module.exports = class FaModule {
 		let path = `${this._path}/modules/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
 		if (this._exist(path)) {
 			return this._find(path);
-		} else if (FaFile.isFile(path)) {
+		} else if (this.file.isFile(path)) {
 			let ControllerClass = require(path);
 			// this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
 			this._controller_list[path] = new ControllerClass(this._server);
@@ -149,6 +169,10 @@ module.exports = class FaModule {
 		}
 	}
 
+	/**
+	 *
+	 * @private
+	 */
 	_loadFromDirectory() {
 		let context = this;
 		let result = {};
@@ -179,9 +203,13 @@ module.exports = class FaModule {
 		return result;
 	}
 
+	/**
+	 *
+	 * @private
+	 */
 	_loadFromConfiguration() {
 		let path = `${this._path}/config/${this._server_type}s.js`;
-		if (FaFile.isFile(path)) {
+		if (this.file.isFile(path)) {
 			let configuration = require(path);
 			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
 				let module = modules[i];
