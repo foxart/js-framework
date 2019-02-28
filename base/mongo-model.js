@@ -1,226 +1,222 @@
 "use strict";
 /*node*/
-const MongoClient = require("mongodb").MongoClient;
 const ObjectID = require("mongodb").ObjectID;
-const assert = require("assert");
 /*fa-nodejs*/
 const ModelClass = require("fa-nodejs/base/model");
 const FaFileClass = require("fa-nodejs/base/file");
-const FaErrorStack = require("fa-nodejs/base/error-stack");
+const FaError = require("fa-nodejs/base/error");
+const FaTrace = require("fa-nodejs/base/trace");
 /*variables*/
 let FaFile = new FaFileClass();
-/**
- *
- * @type {module.MongoModelClass}
- */
-module.exports = class MongoModelClass extends ModelClass {
+let _connector_list = {};
+
+class MongoModelClass extends ModelClass {
 	constructor() {
 		super();
-		this._MongoClient = null;
-		this._connectorName = `${this._connector.split("-").map(item => item.capitalize()).join("")}Connector`;
+		this._connectorName = this._getConnectorName;
 		this._connectorPath = this._getConnectorPath;
+		this._client = null;
+		// this._FaMongoConnector = this._attachConnector;
 	};
 
-	get _collection() {
-		return null;
-	}
+	/**
+	 *
+	 * @return {string}
+	 * @private
+	 */
+	get _getConnectorName() {
+		return `${this.connectorName.split("-").map(item => item.capitalize()).join("")}Connector`;
+	};
 
+	/**
+	 *
+	 * @return {*}
+	 * @private
+	 */
 	get _getConnectorPath() {
-		console.error(FaErrorStack.pick(new Error().stack, 2));
-		let model_path = FaErrorStack.pick(new Error().stack, 2)[0]["path"];
+		let result = null;
+		let model_path = FaTrace.trace(2)["path"];
 		let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
 		let match_path = model_path.match(regular_path);
 		if (match_path) {
-			return `${match_path[1]}/config/connectors/${this._connectorName}.js`;
-		} else {
-			return null;
+			result = `${match_path[1]}/config/connectors/${this._connectorName}.js`;
 		}
-	}
+		return result;
+	};
 
 	/**
 	 *
-	 * @return {module.MongoConnectorClass}
+	 * @return {MongoConnectorClass}
+	 * @private
 	 */
-	get connector() {
-		if (global[this._connectorName]) {
-			console.log(["FOUND"]);
-			return global[this._connectorName];
-		} else {
-			console.log(["NOT"]);
+	get _connector() {
+		let result = _connector_list[this._connectorName];
+		if (!result) {
+			console.info([`{NEW} ${this._connectorName}`]);
 			if (FaFile.isFile(this._connectorPath)) {
-				let ConnectorClass = require(this._connectorPath);
-				global[this._connectorName] = new ConnectorClass();
+				let FaConnectorClass = require(this._connectorPath);
+				_connector_list[this._connectorName] = new FaConnectorClass;
+				result = _connector_list[this._connectorName];
 			} else {
-				throw new FaErrorStack(`connector not found: ${this._connectorPath}`);
+				throw new FaError(`connector <${this.connector}> not found at: ${this._connectorPath}`).pickTrace(2);
 			}
-			return global[this._connectorName];
 		}
+		return result;
 	}
 
 	/**
-	 * @deprecated
-	 * @param collection
-	 * @param options
-	 * @param callback
-	 * @returns {Promise<void>}
+	 *
+	 * @return {string}
 	 */
-	aggregateDocument(collection, options, callback) {
-		if (typeof options === "function") {
-			callback = options;
-		}
-		if (Mongo === undefined || Mongo.isConnected() === false) {
-			// Mongo = await this.openConnection().catch(function (error) {
-			// 	console.error(error)
-			// });
-		}
-		if (Mongo !== undefined) {
-			Mongo.db(this.configuration.database).collection(collection).aggregate(options, function (error, result) {
-				assert.equal(error, null);
-				result.toArray(function (error, documents) {
-					if (callback !== undefined) {
-						callback(documents);
-					}
-				});
-			});
-		}
-	};
-
-	/**
-	 * @param filter
-	 * @param options
-	 * @return {Promise<any>}
-	 */
-
-	findOne(filter, options) {
-		let context = this;
-		return new Promise(async function (resolve, reject) {
-			/**/
-			context.connector.collection(context._collection).then(function (collection) {
-				resolve(collection.findOne(filter, options));
-			}).catch(function (e) {
-				reject(e);
-			});
-			/**/
-			// context.connector.database("ula-central").then(function (database) {
-			// 	resolve(database.collection("ula_clients").findOne(filter, options));
-			// }).catch(function (e) {
-			// 	reject(e);
-			// });
-		});
+	get connectorName() {
+		return "default";
 	};
 
 	/**
 	 *
-	 * @param filter
-	 * @param options
-	 * @return {Promise<any>}
+	 * @return {string|null}
 	 */
-	findMany(filter, options) {
-		let context = this;
-		let stack = FaErrorStack.pick(new Error().stack, 1);
-		// console.error(stack);
-		// console.error(new FaError("e").setTrace(stack));
-		return new Promise(async function (resolve, reject) {
-			// if (Mongo === undefined || Mongo.isConnected() === false) {
-			// 	Mongo = await module.openConnection();
-			// }
-			context.connector.collection(context._collection).then(function (collection) {
-				collection.find(filter, options).toArray(function (e, result) {
-					// console.error(arguments)
-					if (e) {
-console.error(new FaError(e).setTrace(stack))
-						reject(new FaError(e).setTrace(stack));
-					} else {
-						resolve(result);
-					}
-				});
-			});
-		});
+	get collectionName() {
+		return null;
 	};
 
 	/**
 	 *
-	 * @param collection
-	 * @param data
-	 * @return {Promise<any>}
+	 * @returns {ObjectID}
 	 */
-
-	insertOne(collection, data) {
-		return new Promise(async function (resolve, reject) {
-			// if (Mongo === undefined || Mongo.isConnected() === false) {
-			// 	Mongo = await module.openConnection();
-			// }
-			Mongo.db(module.configuration.database).collection(collection).insertOne(data).then(function (result) {
-				if (result.result.n === 1 && result.ops.length === 1) {
-					resolve(result.ops[0]);
-				} else {
-					reject(result);
-				}
-			}).catch(function (e) {
-				reject(e);
-			});
-		});
-	};
-
-	/**
-	 * @deprecated
-	 * @param collection
-	 * @param data
-	 * @param callback
-	 * @returns {Promise<void>}
-	 */
-
-	insertMany(collection, data, callback) {
-		if (Mongo === undefined || Mongo.isConnected() === false) {
-			// Mongo = await this.openConnection().catch(function (error) {
-			// 	console.error(error)
-			// });
-		}
-		if (Mongo !== undefined) {
-			Mongo.db(this.configuration.database).collection(collection).insertMany(data, function (error, result) {
-				assert.equal(error, null);
-				assert.equal(data.length, result.result.n);
-				assert.equal(data.length, result.ops.length);
-				if (callback !== undefined) {
-					callback(result);
-				}
-			});
-		}
-	};
-
-	/**
-	 *
-	 * @param collection
-	 * @param filter
-	 * @param data
-	 * @param options
-	 * @returns {Promise<module.FaPromise>}
-	 */
-
-	updateOne(collection, filter, data, options) {
-		return new Promise(async function (resolve, reject) {
-			// if (Mongo === undefined || Mongo.isConnected() === false) {
-			// 	Mongo = await module.openConnection();
-			// }
-			module.sanitize(filter);
-			Mongo.db(module.configuration.database).collection(collection).updateOne(filter, data, options).then(function (result) {
-				if (result.result.n === 1) {
-					resolve(result.result);
-				} else {
-					reject(result);
-				}
-			}).catch(function (e) {
-				reject(e);
-			});
-		});
-	};
-
-	/**
-	 *
-	 * @returns {*}
-	 */
-
-	newId() {
+	get newId() {
 		return new ObjectID();
 	};
-};
+
+	/**
+	 *
+	 * @param id
+	 * @return {ObjectID}
+	 */
+	toId(id) {
+		return new ObjectID(id);
+	};
+
+	/**
+	 * @param pipeline {Array|Object}
+	 * @param options
+	 * @returns {Promise<Array|null>}
+	 */
+	aggregate(pipeline, options) {
+		let context = this;
+		let trace = FaTrace.trace(1);
+		return new Promise(function (resolve, reject) {
+			context.connectorOld.collection(context._collection).then(function (collection) {
+				collection.aggregate(pipeline, options).get((e, result) => e ? reject(new FaError(e).setTrace(trace)) : resolve(result));
+			});
+		});
+	};
+
+	/**
+	 * @param filter {Object|null}
+	 * @param options {Object|null}
+	 * @return {Promise<Object|null>}
+	 */
+	async findOne(filter = null, options = null) {
+		let collection = await this._connector.collection(this.collectionName);
+		let result = collection.findOne(filter, options);
+		await this._connector.close();
+		return result;
+	};
+
+	/**
+	 *
+	 * @param filter {Object|null}
+	 * @param options {Object|null}
+	 * @return {Promise<Array|null>}
+	 */
+	async findMany(filter = null, options = null) {
+		let collection = await this._connector.collection(this.collectionName);
+		let cursor = await collection.find(filter, options);
+		let result = await cursor.toArray();
+		await this._connector.close();
+		return result;
+	};
+
+	/**
+	 *
+	 * @param document {Object}
+	 * @param options {Object|null}
+	 * @return {Promise<{inserted: number, data: Object, id: ObjectID}>}
+	 */
+	async insertOne(document, options = null) {
+		let collection = await this._connector.collection(this.collectionName);
+		let cursor = await collection.insertOne(document, options);
+		let result = {
+			id: cursor["insertedId"],
+			inserted: cursor["insertedCount"],
+			data: cursor["ops"][0],
+		};
+		await this._connector.close();
+		return result;
+	};
+
+	/**
+	 *
+	 * @param document {Object[]}
+	 * @param options {Object|null}
+	 * @return {Promise<{inserted: number, data: Object, id: ObjectID[]}>}
+	 */
+	async insertMany(document, options = null) {
+		let collection = await this._connector.collection(this.collectionName);
+		let cursor = await collection.insertMany(document, options);
+		let result = {
+			id: cursor["insertedIds"],
+			inserted: cursor["insertedCount"],
+			data: cursor["ops"],
+		};
+		await this._connector.close();
+		return result;
+	};
+
+	/**
+	 *
+	 * @param filter {Object}
+	 * @param update {Object}
+	 * @param options {Object}
+	 * @return {Promise<{filtered: *, modified: *, id: null, upserted: *}>}
+	 */
+	async updateOne(filter, update, options) {
+		let collection = await this._connector.collection(this.collectionName);
+		let cursor = await collection.updateOne(filter, update, options);
+		let result = {
+			id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
+			filtered: cursor["matchedCount"],
+			modified: cursor["modifiedCount"],
+			upserted: cursor["upsertedCount"],
+		};
+		await this._connector.close();
+		return result;
+	};
+
+	/**
+	 *
+	 * @param filter {Object}
+	 * @param update {Object}
+	 * @param options {Object}
+	 * @return {Promise<{filtered: *, modified: *, id: null, upserted: *}>}
+	 */
+	async updateMany(filter, update, options) {
+		let collection = await this._connector.collection(this.collectionName);
+		let cursor = await collection.updateMany(filter, update, options);
+		let result = {
+			id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
+			filtered: cursor["matchedCount"],
+			modified: cursor["modifiedCount"],
+			upserted: cursor["upsertedCount"],
+		};
+		await this._connector.close();
+		return result;
+	};
+}
+
+/**
+ *
+ * @type {MongoModelClass}
+ */
+module.exports = MongoModelClass;

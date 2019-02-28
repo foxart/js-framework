@@ -1,6 +1,6 @@
 "use strict";
-const FaError = require("../base/error");
-const FaFileClass = require("../base/file");
+const FaError = require("fa-nodejs/base/error");
+const FaFileClass = require("fa-nodejs/base/file");
 /**
  *
  * @type {module.FaTemplateClass}
@@ -11,6 +11,11 @@ module.exports = class FaTemplateClass {
 	 * @param path {string|null}
 	 */
 	constructor(path = null) {
+		/**
+		 *
+		 * @type {module.FaFileClass}
+		 * @private
+		 */
 		this._FaFile = new FaFileClass(path);
 		this._template = "";
 	}

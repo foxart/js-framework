@@ -1,21 +1,18 @@
 "use strict";
 const HttpHeadersContentTypeModule = require("./http-content-type");
-/**
- *
- * @type {module.FaHttpRequestClass}
- */
-module.exports = class FaHttpRequestClass {
+
+class FaHttpRequestClass {
 	/**
 	 *
-	 * @param configuration
+	 * @param conf
 	 * @param method
 	 * @param headers
 	 * @param url
 	 * @param body
 	 * @return {{path: string, headers: *, request: {}, input: *, method: string, post, get}}
 	 */
-	constructor(configuration, method, headers, url, body) {
-		this._FaConverterClass = require("../base/converter")(configuration);
+	constructor(conf, method, headers, url, body) {
+		this._FaConverterClass = require("fa-nodejs/base/converter")(conf);
 		this._FaHeadersContentType = new HttpHeadersContentTypeModule();
 	}
 
@@ -77,5 +74,10 @@ module.exports = class FaHttpRequestClass {
 			input: body,
 		};
 	}
-};
+}
 
+/**
+ *
+ * @type {FaHttpRequestClass}
+ */
+module.exports = FaHttpRequestClass;

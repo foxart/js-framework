@@ -1,17 +1,18 @@
-'use strict';
+"use strict";
 /*node*/
-const Buffer = require('buffer').Buffer;
-const Http = require('http');
-// const Https = require('https');
-const MimeTypes = require('mime-types');
-const Url = require('url');
-/*fa*/
-const FaError = require('../base/error');
-const FaFileClass = require('../base/file');
-const FaConsoleColor = require('../console/console-helper');
-const FaConverterClass = require('../base/converter');
-const FaHttpRequestClass = require('./http-request');
-const FaHttpResponseClass = require('./http-response');
+const Buffer = require("buffer").Buffer;
+const Http = require("http");
+// const Https = require("https");
+const MimeTypes = require("mime-types");
+const Url = require("url");
+/*fa-nodejs*/
+const FaError = require("fa-nodejs/base/error");
+const FaTrace = require("fa-nodejs/base/trace");
+const FaFileClass = require("fa-nodejs/base/file");
+const FaConsoleColor = require("fa-nodejs/console/console-helper");
+const FaConverterClass = require("fa-nodejs/base/converter");
+const FaHttpRequestClass = require("fa-nodejs/server/http-request");
+const FaHttpResponseClass = require("fa-nodejs/server/http-response");
 /**
  *
  * @type {module.FaHttpContentType}
@@ -31,23 +32,14 @@ module.exports = class FaHttpClass {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		this._FaFile = new FaFileClass(this.Configuration.path);
-		this._FaAssetsRouterClass = require('../base/router')(this);
+		this._FaAssetsRouterClass = require("../base/router")(this);
 		this._FaHttpResponseClass = FaHttpResponseClass;
-		this._FaRouterClass = require('../base/router')(this);
-		/**
-		 *
-		 * @type {module.FaHttpRequestClass}
-		 * @private
-		 */
+		this._FaRouterClass = require("../base/router")(this);
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
-		/**
-		 *
-		 * @type {module.FaHttpStatusCode}
-		 * @private
-		 */
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this.HttpServer = this._createHttp(this.Configuration);
+		this._trace = FaTrace.trace(1);
 	}
 
 	/**
@@ -124,7 +116,7 @@ module.exports = class FaHttpClass {
 				return `{${key}}`;
 			}), Object.values(configuration)));
 		});
-		// let File = require('../base/file')();
+		// let File = require("../base/file")();
 		// const options = {
 		// 	key: File.readFileSync("/usr/src/ssl/server.key"),
 		// 	cert: File.readFileSync("/usr/src/ssl/server.cert")
@@ -148,16 +140,15 @@ module.exports = class FaHttpClass {
 	 */
 	_listenHttp(req, res) {
 		let context = this;
-		let body = '';
-		req.on('data', function (chunk) {
+		let body = "";
+		req.on("data", function (chunk) {
 			body += chunk;
 		});
-		req.on('error', function (error) {
+		req.on("error", function (error) {
 			context._respondHttp(req, res, error);
 		});
-		req.on('end', function () {
+		req.on("end", function () {
 			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
-				// console.warn(result.headers, result.status);
 				context._respondHttp(req, res, result);
 			});
 		});
@@ -171,26 +162,26 @@ module.exports = class FaHttpClass {
 	 * @private
 	 */
 	_respondHttp(req, res, FaHttpResponse) {
-		if (FaHttpResponse.headers['Content-Type'] === null) {
+		if (FaHttpResponse.headers["Content-Type"] === null) {
 			if (req.headers.accept) {
 				if (req.headers.accept.indexOf(this.type.json) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this.type.json;
+					FaHttpResponse.headers["Content-Type"] = this.type.json;
 				} else if (req.headers.accept.indexOf(this.type.html) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this.type.html;
+					FaHttpResponse.headers["Content-Type"] = this.type.html;
 				} else if (req.headers.accept.indexOf(this.type.urlencoded) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this.type.urlencoded;
+					FaHttpResponse.headers["Content-Type"] = this.type.urlencoded;
 				} else if (req.headers.accept.indexOf(this.type.xml) !== -1) {
-					FaHttpResponse.headers['Content-Type'] = this.type.xml;
+					FaHttpResponse.headers["Content-Type"] = this.type.xml;
 				} else {
-					FaHttpResponse.headers['Content-Type'] = this.type.html;
+					FaHttpResponse.headers["Content-Type"] = this.type.html;
 				}
 			} else {
-				FaHttpResponse.headers['Content-Type'] = this.type.html;
+				FaHttpResponse.headers["Content-Type"] = this.type.html;
 			}
 		}
-		// let accepts = require('accepts');
+		// let accepts = require("accepts");
 		// let accept = accepts(req);
-		switch (!FaHttpResponse.content.byteLength && FaHttpResponse.headers['Content-Type']) {
+		switch (!FaHttpResponse.content.byteLength && FaHttpResponse.headers["Content-Type"]) {
 			case this.type.json:
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
 				break;
@@ -212,17 +203,16 @@ module.exports = class FaHttpClass {
 		if (!FaHttpResponse.content.byteLength) {
 			FaHttpResponse.content = Buffer.from(FaHttpResponse.content);
 		}
-		// server1.console.error(FaHttpResponse.content);
 		for (let property in FaHttpResponse.headers) {
 			if (FaHttpResponse.headers.hasOwnProperty(property)) {
-				if (property === 'Content-Type' && FaHttpResponse.headers[property].indexOf('; charset=') === -1) {
-					res.setHeader(property, FaHttpResponse.headers[property] + '; charset=utf-8');
+				if (property === "Content-Type" && FaHttpResponse.headers[property].indexOf("; charset=") === -1) {
+					res.setHeader(property, FaHttpResponse.headers[property] + "; charset=utf-8");
 				} else {
 					res.setHeader(property, FaHttpResponse.headers[property]);
 				}
 			}
 		}
-		res.setHeader('Content-Length', FaHttpResponse.content.byteLength);
+		res.setHeader("Content-Length", FaHttpResponse.content.byteLength);
 		res.statusCode = FaHttpResponse.status;
 		res.write(FaHttpResponse.content);
 		res.end();
@@ -248,17 +238,16 @@ module.exports = class FaHttpClass {
 			} else if (mime) {
 				resolve(context._handleFile(data.path, mime));
 			} else {
-				resolve(context.response(FaError.pickTrace(`route not found: ${data.path}`, 1), null, context.status.notImplemented));
+				resolve(context.response(new FaError(`route not found: ${data.path}`).setTrace(context._trace), null, context.status.notImplemented));
 			}
 		});
 	}
 
-	 /*@return {Promise<any | never | module.FaHttpResponseClass>}*/
 	/**
 	 *
 	 * @param route {function | string}
 	 * @param data {*}
-	 * @return {Promise<any>}
+	 * @return {Promise<module.FaHttpResponseClass>}
 	 * @private
 	 */
 	_handeRoute(route, data) {
@@ -273,11 +262,10 @@ module.exports = class FaHttpClass {
 			}
 		}).catch(function (e) {
 			console.error(e);
-			return context.response(FaError.pickTrace(e, 0), null, context.status.internalServerError);
+			return context.response(new FaError(e).pickTrace(0), null, context.status.internalServerError);
 		});
 	}
 
-	
 	/**
 	 *
 	 * @param filename {string}

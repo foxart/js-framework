@@ -1,29 +1,11 @@
 "use strict";
 /*nodejs*/
 const MongoClient = require("mongodb").MongoClient;
-/**
- *
- * @type {module.MongoConnectorClass}
- */
-module.exports = class MongoConnectorClass {
-	get _host() {
-	};
 
-	get _port() {
+class MongoConnectorClass {
+	constructor() {
+		this._client = null;
 	};
-
-	get _database() {
-	};
-
-	get _persistent() {
-		return true;
-	};
-
-	get _configuration() {
-		return {
-			forceClose: false,
-		};
-	}
 
 	/**
 	 *
@@ -31,72 +13,111 @@ module.exports = class MongoConnectorClass {
 	 * @private
 	 */
 	get _url() {
-		return `mongodb://${this._host}:${this._port}`;
-	}
-
-	get _options() {
-		return {useNewUrlParser: true};
-	}
-
-	get open() {
-		let context = this;
-		return new Promise(function (resolve, reject) {
-			return MongoClient.connect(context._url, context._options, function (e, client) {
-				if (e === null) {
-					context._MongoClient = client;
-					resolve(true);
-				} else {
-					reject(e);
-				}
-			});
-		});
+		return `mongodb://${this.host}:${this.port}`;
 	};
 
-	get close() {
-		let context = this;
-		return new Promise(function (resolve, reject) {
-			return context._MongoClient.close(context._configuration.forceClose, function (e) {
-				if (e === null) {
-					context._MongoClient = null;
-					resolve(true);
-				} else {
-					reject(e);
-				}
-			});
-		});
+	/**
+	 *
+	 * @return {string}
+	 */
+	get host() {
+		return "localhost";
+	};
+
+	/**
+	 *
+	 * @return {number}
+	 */
+	get port() {
+		return 27017;
+	};
+
+	/**
+	 *
+	 * @return {string}
+	 */
+	get databaseName() {
+		return "mongo";
+	};
+
+	/**
+	 *
+	 * @return {boolean}
+	 */
+	get persistent() {
+		return true;
+	};
+
+	/**
+	 *
+	 * @return {Object}
+	 */
+	get connectOptions() {
+		return {
+			useNewUrlParser: true
+		};
+	};
+
+	/**
+	 *
+	 * @return {Object}
+	 */
+	get closeOptions() {
+		return {
+			forceClose: false,
+		};
 	};
 
 	/**
 	 *
 	 * @return {Promise<MongoClient>}
 	 */
-	get connection() {
-		let context = this;
-		return new Promise(function (resolve, reject) {
-			if (context._MongoClient) {
-				resolve(context._MongoClient);
-			} else {
-				context.open.then(function () {
-					resolve(context._MongoClient);
-				}).catch(function (e) {
-					reject(e);
-				});
-			}
-		});
+	async open() {
+		if (this._client) {
+			return this._client;
+		} else {
+			this._client = await MongoClient.connect(this._url, this.connectOptions);
+			return this._client;
+		}
 	};
 
-	database(name) {
-		let context = this;
-		return context.connection.then(function (client) {
-			return client.db(name);
-		});
+	/**
+	 *
+	 * @param database
+	 * @return {Promise<Db>}
+	 */
+	async database(database) {
+		let client = await this.open();
+		return client.db(database);
 	};
 
-	collection(name) {
-		let context = this;
-		return context.connection.then(function (client) {
-			// console.error(client.db(context._database).collection(name));
-			return client.db(context._database).collection(name);
-		});
+	/**
+	 *
+	 * @param collection
+	 * @return {Promise<Collection>}
+	 */
+	async collection(collection) {
+		let client = await this.open();
+		let db = client.db(this.databaseName);
+		return db.collection(collection);
 	};
-};
+
+	/**
+	 *
+	 * @return {Promise<void>}
+	 */
+	async close() {
+		let self = this;
+		if (!this.persistent) {
+			let client = await this.open();
+			await client.close(this.closeOptions);
+			self._client = null;
+		}
+	};
+}
+
+/**
+ *
+ * @type {MongoConnectorClass}
+ */
+module.exports = MongoConnectorClass;

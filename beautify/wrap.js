@@ -3,7 +3,7 @@
 const Buffer = require("buffer").Buffer;
 const FileType = require("file-type");
 /*fa-nodejs*/
-const FaErrorStack = require("fa-nodejs/base/error-stack");
+const FaTrace = require("fa-nodejs/base/trace");
 
 class FaBeautifyWrap {
 	getTab(level) {
@@ -93,6 +93,7 @@ class FaBeautifyWrap {
 
 	wrapErrorTrace(trace, level) {
 		let result = [];
+		// console.warn(trace)
 		for (let keys = Object.keys(trace), i = 0, end = keys.length - 1; i <= end; i++) {
 			result.push(`\n${this.getTab(level)}| ${this.wrapError(trace[keys[i]]["method"], "method")} ${this.wrapError(trace[keys[i]]["path"], "path")}:${this.wrapError(trace[keys[i]]["line"], "line")}:${this.wrapError(trace[keys[i]]["column"], "column")}`);
 		}
@@ -126,7 +127,7 @@ class FaBeautifyWrap {
 	};
 
 	error(data, level) {
-		let trace = data["trace"] ? data["trace"] : FaErrorStack.trace(data["stack"]);
+		let trace = data["trace"] ? data["trace"] : FaTrace.stack(data["stack"]);
 		return `${this.wrapError(data["name"], "name")}${this.wrapError(data["message"], "message")}${this.wrapErrorTrace(trace, level)}`;
 	};
 

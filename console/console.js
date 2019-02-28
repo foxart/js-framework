@@ -5,9 +5,9 @@
  */
 const DateAndTime = require("date-and-time");
 /*modules*/
-const FaBeautify = require("../beautify");
-const FCH = require("./console-helper");
-const FaError = require("../base/error");
+const FaBeautify = require("fa-nodejs/beautify");
+const FCH = require("fa-nodejs/console/console-helper");
+const FaTrace = require("fa-nodejs/base/trace");
 /**
  *
  * @type {{warn: string, log: string, error: string, info: string}}
@@ -132,7 +132,7 @@ class FaConsoleClass {
 	 */
 	_log(data, template) {
 		let time = DateAndTime.format(new Date(new Date().setUTCHours(new Date().getUTCHours() + 2)), "H:mm:ss");
-		let trace = FaError.pickTrace("console", 3).trace[0];
+		let trace = FaTrace.trace(2);
 		let path = trace["path"] ? trace["path"].replace(process.cwd(), "") : trace["path"];
 		let line = trace["line"];
 		let column = trace["column"];

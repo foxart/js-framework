@@ -1,7 +1,5 @@
 'use strict';
 /*vendor*/
-const FaError = require('./~error');
-const Trace = require('./~trace');
 /**
  * https://gist.github.com/domenic/8ed6048b187ee8f2ec75
  * @type {module.FaPromise}
