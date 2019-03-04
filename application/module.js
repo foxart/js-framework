@@ -49,11 +49,11 @@ module.exports = class FaModule {
 	}
 
 	controllerFilenameToName(controller) {
-		let pattern_filename = new RegExp(`^([A-Z][^-]+)${this._server_type.capitalize()}\.js$`);
-		let pattern_name = new RegExp("[A-Z][^A-Z]*", "g");
-		let match_filename = controller.match(pattern_filename);
+		let regular_filename = new RegExp(`^([A-Z][^-]+)${this._server_type.capitalize()}\.js$`);
+		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
+		let match_filename = controller.match(regular_filename);
 		if (match_filename) {
-			return match_filename[1].match(pattern_name).join("-").toLowerCase();
+			return match_filename[1].match(regular_name).join("-").toLowerCase();
 		} else {
 			return null;
 		}
@@ -70,19 +70,19 @@ module.exports = class FaModule {
 	}
 
 	controllerMethodToAction(method) {
-		let pattern_method = new RegExp("^action([A-Z][^-]+)$");
-		let pattern_action = new RegExp("[A-Z][^A-Z]*", "g");
-		let match_method = method.match(pattern_method);
+		let regular_method = new RegExp("^action([A-Z][^-]+)$");
+		let regular_action = new RegExp("[A-Z][^A-Z]*", "g");
+		let match_method = method.match(regular_method);
 		if (match_method) {
-			return match_method[1].match(pattern_action).join("-").toLowerCase();
+			return match_method[1].match(regular_action).join("-").toLowerCase();
 		} else {
 			return null
 		}
 	}
 
 	controllerActionToMethod(action) {
-		let pattern = new RegExp("[^-]+", "g");
-		let match = action.match(pattern);
+		let regular = new RegExp("[^-]+", "g");
+		let match = action.match(regular);
 		if (match) {
 			return `action${match.map(item => item.capitalize()).join("")}`;
 		} else {

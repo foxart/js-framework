@@ -1,11 +1,7 @@
 "use strict";
 
 class FaTimer {
-	/**
-	 *
-	 * @param executor
-	 */
-	constructor(executor) {
+	constructor() {
 		this._timer = [];
 	}
 
@@ -13,27 +9,24 @@ class FaTimer {
 		this._timer = process.hrtime();
 	};
 
-	// stop() {
-	// 	this.elapsed = process.hrtime(this.timer)[1] / 1000000;
-	// };
-	get(note) {
-		let result;
-		let precision = 3; // 3 decimal places
-		let elapsed = process.hrtime(this._timer)[1] / 1000000; // divide by a million to get nano to milli
-		if (note === undefined) {
-			result = process.hrtime(this._timer)[0] + "s " + elapsed.toFixed(precision) + "ms";
-		} else {
-			result = note + ": " + process.hrtime(this._timer)[0] + "s " + elapsed.toFixed(precision) + "ms"; // print message + time
-		}
-		return result;
+	stop() {
+		this._timer = process.hrtime(this._timer);
+	};
+
+	/**
+	 *
+	 * @param template {string}
+	 * @return {String}
+	 */
+	get(template = "{seconds}s {milliseconds}ms") {
+		let seconds = this._timer[0];
+		let milliseconds = (this._timer[1] / 1000000).toFixed(3); // divide by a million to get nano to milli
+		return template.replaceAll(["{seconds}", "{milliseconds}"], [seconds, milliseconds]);
 	};
 }
 
 /**
  *
-
- * @return {FaTimer}
+ * @type {FaTimer}
  */
-module.exports = function () {
-	return new FaTimer();
-};
+module.exports = FaTimer;

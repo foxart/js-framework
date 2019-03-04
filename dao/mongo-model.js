@@ -1,84 +1,54 @@
 "use strict";
 /*node*/
 const ObjectID = require("mongodb").ObjectID;
-/*fa-nodejs*/
-const ModelClass = require("fa-nodejs/base/model");
-const FaFileClass = require("fa-nodejs/base/file");
+/*fa*/
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
+const ModelClass = require("fa-nodejs/dao/model");
+const MongoClientClass = require("fa-nodejs/dao/mongo-client");
 /*variables*/
-let FaFile = new FaFileClass();
-let _connector_list = {};
+let _client_list = {};
 
 class MongoModelClass extends ModelClass {
+	/**
+	 * @constructor
+	 */
 	constructor() {
 		super();
-		this._connectorName = this._getConnectorName;
-		this._connectorPath = this._getConnectorPath;
-		this._client = null;
-		// this._FaMongoConnector = this._attachConnector;
-	};
+		this._trace = FaTrace.trace(1);
+	}
 
 	/**
 	 *
-	 * @return {string}
+	 * @return {MongoClientClass}
 	 * @private
 	 */
-	get _getConnectorName() {
-		return `${this.connectorName.split("-").map(item => item.capitalize()).join("")}Connector`;
-	};
-
-	/**
-	 *
-	 * @return {*}
-	 * @private
-	 */
-	get _getConnectorPath() {
-		let result = null;
-		let model_path = FaTrace.trace(2)["path"];
-		let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
-		let match_path = model_path.match(regular_path);
-		if (match_path) {
-			result = `${match_path[1]}/config/connectors/${this._connectorName}.js`;
-		}
-		return result;
-	};
-
-	/**
-	 *
-	 * @return {MongoConnectorClass}
-	 * @private
-	 */
-	get _connector() {
-		let result = _connector_list[this._connectorName];
+	get _MongoClient() {
+		let result = _client_list[this.client];
 		if (!result) {
-			console.info([`{NEW} ${this._connectorName}`]);
-			if (FaFile.isFile(this._connectorPath)) {
-				let FaConnectorClass = require(this._connectorPath);
-				_connector_list[this._connectorName] = new FaConnectorClass;
-				result = _connector_list[this._connectorName];
-			} else {
-				throw new FaError(`connector <${this.connector}> not found at: ${this._connectorPath}`).pickTrace(2);
+			try {
+				let model_path = this._trace["path"];
+				let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
+				let match_path = model_path.match(regular_path);
+				let path = `${match_path[1]}/config/clients/${this.client.split("-").map(item => item.capitalize()).join("")}Client.js`;
+				let FaConnectorClass = require(path);
+				_client_list[this.client] = new FaConnectorClass;
+				result = _client_list[this.client];
+			} catch (e) {
+				throw new FaError(`connector not found: ${this.client}`).pickTrace(2);
+				// throw new FaError(e).pickTrace(2);
 			}
 		}
 		return result;
 	}
 
-	/**
-	 *
-	 * @return {string}
-	 */
-	get connectorName() {
-		return "default";
-	};
+	get client() {
+		throw new FaError("client not specified").setTrace(this._trace);
+	}
 
-	/**
-	 *
-	 * @return {string|null}
-	 */
-	get collectionName() {
-		return null;
-	};
+	get collection() {
+		throw new FaError("collection not specified").setTrace(this._trace);
+	}
 
 	/**
 	 *
@@ -99,17 +69,15 @@ class MongoModelClass extends ModelClass {
 
 	/**
 	 * @param pipeline {Array|Object}
-	 * @param options
+	 * @param options {Collection~aggregationCallback|null}
 	 * @returns {Promise<Array|null>}
 	 */
-	aggregate(pipeline, options) {
-		let context = this;
-		let trace = FaTrace.trace(1);
-		return new Promise(function (resolve, reject) {
-			context.connectorOld.collection(context._collection).then(function (collection) {
-				collection.aggregate(pipeline, options).get((e, result) => e ? reject(new FaError(e).setTrace(trace)) : resolve(result));
-			});
-		});
+	async aggregate(pipeline, options = null) {
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
+		let result = await collection.aggregate(pipeline, options).get();
+		await this._MongoClient.close();
+		return result;
 	};
 
 	/**
@@ -118,9 +86,10 @@ class MongoModelClass extends ModelClass {
 	 * @return {Promise<Object|null>}
 	 */
 	async findOne(filter = null, options = null) {
-		let collection = await this._connector.collection(this.collectionName);
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
 		let result = collection.findOne(filter, options);
-		await this._connector.close();
+		await this._MongoClient.close();
 		return result;
 	};
 
@@ -131,10 +100,11 @@ class MongoModelClass extends ModelClass {
 	 * @return {Promise<Array|null>}
 	 */
 	async findMany(filter = null, options = null) {
-		let collection = await this._connector.collection(this.collectionName);
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
 		let cursor = await collection.find(filter, options);
 		let result = await cursor.toArray();
-		await this._connector.close();
+		await this._MongoClient.close();
 		return result;
 	};
 
@@ -145,14 +115,15 @@ class MongoModelClass extends ModelClass {
 	 * @return {Promise<{inserted: number, data: Object, id: ObjectID}>}
 	 */
 	async insertOne(document, options = null) {
-		let collection = await this._connector.collection(this.collectionName);
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
 		let cursor = await collection.insertOne(document, options);
 		let result = {
 			id: cursor["insertedId"],
 			inserted: cursor["insertedCount"],
 			data: cursor["ops"][0],
 		};
-		await this._connector.close();
+		await this._MongoClient.close();
 		return result;
 	};
 
@@ -163,14 +134,15 @@ class MongoModelClass extends ModelClass {
 	 * @return {Promise<{inserted: number, data: Object, id: ObjectID[]}>}
 	 */
 	async insertMany(document, options = null) {
-		let collection = await this._connector.collection(this.collectionName);
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
 		let cursor = await collection.insertMany(document, options);
 		let result = {
 			id: cursor["insertedIds"],
 			inserted: cursor["insertedCount"],
 			data: cursor["ops"],
 		};
-		await this._connector.close();
+		await this._MongoClient.close();
 		return result;
 	};
 
@@ -182,7 +154,8 @@ class MongoModelClass extends ModelClass {
 	 * @return {Promise<{filtered: *, modified: *, id: null, upserted: *}>}
 	 */
 	async updateOne(filter, update, options) {
-		let collection = await this._connector.collection(this.collectionName);
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
 		let cursor = await collection.updateOne(filter, update, options);
 		let result = {
 			id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
@@ -190,7 +163,7 @@ class MongoModelClass extends ModelClass {
 			modified: cursor["modifiedCount"],
 			upserted: cursor["upsertedCount"],
 		};
-		await this._connector.close();
+		await this._MongoClient.close();
 		return result;
 	};
 
@@ -202,7 +175,8 @@ class MongoModelClass extends ModelClass {
 	 * @return {Promise<{filtered: *, modified: *, id: null, upserted: *}>}
 	 */
 	async updateMany(filter, update, options) {
-		let collection = await this._connector.collection(this.collectionName);
+		await this._MongoClient.open();
+		let collection = await this._MongoClient.pick(this.collection);
 		let cursor = await collection.updateMany(filter, update, options);
 		let result = {
 			id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
@@ -210,7 +184,7 @@ class MongoModelClass extends ModelClass {
 			modified: cursor["modifiedCount"],
 			upserted: cursor["upsertedCount"],
 		};
-		await this._connector.close();
+		await this._MongoClient.close();
 		return result;
 	};
 }
