@@ -1,35 +1,29 @@
 "use strict";
+/*fa*/
 const FaError = require("fa-nodejs/base/error");
+/*variables*/
+let TestPattern = "^(?:\\[\\\"([^\\[\\]\\\"]+)\\\"\\])+$";
+let MatchPattern = "[^\\[\\]\\\"]+";
 /**
  *
  * @type {module.AdapterClass}
  */
 module.exports = class AdapterClass {
 	constructor() {
-		this._args = {};
+		this._arguments = {};
 	};
 
-	// objectValueByExpression(object, value, expression) {
-	// 	expression.lastIndex = 0;
-	// 	let keys = expression.exec(value);
-	// 	let result = Object.assign({}, object);
-	// 	while (keys && keys[1] !== null) {
-	// 		result = result[keys[1]];
-	// 		keys = expression.exec(value);
-	// 	}
-	// 	return result;
-	// }
 	/**
 	 *
-	 * @param object
-	 * @param keys
+	 * @param object {Object}
+	 * @param keys {Array}
 	 * @return {*}
 	 * @private
 	 */
-	_getValueByKeys(object, keys) {
+	_getObjectValueByKeys(object, keys) {
 		let key = keys.shift();
 		if (object[key] && keys.length > 0) {
-			return this._getValueByKeys(object[key], keys);
+			return this._getObjectValueByKeys(object[key], keys);
 		} else {
 			return object[key];
 		}
@@ -44,18 +38,15 @@ module.exports = class AdapterClass {
 	 * @private
 	 */
 	_use(adapter, data, args) {
-		// let TestPattern = "^(?:\\[([^\\[\\]]+)\\])+$";
-		// let MatchPattern = "[^\\[\\]]+";
-		let TestPattern = "^(?:\\[\\\"([^\\[\\]\\\"]+)\\\"\\])+$";
-		let MatchPattern = "[^\\[\\]\\\"]+";
 		let TestExpression = new RegExp(TestPattern);
 		let MatchExpression = new RegExp(MatchPattern, "g");
 		let context = this;
 		return data.map(function (map) {
 			let result = Array.isArray(adapter) ? [] : {};
-			Object.entries(adapter).forEach(function ([key, value]) {
+			// Object.entries(adapter).forEach(function ([key, value]) {
+			Object.entries(adapter).map(function ([key, value]) {
 				if (typeof value === "string" && TestExpression.test(value)) {
-					result[key] = context._getValueByKeys(map, value.match(MatchExpression));
+					result[key] = context._getObjectValueByKeys(map, value.match(MatchExpression));
 				} else if (value && value.constructor === Array) {
 					result[key] = context._use(value, [map], args)[0];
 				} else if (value && value.constructor === Object) {
@@ -65,7 +56,7 @@ module.exports = class AdapterClass {
 					try {
 						result_function = value.apply(map, args);
 					} catch (e) {
-						result_function = FaError.pickTrace(e);
+						result_function = new FaError(e).pickTrace(0);
 					}
 					result[key] = result_function;
 				} else {
@@ -85,9 +76,6 @@ module.exports = class AdapterClass {
 		this._adapter = adapter;
 	}
 
-	// set adapter(adapter) {
-	// 	this._adapter = adapter;
-	// }
 	/**
 	 *
 	 * @param data
@@ -95,11 +83,11 @@ module.exports = class AdapterClass {
 	 */
 	use(data) {
 		let result;
-		let adapter = typeof this.adapter === "function" ? this.adapter.apply(this, this._args) : this.adapter;
+		let adapter = typeof this.adapter === "function" ? this.adapter.apply(this, this._arguments) : this.adapter;
 		if (Array.isArray(data)) {
-			result = this._use(adapter, data, this._args);
+			result = this._use(adapter, data, this._arguments);
 		} else {
-			result = this._use(adapter, [data], this._args)[0];
+			result = this._use(adapter, [data], this._arguments)[0];
 		}
 		return result;
 	};
@@ -109,7 +97,7 @@ module.exports = class AdapterClass {
 	 * @return {module.AdapterClass}
 	 */
 	extend() {
-		this._args = arguments;
+		this._arguments = arguments;
 		return this;
 	};
 };

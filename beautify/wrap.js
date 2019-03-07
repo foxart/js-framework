@@ -2,9 +2,10 @@
 /*nodejs*/
 const Buffer = require("buffer").Buffer;
 const FileType = require("file-type");
-/*fa-nodejs*/
+/*fa*/
 const FaTrace = require("fa-nodejs/base/trace");
-
+// const Beautify = require("fa-nodejs/beautify/index");
+// const BeautifyPlain = require("fa-nodejs/beautify/plain");
 class FaBeautifyWrap {
 	getTab(level) {
 		let tab = `    `;
@@ -94,10 +95,21 @@ class FaBeautifyWrap {
 	wrapErrorTrace(trace, level) {
 		let result = [];
 		// console.warn(trace)
+		// log(trace);
 		for (let keys = Object.keys(trace), i = 0, end = keys.length - 1; i <= end; i++) {
-			result.push(`\n${this.getTab(level)}| ${this.wrapError(trace[keys[i]]["method"], "method")} ${this.wrapError(trace[keys[i]]["path"], "path")}:${this.wrapError(trace[keys[i]]["line"], "line")}:${this.wrapError(trace[keys[i]]["column"], "column")}`);
+			let {method, path, line, column} = trace[keys[i]];
+			result.push(`\n${this.getTab(level)}| ${this.wrapError(method, "method")} ${this.wrapError(path, "path")}:${this.wrapError(line, "line")}:${this.wrapError(column, "column")}`);
 		}
 		return result.join();
+	}
+
+	wrapErrorContext(context, level) {
+		let result = "";
+		if (context) {
+			// 	result += `\n${this.getTab(level)}`;
+			// 	result += Beautify.plain(context, level);
+		}
+		return result;
 	}
 
 	wrapText(data, level) {
@@ -128,7 +140,7 @@ class FaBeautifyWrap {
 
 	error(data, level) {
 		let trace = data["trace"] ? data["trace"] : FaTrace.stack(data["stack"]);
-		return `${this.wrapError(data["name"], "name")}${this.wrapError(data["message"], "message")}${this.wrapErrorTrace(trace, level)}`;
+		return `${this.wrapError(data["name"], "name")}${this.wrapError(data["message"], "message")}${this.wrapErrorTrace(trace, level)}${this.wrapErrorContext(data["context"], level)}`;
 	};
 
 	file(data, level) {

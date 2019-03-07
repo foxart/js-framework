@@ -24,11 +24,49 @@ class FaError extends Error {
 
 	/**
 	 *
+	 * @param name {string}
+	 * @return {FaError}
+	 */
+	setName(name) {
+		if (name) {
+			this.name = name;
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param message {string}
+	 * @return {FaError}
+	 */
+	setMessage(message) {
+		if (message) {
+			this.message = message;
+		}
+		return this;
+	}
+
+	/**
+	 *
 	 * @param trace
 	 * @return {FaError}
 	 */
 	setTrace(trace) {
-		this.trace = Array.isArray(trace) ? trace : [trace];
+		if (trace) {
+			this.trace = Array.isArray(trace) ? trace : [trace];
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param context {*}
+	 * @return {FaError}
+	 */
+	setContext(context) {
+		if (context) {
+			this.context = context;
+		}
 		return this;
 	}
 

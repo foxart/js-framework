@@ -2,13 +2,15 @@
 /*nodejs*/
 const MongoClient = require("mongodb").MongoClient;
 /*fa*/
+const ClientClass = require("fa-nodejs/dao/client");
 const FaTrace = require("fa-nodejs/base/trace");
 
-class MongoClientClass {
+class MongoClientClass extends ClientClass {
 	/**
 	 * @constructor
 	 */
 	constructor() {
+		super();
 		this._MongoClient = null;
 		this._trace = FaTrace.trace(1);
 	};
@@ -18,47 +20,15 @@ class MongoClientClass {
 	 * @return {string}
 	 * @private
 	 */
-	get _url() {
+	get dcs() {
 		return `mongodb://${this.host}:${this.port}`;
-	};
-
-	/**
-	 *
-	 * @return {string}
-	 */
-	get host() {
-		return "localhost";
-	};
-
-	/**
-	 *
-	 * @return {number}
-	 */
-	get port() {
-		return 27017;
-	};
-
-	/**
-	 *
-	 * @return {string}
-	 */
-	get database() {
-		throw new FaError("database not specified").setTrace(this._trace);
-	};
-
-	/**
-	 *
-	 * @return {boolean}
-	 */
-	get persistent() {
-		return true;
 	};
 
 	/**
 	 *
 	 * @return {Object}
 	 */
-	get connectOptions() {
+	get optionsConnect() {
 		return {
 			useNewUrlParser: true
 		};
@@ -68,7 +38,7 @@ class MongoClientClass {
 	 *
 	 * @return {Object}
 	 */
-	get closeOptions() {
+	get optionsClose() {
 		return {
 			forceClose: false,
 		};
@@ -81,7 +51,7 @@ class MongoClientClass {
 	async open() {
 		try {
 			if (!this._MongoClient) {
-				this._MongoClient = await MongoClient.connect(this._url, this.connectOptions);
+				this._MongoClient = await MongoClient.connect(this.dcs, this.optionsConnect);
 			}
 			return this._MongoClient;
 		} catch (e) {
@@ -110,7 +80,7 @@ class MongoClientClass {
 	async close() {
 		try {
 			if (!this.persistent && this._MongoClient) {
-				this._MongoClient = await this._MongoClient.close(this.closeOptions);
+				this._MongoClient = await this._MongoClient.close(this.optionsClose);
 				return true;
 			} else {
 				return false;

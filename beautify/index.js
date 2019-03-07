@@ -147,11 +147,8 @@ function beautifyObject(data, wrapper, level) {
 		let item = object[keys[i]];
 		let itemType = getType(item);
 		let itemLength = getLength(item, itemType);
-		/**/
 		let key = wrapper.wrapDataKey(keys[i], itemType, itemLength, level);
-		// let value = isCircular(object, circular) ? wrapper.circular(object, object.length) : wrapper.wrapDataValue(objectType, beautify(object, wrapper, level), level);
 		let value = isCircular(item, circular) ? wrapper.circular(item, level) : beautify(item, wrapper, level);
-		/**/
 		if (i === 0) {
 			result += `${key}${value},${nl}`;
 		} else if (i === end) {
@@ -213,8 +210,8 @@ const FaBeautifyHtmlType = require("./html");
 exports.plain = function (data) {
 	return beautify(data, new FaBeautifyPlain());
 };
-exports.console = function (data) {
-	return beautify(data, new FaBeautifyConsole());
+exports.console = function (data, level = 0) {
+	return beautify(data, new FaBeautifyConsole(), level);
 };
 exports.consoleType = function (data) {
 	return beautify(data, new FaBeautifyConsoleType());
