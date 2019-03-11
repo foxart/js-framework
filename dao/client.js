@@ -14,16 +14,16 @@ class ClientClass {
 	static find(name, trace) {
 		let result = _client_list[name];
 		if (!result) {
-			let model_path = trace["path"];
-			let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
-			let match_path = model_path.match(regular_path);
-			let client_path = `${match_path[1]}/config/clients/${name.split("-").map(item => item.capitalize()).join("")}Client.js`;
 			try {
+				let model_path = trace["path"];
+				let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
+				let match_path = model_path.match(regular_path);
+				let client_path = `${match_path[1]}/config/clients/${name.split("-").map(item => item.capitalize()).join("")}Client.js`;
 				let ClientClass = require(client_path);
 				_client_list[name] = new ClientClass;
 				result = _client_list[name];
 			} catch (e) {
-				throw new FaError(`client <${name}> not found at: ${client_path}`).setTrace(trace);
+				throw new FaError(e).setTrace(trace);
 			}
 		}
 		return result;

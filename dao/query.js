@@ -1,4 +1,6 @@
 "use strict";
+/*fa*/
+const FaTrace = require("fa-nodejs/base/trace");
 
 class QueryClass {
 	/**

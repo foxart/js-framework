@@ -89,13 +89,12 @@ class OracleClientClass extends ClientClass {
 					if (e) {
 						console.error(e);
 					}
-					console.warn([e, "closed"]);
-					// self._OracleClient = null;
+					console.warn("CLOSED");
 				});
-
 				this._OracleClient = null;
 				return true;
 			} else {
+				console.warn("PERSISTENT");
 				return false;
 			}
 		} catch (e) {

@@ -16,6 +16,7 @@ class OracleModelClass extends ModelClass {
 	 */
 	constructor() {
 		super();
+		this._Query = null;
 		this._trace = FaTrace.trace(1);
 	};
 
@@ -46,7 +47,6 @@ class OracleModelClass extends ModelClass {
 	 * @return {Promise<*>}
 	 */
 	async _execute(query) {
-		console.info(process.env);
 		let trace = FaTrace.trace(3);
 		try {
 			let connection = await this.oracle.open();
@@ -57,24 +57,27 @@ class OracleModelClass extends ModelClass {
 			// Object.entries(e).forEach(function ([key, value]) {
 			// 	console.error(key, value);
 			// });
-			// console.error(e);
 			throw new FaError(e).setTrace(trace);
 		}
 	};
 
 	async findOne(query) {
-		let result = await this._execute(query);
-		// console.info(result);
-		if (result["rows"][0]) {
-			return result["rows"][0];
-		} else {
-			return {};
+		let trace = FaTrace.trace(3);
+		try {
+			let result = await this._execute(query);
+			if (result["rows"][0]) {
+				return result["rows"][0];
+			} else {
+				return {};
+			}
+		} catch (e) {
+			throw new FaError(e).setTrace(trace);
 		}
 	}
 
 	async findMany(query) {
+
 		let result = await this._execute(query);
-		// console.info(result);
 		if (result["rows"]) {
 			return result["rows"];
 		} else {
