@@ -70,7 +70,7 @@ class OracleClientClass extends ClientClass {
 					password: this.password,
 				});
 			}
-			console.error("OPEN");
+			// console.error("OPEN");
 			return this._OracleClient;
 		} catch (e) {
 			throw new FaError(e);
@@ -84,12 +84,12 @@ class OracleClientClass extends ClientClass {
 	async close() {
 		try {
 			if (!this.persistent && this._OracleClient) {
-				await this._OracleClient.close();
+				// await this._OracleClient.close();
 				this._OracleClient = null;
 				// console.error("CLOSE");
 				return true;
 			} else {
-				console.error("CLOSED");
+				// console.error("CLOSED");
 				return false;
 			}
 		} catch (e) {
@@ -101,7 +101,6 @@ class OracleClientClass extends ClientClass {
 		// let trace = FaTrace.trace(3);
 		try {
 			if (this._OracleClient) {
-
 				return await this._OracleClient.execute(query);
 			} else {
 				return null;
