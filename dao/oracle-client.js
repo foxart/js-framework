@@ -27,6 +27,9 @@ class OracleClientClass extends ClientClass {
 			fetchAsBuffer: [OracleClient["BLOB"]],
 			// fetchAsString: [OracleClient["DATE"]],
 		};
+		Object.entries(this.options).forEach(function ([key, value]) {
+			OracleClient[key] = value;
+		});
 		this._trace = FaTrace.trace(1);
 	};
 
@@ -61,18 +64,16 @@ class OracleClientClass extends ClientClass {
 	async open() {
 		try {
 			if (!this._OracleClient) {
-				Object.entries(this.options).forEach(function ([key, value]) {
-					OracleClient[key] = value;
-				});
 				this._OracleClient = await OracleClient.getConnection({
 					connectString: this.dcs,
 					user: this.user,
 					password: this.password,
 				});
 			}
+			console.error("OPEN");
 			return this._OracleClient;
 		} catch (e) {
-			throw new FaError(e).setTrace(this._trace);
+			throw new FaError(e);
 		}
 	};
 
@@ -81,24 +82,36 @@ class OracleClientClass extends ClientClass {
 	 * @return {Promise<boolean>}
 	 */
 	async close() {
-		let self = this;
 		try {
 			if (!this.persistent && this._OracleClient) {
-				// console.warn(this._OracleClient);
-				await this._OracleClient.close(function (e) {
-					if (e) {
-						console.error(e);
-					}
-					console.warn("CLOSED");
-				});
+				await this._OracleClient.close();
 				this._OracleClient = null;
+				// console.error("CLOSE");
 				return true;
 			} else {
-				console.warn("PERSISTENT");
+				console.error("CLOSED");
 				return false;
 			}
 		} catch (e) {
-			throw new FaError(e).setTrace(this._trace);
+			throw new FaError(e);
+		}
+	};
+
+	async execute(query) {
+		// let trace = FaTrace.trace(3);
+		try {
+			if (this._OracleClient) {
+
+				return await this._OracleClient.execute(query);
+			} else {
+				return null;
+			}
+		} catch (e) {
+			// Object.entries(e).forEach(function ([key, value]) {
+			// 	console.error(key, value);
+			// });
+			// console.error(trace);
+			throw new FaError(e);
 		}
 	};
 }

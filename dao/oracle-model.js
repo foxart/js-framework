@@ -34,7 +34,6 @@ class OracleModelClass extends ModelClass {
 	/**
 	 *
 	 * @return {OracleClientClass}
-	 * @private
 	 */
 	get oracle() {
 		return ClientClass.find(this.client, this._trace);
@@ -46,43 +45,53 @@ class OracleModelClass extends ModelClass {
 	 * @private
 	 * @return {Promise<*>}
 	 */
-	async _execute(query) {
-		let trace = FaTrace.trace(3);
-		try {
-			let connection = await this.oracle.open();
-			let result = await connection.execute(query);
-			await this.oracle.close();
-			return result;
-		} catch (e) {
-			// Object.entries(e).forEach(function ([key, value]) {
-			// 	console.error(key, value);
-			// });
-			throw new FaError(e).setTrace(trace);
-		}
-	};
+	// async _execute(query) {
+	// 	let trace = FaTrace.trace(3);
+	// 	try {
+	// 		let connection = await this.oracle.open();
+	// 		let result = await connection.execute(query);
+	// 		await this.oracle.close();
+	// 		return result;
+	// 	} catch (e) {
+	// 		// Object.entries(e).forEach(function ([key, value]) {
+	// 		// 	console.error(key, value);
+	// 		// });
+	// 		throw new FaError(e).setTrace(trace);
+	// 	}
+	// };
 
 	async findOne(query) {
-		let trace = FaTrace.trace(3);
-		try {
-			let result = await this._execute(query);
-			if (result["rows"][0]) {
-				return result["rows"][0];
-			} else {
-				return {};
-			}
-		} catch (e) {
-			throw new FaError(e).setTrace(trace);
+		let result = await this._execute(query);
+		if (result["rows"][0]) {
+			return result["rows"][0];
+		} else {
+			return {};
 		}
 	}
 
 	async findMany(query) {
-
-		let result = await this._execute(query);
-		if (result["rows"]) {
+		let connection = await this.oracle.open();
+		let result = await connection.execute(query);
+		await this.oracle.close();
+		if (result && result["rows"]) {
 			return result["rows"];
 		} else {
 			return [];
 		}
+		// let connection = await this.oracle.open();
+		// if (connection) {
+		// 	let result = await connection.execute(query);
+		// 	await this.oracle.close();
+		// 	// return result;
+		// 	if (result["rows"]) {
+		// 		return result["rows"];
+		// 	} else {
+		// 		return [];
+		// 	}
+		// } else {
+		// 	console.error(connection);
+		// 	return [];
+		// }
 	}
 }
 

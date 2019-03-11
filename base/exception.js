@@ -53,10 +53,12 @@ function getTrace(error) {
 			trace[key] = `${item["method"]}    ${item["path"]}:${item["line"]}:${item["column"]}`;
 		});
 		return trace
-	} else {
+	} else if (error["stack"]) {
 		let stack = error["stack"].split("\n");
 		stack.splice(0, 1);
 		return stack;
+	} else {
+		return ["getTrace"];
 	}
 }
 

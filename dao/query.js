@@ -254,6 +254,7 @@ class QueryClass {
 	 * @return {Array<Object>}
 	 */
 	async many() {
+		// console.warn(this._parent);
 		let query = [
 			this._getSelect,
 			this._getFrom,
