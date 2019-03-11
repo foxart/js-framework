@@ -2,7 +2,7 @@
 /*node*/
 const Fs = require("fs");
 /*fa*/
-const FaError = require("./error");
+const FaError = require("fa-nodejs/base/error");
 /**
  *
  * @type {module.FaFileClass}
@@ -54,18 +54,17 @@ module.exports = class FaFileClass {
 		try {
 			Fs.mkdirSync(this.path(directory), options);
 		} catch (e) {
-			throw FaError.pickTrace(e, 2);
+			throw new FaError(e).pickTrace(3);
 		}
 	}
 
 	readDirectoryAsync(directory = "") {
 		let context = this;
-		let error = FaError.pickTrace("error", 2);
+		let error = new FaError();
 		return new Promise(function (resolve, reject) {
 			Fs.readdir(context.path(directory), function (e, files) {
 				if (e) {
-					error.name = e.message;
-					reject(error);
+					reject(error.setName(e.message).pickTrace(2));
 				} else {
 					resolve(files);
 				}
@@ -80,10 +79,9 @@ module.exports = class FaFileClass {
 	 */
 	readDirectorySync(directory = "") {
 		try {
-			// console.error(`READ: ${directory}`);
 			return Fs.readdirSync(this.path(directory));
 		} catch (e) {
-			throw FaError.pickTrace(e, 2);
+			throw new FaError(e).pickTrace(3);
 		}
 	};
 
@@ -94,12 +92,11 @@ module.exports = class FaFileClass {
 	 */
 	readFileAsync(filename) {
 		let context = this;
-		let error = new FaError('');
+		let error = new FaError();
 		return new Promise(function (resolve, reject) {
 			Fs.readFile(context.path(filename), function (e, buffer) {
 				if (e) {
-					error.message = e.message;
-					reject(FaError.pickTrace(error, 1));
+					reject(error.setMessage(e.message).pickTrace(2));
 				} else {
 					resolve(buffer);
 				}
@@ -110,16 +107,12 @@ module.exports = class FaFileClass {
 	writeFileAsync(filename, data) {
 	};
 
-	/**
-	 *
-	 * @param filename {string}
-	 * @return {Buffer}
-	 */
+
 	readFileSync(filename) {
 		try {
 			return Fs.readFileSync(this.path(filename));
 		} catch (e) {
-			throw FaError.pickTrace(e, 2);
+			throw new FaError(e).pickTrace(3);
 		}
 	};
 

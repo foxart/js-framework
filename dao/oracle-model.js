@@ -46,26 +46,19 @@ class OracleModelClass extends ModelClass {
 	 * @return {Promise<*>}
 	 */
 	async _execute(query) {
-		// console.error([query]);
+		console.info(process.env);
 		let trace = FaTrace.trace(3);
-		let connection = await this.oracle.open();
 		try {
+			let connection = await this.oracle.open();
 			let result = await connection.execute(query);
 			await this.oracle.close();
-			return [];
-
-			console.info(result);
 			return result;
 		} catch (e) {
-			console.error(e);
-			Object.entries(e).forEach(function ([key, value]) {
-				console.error(key, value);
-			});
-			// throw new FaError().setName(e.message).setMessage(query).setTrace(trace);
-			// throw new FaError().setTrace(trace);
-			return {rows: null};
-
-
+			// Object.entries(e).forEach(function ([key, value]) {
+			// 	console.error(key, value);
+			// });
+			// console.error(e);
+			throw new FaError(e).setTrace(trace);
 		}
 	};
 
@@ -82,10 +75,6 @@ class OracleModelClass extends ModelClass {
 	async findMany(query) {
 		let result = await this._execute(query);
 		// console.info(result);
-
-
-
-
 		if (result["rows"]) {
 			return result["rows"];
 		} else {

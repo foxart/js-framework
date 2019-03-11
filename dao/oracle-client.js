@@ -16,7 +16,17 @@ class OracleClientClass extends ClientClass {
 	 */
 	constructor() {
 		super();
+		/**
+		 *
+		 * @type {OracleClient}
+		 * @private
+		 */
 		this._OracleClient = null;
+		this._options = {
+			outFormat: OracleClient["OBJECT"],
+			fetchAsBuffer: [OracleClient["BLOB"]],
+			// fetchAsString: [OracleClient["DATE"]],
+		};
 		this._trace = FaTrace.trace(1);
 	};
 
@@ -36,12 +46,12 @@ class OracleClientClass extends ClientClass {
 		throw new FaError("sid not specified").setTrace(this._trace);
 	};
 
+	/**
+	 *
+	 * @return {{fetchAsBuffer: Array, outFormat: Array<number>}}
+	 */
 	get options() {
-		return {
-			outFormat: OracleClient["OBJECT"],
-			fetchAsBuffer: [OracleClient["BLOB"]],
-			// fetchAsString: [OracleClient["DATE"]],
-		}
+		return this._options
 	}
 
 	/**
@@ -71,13 +81,19 @@ class OracleClientClass extends ClientClass {
 	 * @return {Promise<boolean>}
 	 */
 	async close() {
+		let self = this;
 		try {
 			if (!this.persistent && this._OracleClient) {
-				this._OracleClient = this._OracleClient.close(function (e) {
+				// console.warn(this._OracleClient);
+				await this._OracleClient.close(function (e) {
 					if (e) {
 						console.error(e);
 					}
+					console.warn([e, "closed"]);
+					// self._OracleClient = null;
 				});
+
+				this._OracleClient = null;
 				return true;
 			} else {
 				return false;

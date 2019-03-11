@@ -46,7 +46,7 @@ class AdapterClass {
 		return data.map(function (map) {
 			let result = Array.isArray(adapter) ? [] : {};
 			// Object.entries(adapter).forEach(function ([key, value]) {
-			console.warn(typeof adapter);
+			// console.warn(typeof adapter);
 			if (typeof adapter === "function") {
 				try {
 					result = adapter.apply(map, args);
@@ -81,19 +81,33 @@ class AdapterClass {
 
 	/**
 	 *
-	 * @return {Object}
+	 * @return {Object|Function}
 	 */
 	get adapter() {
 		return this._adapter;
 	}
 
+	/**
+	 *
+	 * @param adapter {Object|Function}
+	 */
 	set adapter(adapter) {
 		this._adapter = adapter;
 	}
+
 	/**
 	 *
-	 * @param data {Array|Object}
-	 * @return {Array|Object}
+	 * @return {AdapterClass}
+	 */
+	use() {
+		this._arguments = arguments;
+		return this;
+	};
+
+	/**
+	 *
+	 * @param data {Object|Array<Object>}
+	 * @return {Object|Array<Object>}
 	 */
 	apply(data) {
 		let result;
@@ -103,16 +117,6 @@ class AdapterClass {
 			result = this._apply(this._adapter, [data], this._arguments)[0];
 		}
 		return result;
-	};
-
-
-	/**
-	 *
-	 * @return {AdapterClass}
-	 */
-	use() {
-		this._arguments = arguments;
-		return this;
 	};
 }
 

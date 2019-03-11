@@ -2,7 +2,7 @@
 /*node*/
 const ObjectID = require("mongodb").ObjectID;
 /*fa*/
-const FaError = require("fa-nodejs/base/error");
+// const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
 const ClientClass = require("fa-nodejs/dao/client");
 const ModelClass = require("fa-nodejs/dao/model");
@@ -49,7 +49,7 @@ class MongoModelClass extends ModelClass {
 	 */
 	async aggregate(pipeline, options = null) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
 		let result = await collection.aggregate(pipeline, options).get();
 		await this.mongo.close();
 		return result;
@@ -62,7 +62,7 @@ class MongoModelClass extends ModelClass {
 	 */
 	async findOne(filter = null, options = null) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
 		let result = collection.findOne(filter, options);
 		await this.mongo.close();
 		return result;
@@ -76,7 +76,8 @@ class MongoModelClass extends ModelClass {
 	 */
 	async findMany(filter = null, options = null) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
+		// console.warn(this.mongo.client);
 		let cursor = await collection.find(filter, options);
 		let result = await cursor.toArray();
 		await this.mongo.close();
@@ -91,7 +92,7 @@ class MongoModelClass extends ModelClass {
 	 */
 	async insertOne(document, options = null) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
 		let cursor = await collection.insertOne(document, options);
 		let result = {
 			id: cursor["insertedId"],
@@ -110,7 +111,7 @@ class MongoModelClass extends ModelClass {
 	 */
 	async insertMany(document, options = null) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
 		let cursor = await collection.insertMany(document, options);
 		let result = {
 			id: cursor["insertedIds"],
@@ -130,7 +131,7 @@ class MongoModelClass extends ModelClass {
 	 */
 	async updateOne(filter, update, options) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
 		let cursor = await collection.updateOne(filter, update, options);
 		let result = {
 			id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
@@ -151,7 +152,7 @@ class MongoModelClass extends ModelClass {
 	 */
 	async updateMany(filter, update, options) {
 		await this.mongo.open();
-		let collection = await this.mongo.pick(this.table);
+		let collection = await this.mongo.client(this.table);
 		let cursor = await collection.updateMany(filter, update, options);
 		let result = {
 			id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],

@@ -64,10 +64,10 @@ class MongoClientClass extends ClientClass {
 	 * @param collection {string}
 	 * @return {Promise<Collection>}
 	 */
-	async pick(collection) {
+	async client(collection) {
 		try {
 			let client = await this.open();
-			return client.db(this.database).collection(collection);
+			return await client.db(this.database).collection(collection);
 		} catch (e) {
 			throw new FaError(e).setTrace(this._trace);
 		}

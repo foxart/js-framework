@@ -67,7 +67,6 @@ const Console = {
 console.clear = function () {
 	process.stdout.write("\x1Bc");
 };
-console.write = console.log;
 
 class FaConsoleClass {
 	/**
@@ -76,19 +75,67 @@ class FaConsoleClass {
 	 */
 	constructor(type = null) {
 		this._wrapper = this._getWrapper(type);
-		let context = this;
+		let self = this;
 		console.log = function () {
-			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.log);
+			self._log(self._wrapper.call(this, self._extractArguments(arguments)), template.log);
 		};
 		console.info = function () {
-			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.info);
+			self._log(self._wrapper.call(this, self._extractArguments(arguments)), template.info);
 		};
 		console.warn = function () {
-			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.warn);
+			self._log(self._wrapper.call(this, self._extractArguments(arguments)), template.warn);
 		};
 		console.error = function () {
-			context._log(context._wrapper.call(this, context._extractArguments(arguments)), template.error);
+			self._log(self._wrapper.call(this, self._extractArguments(arguments)), template.error);
 		};
+		console.message = function () {
+			let result = [];
+			let text = FaBeautify.plain(self._extractArguments(arguments));
+			let message = typeof text === "string" ? text.split("\n") : text.toString();
+			let align = self._getAlign(message);
+			result.push(self._messageHeader(align));
+			for (let keys = Object.keys(message), i = 0, end = keys.length - 1; i <= end; i++) {
+				result.push(`${self._messageBody(message[keys[i]], align)}`);
+			}
+			result.push(`${self._messageFooter(align)}`);
+			self._log("\n" + result.join("\n"), template.log);
+		}
+	}
+
+	_getAlign(list) {
+		let result = 0;
+		for (let keys = Object.keys(list), i = 0, end = keys.length - 1; i <= end; i++) {
+			if (result < list[keys[i]].length) {
+				result = list[keys[i]].length;
+			}
+		}
+		return result;
+	}
+
+	_messageHeader(align) {
+		return `\u250c\u2500${Array(align + 1).join("\u2500")}\u2500\u2510`;
+	}
+
+	_messageFooter(align) {
+		return `\u2514\u2500${Array(align + 1).join("\u2500")}\u2500\u2518`;
+	}
+
+	_messageSpacer(align) {
+		return `\u251c\u2500${Array(align + 1).join("\u2500")}\u2500\u2524`;
+	}
+
+	_messageBody(data, align) {
+		let wrapper = "\u2502";
+		let spacer = " ";
+		if (data === undefined) {
+			data = "undefined"
+		}
+		let length = align - data.length + 1;
+		if (length < 0) {
+			return `${wrapper}${spacer}${data.toString().substring(0, align)}${spacer}${wrapper}`;
+		} else {
+			return `${wrapper}${spacer}${data.toString() + Array(length).join(spacer)}${spacer}${wrapper}`;
+		}
 	}
 
 	/**
