@@ -1,24 +1,16 @@
 "use strict";
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-const FaTrace = require("fa-nodejs/base/trace");
-const AdapterClass = require("fa-nodejs/dao/adapter");
+// const FaTrace = require("fa-nodejs/base/trace");
+const FaDaoAdapter = require("fa-nodejs/dao/adapter");
 
-class ModelClass {
+class FaDaoModel {
 	/**
 	 * @constructor
 	 */
 	constructor() {
-		this._trace = FaTrace.trace(1);
+		// this._trace = FaTrace.trace(1);
 		this._adapter_list = this._adapters;
-	}
-
-	get client() {
-		throw new FaError("client not specified").setTrace(this._trace);
-	}
-
-	get table() {
-		throw new FaError("table not specified").setTrace(this._trace);
 	}
 
 	/**
@@ -45,7 +37,7 @@ class ModelClass {
 	get _adapters() {
 		let result = {};
 		Object.entries(this.adapters).map(function ([key, adapter]) {
-			result[key] = new AdapterClass(adapter);
+			result[key] = new FaDaoAdapter(adapter);
 		});
 		return result;
 	}
@@ -53,7 +45,7 @@ class ModelClass {
 	/**
 	 *
 	 * @param adapter {string}
-	 * @return {AdapterClass}
+	 * @return {FaDaoAdapter}
 	 */
 	adapter(adapter) {
 		if (this._existAdapter(adapter)) {
@@ -76,7 +68,7 @@ class ModelClass {
 	/**
 	 *
 	 * @param adapter
-	 * @return {AdapterClass}
+	 * @return {FaDaoAdapter}
 	 * @private
 	 */
 	_findAdapter(adapter) {
@@ -86,6 +78,6 @@ class ModelClass {
 
 /**
  *
- * @type {ModelClass}
+ * @type {FaDaoModel}
  */
-module.exports = ModelClass;
+module.exports = FaDaoModel;

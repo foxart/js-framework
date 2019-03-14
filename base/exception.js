@@ -47,14 +47,18 @@ function getHeader(error, type) {
 }
 
 function getTrace(error) {
-	if (error["trace"]) {
+	if (error.trace && error.trace.length > 0) {
 		let trace = [];
-		error["trace"].map(function (item, key) {
+		error.trace.map(function (item, key) {
 			trace[key] = `${item["method"]}    ${item["path"]}:${item["line"]}:${item["column"]}`;
 		});
 		return trace
-	} else if (error["stack"]) {
-		let stack = error["stack"].split("\n");
+	} else if (error.stack) {
+		// console.message("HUI");
+		// console.message(error.stack);
+		// console.message(error.trace);
+		// console.message("HUI");
+		let stack = error.stack.split("\n");
 		stack.splice(0, 1);
 		return stack;
 	} else {

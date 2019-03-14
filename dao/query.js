@@ -1,94 +1,23 @@
 "use strict";
 /*fa*/
-const FaTrace = require("fa-nodejs/base/trace");
+const FaDaoConnection = require("fa-nodejs/dao/connection");
 
-class QueryClass {
+class FaDaoQuery {
 	/**
 	 * @constructor
-	 * @param parent
-	 * @param database
-	 * @param table
+	 * @param FaDaoModel {FaDaoModel}
 	 */
-	constructor(parent, database, table) {
-		this._database = database;
-		this._table = table;
-		this._parent = parent;
+	constructor(FaDaoModel) {
+		this._FaDaoModel = FaDaoModel;
 	};
 
 	/**
 	 *
-	 * @param select {string|Array<string>}
-	 * @return {QueryClass}
+	 * @return {FaDaoConnection}
+	 * @private
 	 */
-	select(select) {
-		if (select) {
-			this._select = Array.isArray(select) ? select : [select];
-		} else {
-			this._select = null;
-		}
-		return this;
-	};
-
-	/**
-	 *
-	 * @param where {Object|Array<Object>}
-	 * @return {QueryClass}
-	 */
-	where(where) {
-		if (where) {
-			this._where = Array.isArray(where) ? where : [where];
-		} else {
-			this._where = [];
-		}
-		return this;
-	}
-
-	/**
-	 *
-	 * @param where {Object|Array<Object>}
-	 * @return {QueryClass}
-	 */
-	andWhere(where) {
-		if (where) {
-			this._andWhere = Array.isArray(where) ? where : [where];
-		} else {
-			this._andWhere = [];
-		}
-		return this;
-	}
-
-	/**
-	 *
-	 * @param where {Object|Array<Object>}
-	 * @return {QueryClass}
-	 */
-	orWhere(where) {
-		if (where) {
-			this._orWhere = Array.isArray(where) ? where : [where];
-		} else {
-			this._orWhere = [];
-		}
-		return this;
-	}
-
-	/**
-	 *
-	 * @param limit {number}
-	 * @return {QueryClass}
-	 */
-	limit(limit) {
-		this._limit = limit;
-		return this;
-	}
-
-	/**
-	 *
-	 * @param offset {number}
-	 * @return {QueryClass}
-	 */
-	offset(offset) {
-		this._offset = offset;
-		return this;
+	get _connection() {
+		return FaDaoConnection.findConnection(this._FaDaoModel.connection);
 	}
 
 	/**
@@ -98,9 +27,9 @@ class QueryClass {
 	 */
 	get _getSelect() {
 		if (this._select) {
-			return `SELECT ${this._select.map(item => `${item}`).join(", ")} `
+			return `SELECT ${this._select.map(item => `${item}`).join(", ")} `;
 		} else {
-			return `SELECT * `
+			return `SELECT * `;
 		}
 	}
 
@@ -110,7 +39,11 @@ class QueryClass {
 	 * @private
 	 */
 	get _getFrom() {
-		return `FROM ${this._database}.${this._table} `;
+		if (this._from) {
+			return `FROM ${this._from.map(item => `${this._connection.database}.${item}`).join(", ")} `
+		} else {
+			return `FROM ${this._connection.database}.${this._FaDaoModel.table} `;
+		}
 	}
 
 	/**
@@ -171,7 +104,6 @@ class QueryClass {
 	 */
 	get _getWhere() {
 		let result = this._extractWhere(this._where);
-		// console.warn(result);
 		if (result.length) {
 			return result.length === 1 ? `WHERE ${result} ` : `WHERE (${result.join(" AND ")}) `;
 		} else {
@@ -234,6 +166,110 @@ class QueryClass {
 	}
 
 	/**
+	 *
+	 * @private
+	 */
+	_reset() {
+		this._select = null;
+		this._from = null;
+		this._where = null;
+		this._andWhere = null;
+		this._orWhere = null;
+		this._limit = null;
+		this._offset = null;
+	}
+
+	/**
+	 *
+	 * @param select {string|Array<string>}
+	 * @return {FaDaoQuery}
+	 */
+	select(select) {
+		if (select) {
+			this._select = Array.isArray(select) ? select : [select];
+		} else {
+			this._select = null;
+		}
+		return this;
+	};
+
+	/**
+	 *
+	 * @param from {string|Array<string>}
+	 * @return {FaDaoQuery}
+	 */
+	from(from) {
+		if (from) {
+			this._from = Array.isArray(from) ? from : [from];
+		} else {
+			this._from = null;
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param where {Object|Array<Object>}
+	 * @return {FaDaoQuery}
+	 */
+	where(where) {
+		if (where) {
+			this._where = Array.isArray(where) ? where : [where];
+		} else {
+			this._where = [];
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param where {Object|Array<Object>}
+	 * @return {FaDaoQuery}
+	 */
+	andWhere(where) {
+		if (where) {
+			this._andWhere = Array.isArray(where) ? where : [where];
+		} else {
+			this._andWhere = [];
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param where {Object|Array<Object>}
+	 * @return {FaDaoQuery}
+	 */
+	orWhere(where) {
+		if (where) {
+			this._orWhere = Array.isArray(where) ? where : [where];
+		} else {
+			this._orWhere = [];
+		}
+		return this;
+	}
+
+	/**
+	 *
+	 * @param limit {number}
+	 * @return {FaDaoQuery}
+	 */
+	limit(limit) {
+		this._limit = limit;
+		return this;
+	}
+
+	/**
+	 *
+	 * @param offset {number}
+	 * @return {FaDaoQuery}
+	 */
+	offset(offset) {
+		this._offset = offset;
+		return this;
+	}
+
+	/**
 	 * @return {Object}
 	 */
 	async one() {
@@ -247,14 +283,14 @@ class QueryClass {
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
-		return await this._parent.findOne(query);
+		// console.info(query);
+		return await this._FaDaoModel.findOne(query);
 	}
 
 	/**
 	 * @return {Array<Object>}
 	 */
 	async many() {
-		// console.warn(this._parent);
 		let query = [
 			this._getSelect,
 			this._getFrom,
@@ -264,12 +300,13 @@ class QueryClass {
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
-		return await this._parent.findMany(query);
+		// console.info(query);
+		return await this._FaDaoModel.findMany(query);
 	}
 }
 
 /**
  *
- * @type {QueryClass}
+ * @type {FaDaoQuery}
  */
-module.exports = QueryClass;
+module.exports = FaDaoQuery;

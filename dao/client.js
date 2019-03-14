@@ -1,98 +1,56 @@
 "use strict";
-/*fa*/
-const FaError = require("fa-nodejs/base/error");
+// const FaDaoConnection = require("fa-nodejs/dao/connection");
+const FaDaoClientInterface = require("fa-nodejs/dao/client-interface");
 /*variables*/
 let _client_list = {};
 
-class ClientClass {
+class FaDaoClient extends FaDaoClientInterface {
 	/**
 	 *
-	 * @param name {string}
-	 * @param trace {Object}
-	 * @return {*}
+	 * @return {Array<string>}
 	 */
-	static find(name, trace) {
-		let result = _client_list[name];
-		if (!result) {
-			try {
-				let model_path = trace["path"];
-				let regular_path = new RegExp(`^(.+)/modules/.+models/([A-Z][^-]+)Model.js$`);
-				let match_path = model_path.match(regular_path);
-				let client_path = `${match_path[1]}/config/clients/${name.split("-").map(item => item.capitalize()).join("")}Client.js`;
-				let ClientClass = require(client_path);
-				_client_list[name] = new ClientClass;
-				result = _client_list[name];
-			} catch (e) {
-				throw new FaError(e).setTrace(trace);
-			}
-		}
-		return result;
-	};
-
-	/**
-	 *
-	 * @return {string}
-	 */
-	get host() {
-		throw new FaError("host not specified");
-	};
-
-	/**
-	 *
-	 * @return {number}
-	 */
-	get port() {
-		throw new FaError("port not specified");
-	};
-
-	/**
-	 *
-	 * @return {string}
-	 */
-	get database() {
-		throw new FaError("database not specified");
-	};
-
-	/**
-	 * @return {string}
-	 */
-	get user() {
-		throw new FaError("user not specified");
-	};
-
-	/**
-	 * @return {string}
-	 */
-	get password() {
-		throw new FaError("password not specified");
-	};
-
-	/**
-	 * @return {string}
-	 */
-	get dcs() {
-		throw new FaError("dcs not implemented");
+	static get listClient() {
+		return Object.keys(_client_list);
 	}
 
 	/**
 	 *
+	 * @param client {string}
+	 * @return {Object}
+	 */
+	static findClient(client) {
+		return _client_list[client];
+	}
+
+	/**
+	 *
+	 * @param index {string}
 	 * @return {boolean}
 	 */
-	get persistent() {
-		throw new FaError("persistent not specified");
-	};
-
-	get open() {
-		throw new FaError("dcs not implemented");
+	static existClient(index) {
+		return !!_client_list[index];
 	}
 
-	get close() {
-		throw new FaError("dcs not implemented");
+	/**
+	 *
+	 * @param index {string}
+	 * @param client {Object}
+	 */
+	static attachClient(index, client) {
+		_client_list[index] = client;
+	}
+
+	/**
+	 *
+	 * @param index {string}
+	 */
+	static detachClient(index) {
+		delete _client_list[index];
 	}
 }
 
 /**
  *
- * @type {ClientClass}
+ * @type {FaDaoClient}
  */
-module.exports = ClientClass;
+module.exports = FaDaoClient;

@@ -1,124 +1,114 @@
 "use strict";
-/*node*/
-/** @type {oracledbCLib.Oracledb} */
-// const OracleClient = require("oracledb");
 /*fa*/
-const ClientClass = require("fa-nodejs/dao/client");
-const ModelClass = require("fa-nodejs/dao/model");
-const QueryClass = require("fa-nodejs/dao/query");
+const FaDaoModel = require("fa-nodejs/dao/model");
+const FaDaoOracleClient = require("fa-nodejs/dao/oracle-client");
+const FaDaoQuery = require("fa-nodejs/dao/query");
 const FaTrace = require("fa-nodejs/base/trace");
-/*variables*/
 const FaError = require("fa-nodejs/base/error");
 
-class OracleModelClass extends ModelClass {
+class FaDaoOracleModel extends FaDaoModel {
 	/**
 	 * @constructor
 	 */
 	constructor() {
 		super();
-		this._Query = null;
 		this._trace = FaTrace.trace(1);
 	};
 
+	get connection() {
+		throw new FaError("connection not specified").setTrace(this._trace);
+	}
+
+	get table() {
+		throw new FaError("table not specified").setTrace(this._trace);
+	}
+
 	/**
 	 *
-	 * @return {QueryClass}
+	 * @return {FaDaoOracleClient}
+	 * @private
+	 */
+	get _client() {
+		if (!this._Client) {
+			this._Client = new FaDaoOracleClient(this);
+		}
+		return this._Client;
+	}
+
+	/**
+	 *
+	 * @param error {Error}
+	 * @return {Error}
+	 */
+	_error(error) {
+		let MatchPattern = "^(.+): (.+)$";
+		let MatchExpression = new RegExp(MatchPattern);
+		let result = error.message.match(MatchExpression);
+		if (result) {
+			return {name: result[1], message: result[2]};
+		} else {
+			return error;
+		}
+	}
+
+	/**
+	 *
+	 * @return {FaDaoQuery}
 	 */
 	get query() {
 		if (!this._Query) {
-			this._Query = new QueryClass(this, this.oracle.database, this.table);
+			this._Query = new FaDaoQuery(this);
 		}
 		return this._Query;
 	}
 
 	/**
 	 *
-	 * @return {OracleClientClass}
+	 * @param query
+	 * @return {Promise<Object>}
 	 */
-	get oracle() {
-		return ClientClass.find(this.client, this._trace);
+	async findOne(query) {
+		// console.info(query);
+		let trace = FaTrace.trace(1);
+		try {
+			let connection = await this._client.open();
+			let result = await connection.execute(query);
+			await this._client.close(connection);
+			if (result && result["rows"]) {
+				return result["rows"][0]
+			} else {
+				return {};
+			}
+		} catch (e) {
+			throw new FaError(this._error(e)).setTrace(trace);
+		}
 	}
 
 	/**
 	 *
 	 * @param query
-	 * @private
-	 * @return {Promise<*>}
+	 * @return {Promise<Array>}
 	 */
-	// async _execute(query) {
-	// 	let trace = FaTrace.trace(3);
-	// 	try {
-	// 		let connection = await this.oracle.open();
-	// 		let result = await connection.execute(query);
-	// 		await this.oracle.close();
-	// 		return result;
-	// 	} catch (e) {
-	// 		// Object.entries(e).forEach(function ([key, value]) {
-	// 		// 	console.error(key, value);
-	// 		// });
-	// 		throw new FaError(e).setTrace(trace);
-	// 	}
-	// };
-
-	async findOne(query) {
-		let result = await this._execute(query);
-		if (result["rows"][0]) {
-			return result["rows"][0];
-		} else {
-			return {};
-		}
-	}
-
 	async findMany(query) {
-		let connection = await this.oracle.open();
-		let result = await connection.execute(query);
-		await this.oracle.close();
-		if (result && result["rows"]) {
-			return result["rows"];
-		} else {
-			return [];
+		// console.info(query);
+		let trace = FaTrace.trace(1);
+		try {
+			let connection = await this._client.open();
+			let result = await connection.execute(query);
+			await this._client.close(connection);
+			if (result && result["rows"]) {
+				return result["rows"]
+			} else {
+				return [];
+			}
+		} catch (e) {
+			throw new FaError(this._error(e)).setTrace(trace);
 		}
-		// let connection = await this.oracle.open();
-		// if (connection) {
-		// 	let result = await connection.execute(query);
-		// 	await this.oracle.close();
-		// 	// return result;
-		// 	if (result["rows"]) {
-		// 		return result["rows"];
-		// 	} else {
-		// 		return [];
-		// 	}
-		// } else {
-		// 	console.error(connection);
-		// 	return [];
-		// }
 	}
 }
 
 /**
  *
- * @type {OracleModelClass}
+ * @type {FaDaoOracleModel}
  */
-module.exports = OracleModelClass;
-// function filterArguments(data) {
-// 	let parameter_list = [];
-// 	let function_list = [];
-// 	Object.values(data).filter(function (value) {
-// 		if (typeof value === "function") {
-// 			function_list.push(value);
-// 		} else {
-// 			parameter_list.push(value);
-// 		}
-// 	});
-// 	return [
-// 		parameter_list[0] === undefined ? "SELECT * FROM V$VERSION" : parameter_list[0],
-// 		parameter_list[1] === undefined ? [] : parameter_list[1],
-// 		parameter_list[2] === undefined ? [] : parameter_list[2],
-// 		function_list[0] === undefined ? function (data) {
-// 			// logOracleResponse(data);
-// 		} : function_list[0],
-// 		function_list[1] === undefined ? function (e) {
-// 			console.error(e);
-// 		} : function_list[1]
-// 	];
-// }
+module.exports = FaDaoOracleModel;

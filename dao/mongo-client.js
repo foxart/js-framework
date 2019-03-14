@@ -2,47 +2,46 @@
 /*nodejs*/
 const MongoClient = require("mongodb").MongoClient;
 /*fa*/
-const ClientClass = require("fa-nodejs/dao/client");
-const FaTrace = require("fa-nodejs/base/trace");
+const FaError = require("fa-nodejs/base/error");
+const FaDaoClient = require("fa-nodejs/dao/client");
+const FaDaoConnection = require("fa-nodejs/dao/connection");
 
-class MongoClientClass extends ClientClass {
+class FaDaoMongoClient extends FaDaoClient {
 	/**
 	 * @constructor
+	 * @param FaDaoMongoModel {FaDaoMongoModel}
 	 */
-	constructor() {
+	constructor(FaDaoMongoModel) {
 		super();
-		this._MongoClient = null;
-		this._trace = FaTrace.trace(1);
+		this._FaDaoMongoModel = FaDaoMongoModel;
 	};
 
 	/**
 	 *
-	 * @return {string}
+	 * @return {FaDaoMongoConnection}
 	 * @private
 	 */
-	get dcs() {
-		return `mongodb://${this.host}:${this.port}`;
-	};
+	get _connection() {
+		return FaDaoConnection.findConnection(this._FaDaoMongoModel.connection);
+	}
 
 	/**
 	 *
-	 * @return {Object}
+	 * @return {Promise<MongoClient>}
+	 * @private
 	 */
-	get optionsConnect() {
-		return {
-			useNewUrlParser: true
-		};
-	};
+	async _connect() {
+		return await MongoClient.connect(this._connection.url, this._connection.options.connect);
+	}
 
 	/**
 	 *
-	 * @return {Object}
+	 * @param error {Error}
+	 * @return {FaError}
 	 */
-	get optionsClose() {
-		return {
-			forceClose: false,
-		};
-	};
+	_error(error) {
+		return new FaError(error);
+	}
 
 	/**
 	 *
@@ -50,49 +49,60 @@ class MongoClientClass extends ClientClass {
 	 */
 	async open() {
 		try {
-			if (!this._MongoClient) {
-				this._MongoClient = await MongoClient.connect(this.dcs, this.optionsConnect);
+			let result;
+			if (this._connection.persistent) {
+				if (FaDaoClient.existClient(this._FaDaoMongoModel.connection)) {
+					result = FaDaoClient.findClient(this._FaDaoMongoModel.connection);
+				} else {
+					result = await this._connect();
+					FaDaoClient.attachClient(this._FaDaoMongoModel.connection, result);
+					console.error("NEW");
+				}
+			} else {
+				result = await this._connect();
 			}
-			return this._MongoClient;
+			return result;
 		} catch (e) {
-			throw new FaError(e).setTrace(this._trace);
+			throw this._error(e);
 		}
-	};
+	}
 
 	/**
 	 *
+	 * @param connection {MongoClient}
 	 * @param collection {string}
 	 * @return {Promise<Collection>}
 	 */
-	async client(collection) {
+	async collection(connection, collection) {
 		try {
-			let client = await this.open();
-			return await client.db(this.database).collection(collection);
+			return await connection.db(this._connection.database).collection(collection);
 		} catch (e) {
-			throw new FaError(e).setTrace(this._trace);
+			throw this._error(e);
 		}
-	};
+	}
 
 	/**
-	 *
+	 * @param connection {MongoClient}
 	 * @return {Promise<boolean>}
 	 */
-	async close() {
+	async close(connection) {
 		try {
-			if (!this.persistent && this._MongoClient) {
-				this._MongoClient = await this._MongoClient.close(this.optionsClose);
+			if (!this._connection.persistent && connection) {
+				await connection.close(this._connection.options.close);
+				FaDaoConnection.detachConnection(this._FaDaoMongoModel.connection);
+				FaDaoClient.detachClient(this._FaDaoMongoModel.connection);
 				return true;
 			} else {
 				return false;
 			}
 		} catch (e) {
-			throw new FaError(e).setTrace(this._trace);
+			throw this._error(e);
 		}
-	};
+	}
 }
 
 /**
  *
- * @type {MongoClientClass}
+ * @type {FaDaoMongoClient}
  */
-module.exports = MongoClientClass;
+module.exports = FaDaoMongoClient;
