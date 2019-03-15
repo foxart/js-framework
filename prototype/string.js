@@ -31,7 +31,7 @@ String.prototype.escapeHtml = function () {
 	});
 };
 /**
- *
+ * @deprecated
  * @return {Object}
  */
 String.prototype.toMongoId = function () {

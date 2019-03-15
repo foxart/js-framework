@@ -48,7 +48,7 @@ class FaHttpRequestClass {
 		if (url.query) {
 			get = this._converter.fromUrlEncoded(url.query);
 		}
-		if (["PATCH", "POST", "PUT"].hasElement(method)) {
+		if (["PATCH", "POST", "PUT"].has(method)) {
 			switch (headers["content-type"]) {
 				case this._contentType.json:
 					post = this._converter.fromJson(body);

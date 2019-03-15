@@ -1,21 +1,4 @@
-'use strict';
-/**
- *
- * @param item
- * @returns {boolean}
- */
-Array.prototype.hasElement = function (item) {
-	return this.indexOf(item) !== -1;
-};
-
-/**
- *
- * @param item
- * @return {boolean}
- */
-Array.prototype.omitElement = function (item) {
-	return this.indexOf(item) === -1;
-};
+"use strict";
 /**
  *
  * @param item
@@ -33,30 +16,18 @@ Array.prototype.omit = function (item) {
 	return this.indexOf(item) === -1;
 };
 /**
- *
- * @param item
+ * @param array {Array}
  */
-Array.prototype.pushUnique = function (item) {
-	if (this.indexOf(item) === -1) {
-		this.push(item);
-	}
-};
-/**
- *
- * @param array {array}
- */
-Array.prototype.differsFrom = function (array) {
+Array.prototype.difference = function (array) {
 	return this.filter(function (item) {
-		return array.indexOf(item) < 0;
+		return array.indexOf(item) === -1;
 	});
 };
 /**
- *
- * @returns {any[]}
+ * @param array {Array}
  */
-// Array.server1.prototype.values = function () {
-// 	let context = this;
-// 	return Object.keys(context).map(function (key) {
-// 		return context[key];
-// 	})
-// };
+Array.prototype.intersect = function (array) {
+	return this.filter(function (item) {
+		return array.indexOf(item) !== -1;
+	});
+};

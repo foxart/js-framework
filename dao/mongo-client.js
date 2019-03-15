@@ -56,7 +56,6 @@ class FaDaoMongoClient extends FaDaoClient {
 				} else {
 					result = await this._connect();
 					FaDaoClient.attachClient(this._FaDaoMongoModel.connection, result);
-					console.error("NEW");
 				}
 			} else {
 				result = await this._connect();

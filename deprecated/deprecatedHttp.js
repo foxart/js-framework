@@ -30,7 +30,7 @@ module.exports = function (configuration) {
 			serveHttpServer(request, response);
 		});
 		Server.listen(configuration.port, function () {
-			console.log(`http | ${configuration.host}:${configuration.port}/${configuration.path}`);
+			// console.log(`http | ${configuration.host}:${configuration.port}/${configuration.path}`);
 		});
 		return Server;
 	};
