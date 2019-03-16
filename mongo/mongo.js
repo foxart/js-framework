@@ -7,7 +7,6 @@ const
 	MongoClient = require('mongodb').MongoClient,
 	ObjectID = require('mongodb').ObjectID,
 	assert = require('assert');
-
 /*services*/
 // const
 // 	LogService = require('../../idol/modules/audit/services/LogService');
@@ -27,7 +26,6 @@ module.exports = function (configuration) {
 		module.link = `mongodb://${configuration.host}:${configuration.port}`;
 		// LogService.check(`server1.mongo | ${configuration.host}:${configuration.port}/${configuration.database}`);
 	};
-
 	/*create*/
 	new createConnection(configuration);
 	/**
@@ -149,7 +147,9 @@ module.exports = function (configuration) {
 				Mongo = await module.openConnection();
 			}
 			module.sanitize(filter);
+			// console.warn(filter, options);
 			Mongo.db(module.configuration.database).collection(collection).find(filter, options).toArray(function (e, result) {
+				// console.info(arguments);
 				if (e) {
 					reject(new FaError(e));
 				} else {
@@ -333,12 +333,9 @@ module.exports = function (configuration) {
 	module.newId = function () {
 		return new ObjectID();
 	};
-
-
 	module.toId = function (id) {
 		return new ObjectID(id);
 	};
-
 	/**
 	 *
 	 * @param id

@@ -34,8 +34,6 @@ class FaDaoOracleClient extends FaDaoClient {
 	 */
 	async _connect() {
 		let options = this._connection.options;
-		// console.warn([this.connector, this.connection.options]);
-		// return;
 		Object.entries(options).forEach(function ([key, value]) {
 			OracleDb[key] = value;
 		});
@@ -50,6 +48,7 @@ class FaDaoOracleClient extends FaDaoClient {
 	 *
 	 * @param error {Error}
 	 * @return {FaError}
+	 * @private
 	 */
 	_error(error) {
 		let MatchPattern = "^(.+): (.+)$";
@@ -86,7 +85,21 @@ class FaDaoOracleClient extends FaDaoClient {
 	}
 
 	/**
-	 * connection {Object}
+	 * @param connection {Object}
+	 * @param query {string}
+	 * @return {Promise<*>}
+	 */
+	async execute(connection, query) {
+		try {
+			return await connection.execute(query);
+		} catch (e) {
+			await this.close(connection);
+			throw this._error(e);
+		}
+	}
+
+	/**
+	 * @param connection {Object}
 	 * @return {Promise<boolean>}
 	 */
 	async close(connection) {

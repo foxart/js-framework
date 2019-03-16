@@ -26,29 +26,12 @@ class FaDaoOracleModel extends FaDaoModel {
 	/**
 	 *
 	 * @return {FaDaoOracleClient}
-	 * @private
 	 */
-	get _client() {
+	get client() {
 		if (!this._Client) {
 			this._Client = new FaDaoOracleClient(this);
 		}
 		return this._Client;
-	}
-
-	/**
-	 *
-	 * @param error {Error}
-	 * @return {Error}
-	 */
-	_error(error) {
-		let MatchPattern = "^(.+): (.+)$";
-		let MatchExpression = new RegExp(MatchPattern);
-		let result = error.message.match(MatchExpression);
-		if (result) {
-			return {name: result[1], message: result[2]};
-		} else {
-			return error;
-		}
 	}
 
 	/**
@@ -71,16 +54,17 @@ class FaDaoOracleModel extends FaDaoModel {
 		// console.info(query);
 		let trace = FaTrace.trace(1);
 		try {
-			let connection = await this._client.open();
-			let result = await connection.execute(query);
-			await this._client.close(connection);
+			let connection = await this.client.open();
+			let result = await this.client.execute(connection, query);
+			await this.client.close(connection);
+			// let result = await connection.execute(query);
 			if (result && result["rows"]) {
 				return result["rows"][0]
 			} else {
-				return {};
+				return null;
 			}
 		} catch (e) {
-			throw new FaError(this._error(e)).setTrace(trace);
+			throw new FaError(e).setTrace(trace);
 		}
 	}
 
@@ -93,16 +77,17 @@ class FaDaoOracleModel extends FaDaoModel {
 		// console.info(query);
 		let trace = FaTrace.trace(1);
 		try {
-			let connection = await this._client.open();
-			let result = await connection.execute(query);
-			await this._client.close(connection);
+			let connection = await this.client.open();
+			let result = await this.client.execute(connection, query);
+			// let result = await connection.execute(query);
+			await this.client.close(connection);
 			if (result && result["rows"]) {
 				return result["rows"]
 			} else {
 				return [];
 			}
 		} catch (e) {
-			throw new FaError(this._error(e)).setTrace(trace);
+			throw new FaError(e).setTrace(trace);
 		}
 	}
 }

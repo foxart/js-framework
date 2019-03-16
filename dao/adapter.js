@@ -5,7 +5,7 @@ const FaError = require("fa-nodejs/base/error");
 let TestPattern = "^(?:\\[\\\"([^\\[\\]\\\"]+)\\\"\\])+$";
 let MatchPattern = "[^\\[\\]\\\"]+";
 
-class AdapterClass {
+class FaDaoAdapter {
 	/**
 	 * @constructor
 	 * @param adapter {Object}
@@ -45,13 +45,17 @@ class AdapterClass {
 		let context = this;
 		return data.map(function (map) {
 			let result = Array.isArray(adapter) ? [] : {};
-			// Object.entries(adapter).forEach(function ([key, value]) {
-			// console.warn(typeof adapter);
 			if (typeof adapter === "function") {
 				try {
 					result = adapter.apply(map, args);
 				} catch (e) {
 					result = new FaError(e).pickTrace(0).setContext(map);
+				}
+			} else if (typeof adapter === "string") {
+				if (TestExpression.test(adapter)) {
+					result = context._getObjectValueByKeys(map, adapter.match(MatchExpression));
+				} else {
+					result = adapter;
 				}
 			} else {
 				Object.entries(adapter).map(function ([key, value]) {
@@ -83,21 +87,19 @@ class AdapterClass {
 	 *
 	 * @return {Object|Function}
 	 */
-	get adapter() {
-		return this._adapter;
-	}
-
+	// get adapter() {
+	// 	return this._adapter;
+	// }
 	/**
 	 *
 	 * @param adapter {Object|Function}
 	 */
-	set adapter(adapter) {
-		this._adapter = adapter;
-	}
-
+	// set adapter(adapter) {
+	// 	this._adapter = adapter;
+	// }
 	/**
 	 *
-	 * @return {AdapterClass}
+	 * @return {FaDaoAdapter}
 	 */
 	use() {
 		this._arguments = arguments;
@@ -122,6 +124,6 @@ class AdapterClass {
 
 /**
  *
- * @type {AdapterClass}
+ * @type {FaDaoAdapter}
  */
-module.exports = AdapterClass;
+module.exports = FaDaoAdapter;

@@ -83,7 +83,11 @@ class FaDaoMongoModel extends FaDaoModel {
 			let collection = await this._client.collection(connection, this.table);
 			let result = collection.findOne(filter, options);
 			await this._client.close(connection);
-			return result;
+			if (result) {
+				return result;
+			} else {
+				return null;
+			}
 		} catch (e) {
 			throw new FaError(e).setTrace(trace);
 		}
@@ -93,7 +97,7 @@ class FaDaoMongoModel extends FaDaoModel {
 	 *
 	 * @param filter {Object|null}
 	 * @param options {Object|null}
-	 * @return {Promise<Array|null>}
+	 * @return {Promise<Array>}
 	 */
 	async findMany(filter = null, options = null) {
 		let trace = FaTrace.trace(1);
@@ -103,7 +107,11 @@ class FaDaoMongoModel extends FaDaoModel {
 			let cursor = await collection.find(filter, options);
 			let result = await cursor.toArray();
 			await this._client.close(connection);
-			return result;
+			if (result.length > 0) {
+				return result;
+			} else {
+				return [];
+			}
 		} catch (e) {
 			throw new FaError(e).setTrace(trace);
 		}
@@ -161,10 +169,10 @@ class FaDaoMongoModel extends FaDaoModel {
 	 *
 	 * @param filter {Object}
 	 * @param update {Object}
-	 * @param options {Object}
+	 * @param options {Object|null}
 	 * @return {Promise<{filtered: *, modified: *, id: null, upserted: *}>}
 	 */
-	async updateOne(filter, update, options) {
+	async updateOne(filter, update, options = null) {
 		let trace = FaTrace.trace(1);
 		try {
 			let connection = await this._client.open();
