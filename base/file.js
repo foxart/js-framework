@@ -3,11 +3,8 @@
 const Fs = require("fs");
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-/**
- *
- * @type {module.FaFileClass}
- */
-module.exports = class FaFileClass {
+
+class FaBaseFile {
 	/**
 	 *
 	 * @param path {string|null}
@@ -107,7 +104,6 @@ module.exports = class FaFileClass {
 	writeFileAsync(filename, data) {
 	};
 
-
 	readFileSync(filename) {
 		try {
 			return Fs.readFileSync(this.path(filename));
@@ -128,4 +124,10 @@ module.exports = class FaFileClass {
 		fileStream.write(data);
 		fileStream.end();
 	};
-};
+}
+
+/**
+ *
+ * @type {FaBaseFile}
+ */
+module.exports = FaBaseFile;

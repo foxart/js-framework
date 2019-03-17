@@ -1,7 +1,7 @@
 "use strict";
 /*fa-nodejs*/
 const FaError = require("../base/error");
-const FaFileClass = require("../base/file");
+const FaBaseFile = require("../base/file");
 const FaHttpClass = require("../server/http");
 const FaSocketClass = require("../server/socket");
 /**
@@ -23,7 +23,7 @@ module.exports = class FaModule {
 		} else {
 			throw new FaError(`wrong server type`);
 		}
-		this._FaFile = new FaFileClass();
+		this._FaFile = new FaBaseFile();
 		this._path = path;
 		this._controller_list = {};
 		this._routes_list = {};
@@ -187,6 +187,7 @@ module.exports = class FaModule {
 						let item = before.pop();
 						after.push(item);
 						if (item === "index" && after.every(item => (item === "index"))) {
+							// console.error(`${module}`,`/${before.join("/")}`);
 							context._routes_list[module][`/${before.join("/")}`] = {
 								controller: controller,
 								action: action,
