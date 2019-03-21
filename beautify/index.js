@@ -6,15 +6,21 @@ const FileType = require("file-type");
 
 /**
  *
- * @param json
+ * @param data
  * @returns {boolean}
  */
-function isJson(json) {
+function isJson(data) {
 	try {
-		return typeof JSON.parse(json) === "object";
+		let json = JSON.parse(data);
+		return typeof json === "object" && json !== null;
 	} catch (e) {
 		return false;
 	}
+	// if (/^[\],:{}\s]*$/.test(json.replace(/\\["\\\/bfnrtu]/g, '@').replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+	// 	return false;
+	// } else {
+	// 	return false;
+	// }
 }
 
 /**

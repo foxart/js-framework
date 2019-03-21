@@ -11,6 +11,8 @@ class FaDaoAdapter {
 	 * @param adapter {Object}
 	 */
 	constructor(adapter) {
+		this._TestExpression = new RegExp(TestPattern);
+		this._MatchExpression = new RegExp(MatchPattern, "g");
 		this._adapter = adapter;
 		this._arguments = {};
 	};
@@ -22,12 +24,16 @@ class FaDaoAdapter {
 	 * @return {*}
 	 * @private
 	 */
-	_getObjectValueByKeys(object, keys) {
+	_extractObject(object, keys) {
 		let key = keys.shift();
-		if (object[key] && keys.length > 0) {
-			return this._getObjectValueByKeys(object[key], keys);
-		} else {
-			return object[key];
+		try {
+			if (object[key] && keys.length > 0) {
+				return this._extractObject(object[key], keys);
+			} else {
+				return object[key];
+			}
+		} catch (e) {
+			return null;
 		}
 	};
 
@@ -39,9 +45,7 @@ class FaDaoAdapter {
 	 * @return {Array|Object}
 	 * @private
 	 */
-	_apply(adapter, data, args) {
-		let TestExpression = new RegExp(TestPattern);
-		let MatchExpression = new RegExp(MatchPattern, "g");
+	_extract(adapter, data, args) {
 		let context = this;
 		return data.map(function (map) {
 			let result = Array.isArray(adapter) ? [] : {};
@@ -52,19 +56,19 @@ class FaDaoAdapter {
 					result = new FaError(e).pickTrace(0).setContext(map);
 				}
 			} else if (typeof adapter === "string") {
-				if (TestExpression.test(adapter)) {
-					result = context._getObjectValueByKeys(map, adapter.match(MatchExpression));
+				if (context._TestExpression.test(adapter)) {
+					result = context._extractObject(map, adapter.match(context._MatchExpression));
 				} else {
 					result = adapter;
 				}
 			} else {
 				Object.entries(adapter).map(function ([key, value]) {
-					if (typeof value === "string" && TestExpression.test(value)) {
-						result[key] = context._getObjectValueByKeys(map, value.match(MatchExpression));
+					if (typeof value === "string" && context._TestExpression.test(value)) {
+						result[key] = context._extractObject(map, value.match(context._MatchExpression));
 					} else if (value && value.constructor === Array) {
-						result[key] = context._apply(value, [map], args)[0];
+						result[key] = context._extract(value, [map], args)[0];
 					} else if (value && value.constructor === Object) {
-						result[key] = context._apply(value, [map], args)[0];
+						result[key] = context._extract(value, [map], args)[0];
 					} else if (typeof value === "function") {
 						let result_function;
 						try {
@@ -85,18 +89,20 @@ class FaDaoAdapter {
 
 	/**
 	 *
-	 * @return {Object|Function}
+	 * @return {Object}
 	 */
-	// get adapter() {
-	// 	return this._adapter;
-	// }
+	get adapter() {
+		return this._adapter;
+	}
+
 	/**
 	 *
-	 * @param adapter {Object|Function}
+	 * @param adapter {Object}
 	 */
-	// set adapter(adapter) {
-	// 	this._adapter = adapter;
-	// }
+	set adapter(adapter) {
+		this._adapter = adapter;
+	}
+
 	/**
 	 *
 	 * @return {FaDaoAdapter}
@@ -104,7 +110,7 @@ class FaDaoAdapter {
 	use() {
 		this._arguments = arguments;
 		return this;
-	};
+	}
 
 	/**
 	 *
@@ -113,13 +119,19 @@ class FaDaoAdapter {
 	 */
 	apply(data) {
 		let result;
+		// let adapter;
+		// if (typeof this._adapter === "function") {
+		// 	adapter = this._adapter.apply(data, this._arguments);
+		// } else {
+		// 	adapter = this._adapter;
+		// }
 		if (Array.isArray(data)) {
-			result = this._apply(this._adapter, data, this._arguments);
+			result = this._extract(this._adapter, data, this._arguments);
 		} else {
-			result = this._apply(this._adapter, [data], this._arguments)[0];
+			result = this._extract(this._adapter, [data], this._arguments)[0];
 		}
 		return result;
-	};
+	}
 }
 
 /**

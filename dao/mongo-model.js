@@ -130,7 +130,7 @@ class FaDaoMongoModel extends FaDaoModel {
 			let collection = await this._client.collection(connection, this.table);
 			let cursor = await collection.insertOne(document, options);
 			let result = {
-				id: cursor["insertedId"],
+				_id: cursor["insertedId"],
 				inserted: cursor["insertedCount"],
 				data: cursor["ops"][0],
 			};
@@ -154,7 +154,7 @@ class FaDaoMongoModel extends FaDaoModel {
 			let collection = await this._client.collection(connection, this.table);
 			let cursor = await collection.insertMany(document, options);
 			let result = {
-				id: cursor["insertedIds"],
+				_id: cursor["insertedIds"],
 				inserted: cursor["insertedCount"],
 				data: cursor["ops"],
 			};
@@ -179,7 +179,7 @@ class FaDaoMongoModel extends FaDaoModel {
 			let collection = await this._client.collection(connection, this.table);
 			let cursor = await collection.updateOne(filter, update, options);
 			let result = {
-				id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
+				_id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
 				filtered: cursor["matchedCount"],
 				modified: cursor["modifiedCount"],
 				upserted: cursor["upsertedCount"],
@@ -205,7 +205,7 @@ class FaDaoMongoModel extends FaDaoModel {
 			let collection = await this._client.collection(connection, this.table);
 			let cursor = await collection.updateMany(filter, update, options);
 			let result = {
-				id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
+				_id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
 				filtered: cursor["matchedCount"],
 				modified: cursor["modifiedCount"],
 				upserted: cursor["upsertedCount"],

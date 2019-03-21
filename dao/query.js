@@ -60,10 +60,14 @@ class FaDaoQuery {
 			result = `(${comparsion.map(function (item) {
 				if (typeof item === "string") {
 					return `'${item}'`;
+				} else if (typeof item === "function") {
+					return item();
 				} else {
 					return item;
 				}
 			}).join(", ")})`;
+		} else if (typeof comparsion === "function") {
+			result = comparsion();
 		} else if (typeof comparsion === "string") {
 			result = `'${comparsion}'`;
 		} else {
@@ -146,7 +150,8 @@ class FaDaoQuery {
 	 */
 	get _getLimit() {
 		if (this._limit) {
-			return `FETCH NEXT ${this._limit} ROWS ONLY `;
+			// return `FETCH NEXT ${this._limit} ROWS ONLY `;
+			return null;
 		} else {
 			return null;
 		}
@@ -256,6 +261,7 @@ class FaDaoQuery {
 	 */
 	limit(limit) {
 		this._limit = limit;
+		// this.andWhere({"ROWNUM": {"<=": limit}});
 		return this;
 	}
 
@@ -269,20 +275,53 @@ class FaDaoQuery {
 		return this;
 	}
 
+	get _getOrder() {
+		let self = this;
+		let result = [];
+		if (this._order) {
+			Object.entries(self._order).map(function ([key, value]) {
+				if (value > 0) {
+					result.push(`${key} ASC`);
+				} else {
+					result.push(`${key} DESC`);
+				}
+			});
+			return `ORDER BY ${result.join(", ")} `;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 *
+	 */
+	order(order) {
+		this._order = order;
+		return this;
+	}
+
+	toDatetimeOracle(datetime, format) {
+		return function () {
+			return `TO_DATE('${datetime.toISOString().slice(0, 19).replace('T', ' ')}', '${format}')`;
+		}
+	}
+
 	/**
 	 * @return {Object}
 	 */
 	async one() {
-		this.limit(1);
+		// this.limit(1);
 		let query = [
 			this._getSelect,
 			this._getFrom,
 			this._getWhere,
 			this._getAndWhere,
 			this._getOrWhere,
+			this._getOrder,
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
+		query = `SELECT * FROM (${query}) WHERE ROWNUM=1`;
 		// console.info([query]);
 		return await this._FaDaoModel.findOne(query);
 	}
@@ -297,6 +336,7 @@ class FaDaoQuery {
 			this._getWhere,
 			this._getAndWhere,
 			this._getOrWhere,
+			this._getOrder,
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
