@@ -1,30 +1,32 @@
 "use strict";
 /*fa-nodejs*/
-const FaError = require("fa-nodejs/base/error");
-const FaTrace = require("fa-nodejs/base/trace");
-const FaTemplateClass = require("fa-nodejs/application/template");
+const FaBaseError = require("fa-nodejs/base/error");
+const FaBaseTrace = require("fa-nodejs/base/trace");
+const FaApplicationTemplate = require("fa-nodejs/application/template");
+const FaController = require("fa-nodejs/application/controller");
 /**
  *
  * @type {module.FaControllerHttp}
  */
-module.exports = class FaControllerHttp {
+module.exports = class FaControllerHttp  extends FaController{
 	/**
 	 *
 	 * @param FaHttp {module.FaHttpClass}
 	 * @param views_path {string|null}
 	 */
 	constructor(FaHttp, views_path = null) {
+		super(views_path);
 		this._FaHttp = FaHttp;
 		/**
 		 *
 		 * @type {module.FaTemplateClass}
 		 * @private
 		 */
-		this._FaTemplateClass = new FaTemplateClass(views_path === null ? this._getTemplatePath : views_path);
+		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
 	}
 
 	get _getTemplatePath() {
-		let controller_path = FaTrace.trace(2)["path"];
+		let controller_path = FaBaseTrace.trace(2)["path"];
 		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Controller.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_path = controller_path.match(regular_path);
@@ -51,7 +53,7 @@ module.exports = class FaControllerHttp {
 		try {
 			return this._FaTemplateClass.load(template);
 		} catch (e) {
-			throw new FaError(e).pickTrace(1);
+			throw new FaBaseError(e).pickTrace(1);
 		}
 	}
 

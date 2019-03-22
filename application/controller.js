@@ -1,25 +1,32 @@
 "use strict";
-const FaTemplateClass = require('./template');
-const FaError = require('../base/error');
+const FaBaseError = require("fa-nodejs/base/error");
+const FaBaseTrace = require("fa-nodejs/base/trace");
+const FaApplicationTemplate = require("fa-nodejs/application/template");
+
 /**
  *
  * @type {module.FaController}
  */
-module.exports = class FaController {
+class FaController {
 	/**
 	 *
-	 * @param FaHttp {FaHttpClass}
-	 * @param namespace {string}
+	 * @param views_path {string}
 	 */
-	constructor(FaHttp, namespace) {
-		throw new Error("deprecated");
-		this.Http = FaHttp;
-		/**
-		 *
-		 * @type {module.FaTemplateClass}
-		 * @private
-		 */
-		this._FaTemplateClass = new FaTemplateClass(`${namespace}/views`);
+	constructor(views_path) {
+		// console.info(views_path)
+		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
+	}
+
+	get _getTemplatePath() {
+		let controller_path = FaBaseTrace.trace(2)["path"];
+		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Controller.js$`);
+		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
+		let match_path = controller_path.match(regular_path);
+		if (match_path) {
+			return `${match_path[1]}/views/${match_path[2].match(regular_name).join("-").toLowerCase()}`;
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -30,7 +37,7 @@ module.exports = class FaController {
 		try {
 			return this._FaTemplateClass.load(template);
 		} catch (e) {
-			throw FaError.pickTrace(e.message, 2);
+			throw FaBaseError.pickTrace(e.message, 2);
 		}
 	}
 
@@ -44,4 +51,10 @@ module.exports = class FaController {
 			xml: data
 		}, this.Http.type.xml);
 	}
-};
+}
+
+/**
+ *
+ * @type {FaController}
+ */
+module.exports = FaController;
