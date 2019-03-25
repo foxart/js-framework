@@ -39,10 +39,18 @@ class FaDaoQuery {
 	 * @private
 	 */
 	get _getFrom() {
-		if (this._from) {
-			return `FROM ${this._from.map(item => `${this._connection.database}.${item}`).join(", ")} `
+		let database;
+		if (this._connection.database) {
+			database = `${this._connection.database}.`;
 		} else {
-			return `FROM ${this._connection.database}.${this._FaDaoModel.table} `;
+			database = "";
+		}
+		if (this._from) {
+			return `FROM ${this._from.map(item => {
+				return `${database}${item}`;
+			}).join(", ")} `;
+		} else {
+			return `FROM ${database}${this._FaDaoModel.table} `;
 		}
 	}
 
@@ -322,7 +330,7 @@ class FaDaoQuery {
 			this._getLimit,
 		].filter(item => item).join("").trim();
 		query = `SELECT * FROM (${query}) WHERE ROWNUM=1`;
-		// console.info([query]);
+		console.info([query]);
 		return await this._FaDaoModel.findOne(query);
 	}
 
@@ -340,7 +348,7 @@ class FaDaoQuery {
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
-		// console.info([query]);
+		console.info([query]);
 		return await this._FaDaoModel.findMany(query);
 	}
 }
