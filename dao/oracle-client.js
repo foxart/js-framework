@@ -37,6 +37,7 @@ class FaDaoOracleClient extends FaDaoClient {
 		Object.entries(options).forEach(function ([key, value]) {
 			OracleDb[key] = value;
 		});
+		OracleDb.queueTimeout = 1000;
 		return await OracleDb.getConnection({
 			connectString: this._connection.url,
 			user: this._connection.user,
@@ -76,6 +77,7 @@ class FaDaoOracleClient extends FaDaoClient {
 					FaDaoClient.attachClient(this._FaDaoOracleModel.connection, result);
 				}
 			} else {
+				console.warn(["OPEN"]);
 				result = await this._connect();
 			}
 			return result;
@@ -105,7 +107,10 @@ class FaDaoOracleClient extends FaDaoClient {
 	async close(connection) {
 		try {
 			if (!this._connection.persistent && connection) {
+				// if (!this._connection.persistent) {
+				// 	await connection.release();
 				await connection.close();
+				console.error(["CLOSE"]);
 				FaDaoConnection.detachConnection(this._FaDaoOracleModel.connection);
 				FaDaoClient.detachClient(this._FaDaoOracleModel.connection);
 				return true;

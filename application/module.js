@@ -2,7 +2,7 @@
 /*fa-nodejs*/
 const FaError = require("fa-nodejs/base/error");
 const FaBaseFile = require("fa-nodejs/base/file");
-const FaBaseTrace = require("fa-nodejs/base/trace");
+// const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaHttpClass = require("fa-nodejs/server/http");
 const FaSocketClass = require("fa-nodejs/server/socket");
 
@@ -28,7 +28,6 @@ class FaApplicationModule {
 		this._loadFromDirectory();
 		this._loadFromConfiguration();
 		this._serve();
-		// console.warn(this._getTemplatePath);
 	}
 
 	/**
@@ -147,7 +146,7 @@ class FaApplicationModule {
 	 * @private
 	 */
 	_loadController(module, controller) {
-		let path = `${this._path}/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
+		let path = `${this._path}/modules/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
 		if (this._exist(path)) {
 			return this._find(path);
 		} else if (this._FaBaseFile.isFile(path)) {
@@ -167,9 +166,9 @@ class FaApplicationModule {
 	_loadFromDirectory() {
 		let self = this;
 		let result = {};
-		this._readModules(`${self._path}`).forEach(function (module) {
+		this._readModules(`${self._path}/modules`).forEach(function (module) {
 			self._routes_list[module] = {};
-			self._readControllers(`${self._path}/${module}/${self._server_type}s`).forEach(function (controller) {
+			self._readControllers(`${self._path}/modules/${module}/${self._server_type}s`).forEach(function (controller) {
 				let methods = self._readMethods(self._loadController(module, controller));
 				methods.forEach(function (action) {
 					let before = [module, controller, action];
@@ -201,6 +200,7 @@ class FaApplicationModule {
 	 */
 	_loadFromConfiguration() {
 		let path = `${this._path}/config/${this._server_type}s.js`;
+		console.error(path)
 		if (this._FaBaseFile.isFile(path)) {
 			let configuration = require(path);
 			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {

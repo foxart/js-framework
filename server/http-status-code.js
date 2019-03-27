@@ -1,13 +1,12 @@
 "use strict";
-/**
- *
- * @type {module.FaHttpStatusCode}
- */
-module.exports = class FaHttpStatusCode {
+
+class FaServerHttpStatusCode {
 	constructor() {
-		//Http
+		//http
 		this.badRequest = 400;
 		this.internalServerError = 500;
+		this.found = 302;
+		this.movedPermanently = 301;
 		this.notFound = 404;
 		this.notImplemented = 501;
 		this.ok = 200;
@@ -18,4 +17,10 @@ module.exports = class FaHttpStatusCode {
 		this.apiPost = 201;
 		this.apiPut = 200;
 	}
-};
+}
+
+/**
+ *
+ * @type {FaServerHttpStatusCode}
+ */
+module.exports = FaServerHttpStatusCode;
