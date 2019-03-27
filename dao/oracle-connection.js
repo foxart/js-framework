@@ -95,6 +95,15 @@ class FaDaoOracleConnection extends FaDaoConnection {
 	get password() {
 		return "system";
 	}
+
+	/**
+	 *
+	 * @return {number}
+	 */
+	get timeout() {
+		return 5000;
+	}
+
 }
 
 /**
