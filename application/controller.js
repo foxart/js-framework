@@ -3,18 +3,19 @@ const FaBaseError = require("fa-nodejs/base/error");
 const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 
-/**
- *
- * @type {module.FaController}
- */
-class FaController {
+class FaApplicationController {
 	/**
 	 *
 	 * @param views_path {string}
 	 */
 	constructor(views_path) {
 		// console.info(views_path)
-		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
+		/**
+		 *
+		 * @type {FaApplicationTemplate}
+		 * @private
+		 */
+		this._FaApplicationTemplate = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
 	}
 
 	get _getTemplatePath() {
@@ -31,30 +32,23 @@ class FaController {
 
 	/**
 	 * @param template {string}
-	 * @return {module.FaTemplateClass}
+	 * @return {FaApplicationTemplate}
 	 */
 	template(template) {
 		try {
-			return this._FaTemplateClass.load(template);
+			return this._FaApplicationTemplate.load(template);
 		} catch (e) {
-			throw FaBaseError.pickTrace(e.message, 2);
+			throw new FaBaseError(e).pickTrace(2);
 		}
 	}
 
-	/**
-	 *
-	 * @param data {object}
-	 * @return {*}
-	 */
 	actionIndex(data) {
-		return this.Http.response({
-			xml: data
-		}, this.Http.type.xml);
+		console.log(data);
 	}
 }
 
 /**
  *
- * @type {FaController}
+ * @type {FaApplicationController}
  */
-module.exports = FaController;
+module.exports = FaApplicationController;

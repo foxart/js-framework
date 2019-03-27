@@ -1,17 +1,15 @@
 "use strict";
 /*fa-nodejs*/
-const FaError = require("../base/error");
-const FaBaseFile = require("../base/file");
-const FaHttpClass = require("../server/http");
-const FaSocketClass = require("../server/socket");
-/**
- *
- * @type {module.FaModule}
- */
-module.exports = class FaModule {
+const FaError = require("fa-nodejs/base/error");
+const FaBaseFile = require("fa-nodejs/base/file");
+const FaBaseTrace = require("fa-nodejs/base/trace");
+const FaHttpClass = require("fa-nodejs/server/http");
+const FaSocketClass = require("fa-nodejs/server/socket");
+
+class FaApplicationModule {
 	/**
 	 *
-	 * @param server {module.FaHttpClass | module.FaSocketClass}
+	 * @param server {module.FaHttpClass|module.FaSocketClass}
 	 * @param path {string}
 	 */
 	constructor(server, path) {
@@ -23,13 +21,14 @@ module.exports = class FaModule {
 		} else {
 			throw new FaError(`wrong server type`);
 		}
-		this._FaFile = new FaBaseFile();
+		this._FaBaseFile = new FaBaseFile();
 		this._path = path;
 		this._controller_list = {};
 		this._routes_list = {};
 		this._loadFromDirectory();
 		this._loadFromConfiguration();
-		this._serve()
+		this._serve();
+		// console.warn(this._getTemplatePath);
 	}
 
 	/**
@@ -38,14 +37,6 @@ module.exports = class FaModule {
 	 */
 	get list() {
 		return Object.keys(this._controller_list);
-	}
-
-	/**
-	 *
-	 * @return {module.FaFileClass}
-	 */
-	get file() {
-		return this._FaFile;
 	}
 
 	controllerFilenameToName(controller) {
@@ -97,10 +88,10 @@ module.exports = class FaModule {
 	 * @private
 	 */
 	_readModules(path) {
-		let context = this;
-		if (this.file.isDirectory(path)) {
-			return this.file.readDirectorySync(path).reduce(function (result, item) {
-				if (context.file.isDirectory(`${path}/${item}`)) {
+		let self = this;
+		if (this._FaBaseFile.isDirectory(path)) {
+			return this._FaBaseFile.readDirectorySync(path).reduce(function (result, item) {
+				if (self._FaBaseFile.isDirectory(`${path}/${item}`)) {
 					result.push(item);
 				}
 				return result;
@@ -117,11 +108,11 @@ module.exports = class FaModule {
 	 * @private
 	 */
 	_readControllers(path) {
-		let context = this;
-		if (this.file.isDirectory(path)) {
-			return this.file.readDirectorySync(path).reduce(function (result, item) {
-				let controller = context.controllerFilenameToName(item);
-				if (context.file.isFile(`${path}/${item}`) && controller) {
+		let self = this;
+		if (this._FaBaseFile.isDirectory(path)) {
+			return this._FaBaseFile.readDirectorySync(path).reduce(function (result, item) {
+				let controller = self.controllerFilenameToName(item);
+				if (self._FaBaseFile.isFile(`${path}/${item}`) && controller) {
 					result.push(controller);
 				}
 				return result;
@@ -156,10 +147,10 @@ module.exports = class FaModule {
 	 * @private
 	 */
 	_loadController(module, controller) {
-		let path = `${this._path}/modules/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
+		let path = `${this._path}/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
 		if (this._exist(path)) {
 			return this._find(path);
-		} else if (this.file.isFile(path)) {
+		} else if (this._FaBaseFile.isFile(path)) {
 			let ControllerClass = require(path);
 			// this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
 			this._controller_list[path] = new ControllerClass(this._server);
@@ -174,12 +165,12 @@ module.exports = class FaModule {
 	 * @private
 	 */
 	_loadFromDirectory() {
-		let context = this;
+		let self = this;
 		let result = {};
-		this._readModules(`${context._path}/modules`).forEach(function (module) {
-			context._routes_list[module] = {};
-			context._readControllers(`${context._path}/modules/${module}/${context._server_type}s`).forEach(function (controller) {
-				let methods = context._readMethods(context._loadController(module, controller));
+		this._readModules(`${self._path}`).forEach(function (module) {
+			self._routes_list[module] = {};
+			self._readControllers(`${self._path}/${module}/${self._server_type}s`).forEach(function (controller) {
+				let methods = self._readMethods(self._loadController(module, controller));
 				methods.forEach(function (action) {
 					let before = [module, controller, action];
 					let after = [];
@@ -188,13 +179,13 @@ module.exports = class FaModule {
 						after.push(item);
 						if (item === "index" && after.every(item => (item === "index"))) {
 							// console.error(`${module}`,`/${before.join("/")}`);
-							context._routes_list[module][`/${before.join("/")}`] = {
+							self._routes_list[module][`/${before.join("/")}`] = {
 								controller: controller,
 								action: action,
 							};
 						}
 					}
-					context._routes_list[module][`/${module}/${controller}/${action}`] = {
+					self._routes_list[module][`/${module}/${controller}/${action}`] = {
 						controller: controller,
 						action: action,
 					};
@@ -210,7 +201,7 @@ module.exports = class FaModule {
 	 */
 	_loadFromConfiguration() {
 		let path = `${this._path}/config/${this._server_type}s.js`;
-		if (this.file.isFile(path)) {
+		if (this._FaBaseFile.isFile(path)) {
 			let configuration = require(path);
 			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
 				let module = modules[i];
@@ -273,4 +264,10 @@ module.exports = class FaModule {
 			}
 		}
 	}
-};
+}
+
+/**
+ *
+ * @type {FaApplicationModule}
+ */
+module.exports = FaApplicationModule;

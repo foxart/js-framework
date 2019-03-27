@@ -1,22 +1,14 @@
 "use strict";
-const FaError = require("fa-nodejs/base/error");
-const FaFileClass = require("fa-nodejs/base/file");
-/**
- *
- * @type {module.FaTemplateClass}
- */
-module.exports = class FaTemplateClass {
+const FaBaseError = require("fa-nodejs/base/error");
+const FaBaseFile = require("fa-nodejs/base/file");
+
+class FaApplicationTemplate {
 	/**
 	 *
 	 * @param path {string|null}
 	 */
 	constructor(path = null) {
-		/**
-		 *
-		 * @type {module.FaFileClass}
-		 * @private
-		 */
-		this._FaFile = new FaFileClass(path);
+		this._FaFile = new FaBaseFile(path);
 		this._template = "";
 	}
 
@@ -39,15 +31,21 @@ module.exports = class FaTemplateClass {
 	/**
 	 *
 	 * @param filename {string}
-	 * @return {module.FaTemplateClass}
+	 * @return {FaApplicationTemplate}
 	 */
 	load(filename) {
-		// console.error(this._FaFile.path(filename));
+		// console.error(filename, this._FaFile.path(filename));
 		try {
 			this.set = this._FaFile.readFileSync(`${filename}.tpl`).toString();
 		} catch (e) {
-			throw FaError.pickTrace(`template not found: ${this._FaFile.path(`${filename}.tpl`)}`, 2);
+			throw new Error(`template not found: ${this._FaFile.path(`${filename}.tpl`)}`);
 		}
 		return this;
 	}
-};
+}
+
+/**
+ *
+ * @type {FaApplicationTemplate}
+ */
+module.exports = FaApplicationTemplate;

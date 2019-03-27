@@ -3,12 +3,12 @@
 const FaBaseError = require("fa-nodejs/base/error");
 const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
-const FaController = require("fa-nodejs/application/controller");
+const FaApplicationController = require("fa-nodejs/application/controller");
 /**
  *
  * @type {module.FaControllerHttp}
  */
-module.exports = class FaControllerHttp  extends FaController{
+module.exports = class FaControllerHttp extends FaApplicationController {
 	/**
 	 *
 	 * @param FaHttp {module.FaHttpClass}
@@ -17,11 +17,6 @@ module.exports = class FaControllerHttp  extends FaController{
 	constructor(FaHttp, views_path = null) {
 		super(views_path);
 		this._FaHttp = FaHttp;
-		/**
-		 *
-		 * @type {module.FaTemplateClass}
-		 * @private
-		 */
 		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
 	}
 
@@ -46,8 +41,9 @@ module.exports = class FaControllerHttp  extends FaController{
 	}
 
 	/**
-	 * @param template {string}
-	 * @return {module.FaTemplateClass}
+	 *
+	 * @param template
+	 * @return {FaApplicationTemplate}
 	 */
 	template(template) {
 		try {

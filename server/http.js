@@ -62,7 +62,7 @@ module.exports = class FaHttpClass {
 
 	/**
 	 *
-	 * @return {module.FaFileClass}
+	 * @return {FaBaseFile}
 	 * @constructor
 	 */
 	get File() {
@@ -232,9 +232,9 @@ module.exports = class FaHttpClass {
 		let asset = this.Assets.find(data.path);
 		return new Promise(function (resolve) {
 			if (route) {
-				resolve(context._handeRoute(route, data));
+				resolve(context._handleRoute(route, data));
 			} else if (asset) {
-				resolve(context._handeRoute(asset, data));
+				resolve(context._handleRoute(asset, data));
 			} else if (mime) {
 				resolve(context._handleFile(data.path, mime));
 			} else {
@@ -250,7 +250,7 @@ module.exports = class FaHttpClass {
 	 * @return {Promise<module.FaHttpResponseClass>}
 	 * @private
 	 */
-	_handeRoute(route, data) {
+	_handleRoute(route, data) {
 		let context = this;
 		return new Promise(function (resolve) {
 			resolve(route.call(context, data));
