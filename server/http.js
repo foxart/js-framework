@@ -18,11 +18,7 @@ const FaHttpResponseClass = require("fa-nodejs/server/http-response");
  * @type {module.FaHttpContentType}
  */
 const FaHttpContentType = require("./http-content-type");
-/**
- *
- * @type {module.FaHttpStatusCode}
- */
-const FaHttpStatusCode = require("./http-status-code");
+const FaServerHttpStatusCode = require("./http-status-code");
 /**
  *
  * @type {module.FaHttpClass}
@@ -37,7 +33,7 @@ module.exports = class FaHttpClass {
 		this._FaRouterClass = require("../base/router")(this);
 		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaHttpContentType();
-		this._FaHttpStatusCode = new FaHttpStatusCode();
+		this._FaHttpStatusCode = new FaServerHttpStatusCode();
 		this.HttpServer = this._createHttp(this.Configuration);
 		this._trace = FaTrace.trace(1);
 	}
@@ -95,7 +91,7 @@ module.exports = class FaHttpClass {
 
 	/**
 	 *
-	 * @return {module.FaHttpStatusCode}
+	 * @return {FaServerHttpStatusCode}
 	 */
 	get status() {
 		return this._FaHttpStatusCode;
