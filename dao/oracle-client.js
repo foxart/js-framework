@@ -77,7 +77,7 @@ class FaDaoOracleClient extends FaDaoClient {
 					FaDaoClient.attachClient(this._FaDaoOracleModel.connection, result);
 				}
 			} else {
-				console.warn(["OPEN"]);
+				console.info("OPEN");
 				result = await this._connect();
 			}
 			return result;
@@ -110,7 +110,7 @@ class FaDaoOracleClient extends FaDaoClient {
 				// if (!this._connection.persistent) {
 				// 	await connection.release();
 				await connection.close();
-				console.error(["CLOSE"]);
+				console.warn("CLOSE");
 				FaDaoConnection.detachConnection(this._FaDaoOracleModel.connection);
 				FaDaoClient.detachClient(this._FaDaoOracleModel.connection);
 				return true;
