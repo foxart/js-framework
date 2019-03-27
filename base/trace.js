@@ -1,5 +1,5 @@
 "use strict";
-const FaTrace = class FaTrace {
+class FaTrace {
 	/**
 	 *
 	 * @param stack {Array}
@@ -37,7 +37,8 @@ const FaTrace = class FaTrace {
 					column: null,
 				});
 			} else {
-				throw new Error(`can't parse stack string: ${item}`);
+				console.error(`can't parse stack string: ${stack}`);
+				// throw new Error(`can't parse stack string: ${item}`);
 			}
 		});
 		return result;
@@ -116,7 +117,7 @@ const FaTrace = class FaTrace {
 	// 	});
 	// 	return result;
 	// }
-};
+}
 /**
  *
  * @type {FaTrace}

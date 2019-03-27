@@ -53,8 +53,8 @@ class FaDaoOracleModel extends FaDaoModel {
 	async findOne(query) {
 		// console.info(query);
 		let trace = FaTrace.trace(1);
+		let connection = await this.client.open();
 		try {
-			let connection = await this.client.open();
 			let result = await this.client.execute(connection, query);
 			await this.client.close(connection);
 			// let result = await connection.execute(query);
@@ -64,6 +64,8 @@ class FaDaoOracleModel extends FaDaoModel {
 				return null;
 			}
 		} catch (e) {
+			await this.client.close(connection);
+			console.error(query);
 			throw new FaError(e).setTrace(trace);
 		}
 	}
@@ -76,8 +78,8 @@ class FaDaoOracleModel extends FaDaoModel {
 	async findMany(query) {
 		// console.info(query);
 		let trace = FaTrace.trace(1);
+		let connection = await this.client.open();
 		try {
-			let connection = await this.client.open();
 			let result = await this.client.execute(connection, query);
 			// let result = await connection.execute(query);
 			await this.client.close(connection);
@@ -87,6 +89,8 @@ class FaDaoOracleModel extends FaDaoModel {
 				return [];
 			}
 		} catch (e) {
+			await this.client.close(connection);
+			console.error(query);
 			throw new FaError(e).setTrace(trace);
 		}
 	}
