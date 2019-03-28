@@ -1,9 +1,6 @@
 "use strict";
-/**
- *
- * @type {module.FaHttpContentType}
- */
-module.exports = class FaHttpContentType {
+
+class FaServerHttpContentType {
 	constructor() {
 		this.css = "text/css";
 		this.javascript = "application/javascript";
@@ -13,4 +10,10 @@ module.exports = class FaHttpContentType {
 		this.urlencoded = "application/x-www-form-urlencoded";
 		this.xml = "application/xml";
 	}
-};
+}
+
+/**
+ *
+ * @type {FaServerHttpContentType}
+ */
+module.exports = FaServerHttpContentType;

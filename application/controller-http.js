@@ -4,23 +4,21 @@ const FaBaseError = require("fa-nodejs/base/error");
 const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 const FaApplicationController = require("fa-nodejs/application/controller");
-/**
- *
- * @type {module.FaControllerHttp}
- */
-module.exports = class FaControllerHttp extends FaApplicationController {
+
+class FaApplicationControllerHttp extends FaApplicationController {
 	/**
 	 *
-	 * @param FaHttp {module.FaHttpClass}
+	 * @param FaServerHttp {FaServerHttp}
 	 * @param views_path {string|null}
 	 */
-	constructor(FaHttp, views_path = null) {
+	constructor(FaServerHttp, views_path = null) {
 		super(views_path);
-		this._FaHttp = FaHttp;
+		this._FaServerHttp = FaServerHttp;
 		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
 	}
 
 	get _getTemplatePath() {
+		// console.info(FaBaseTrace.trace(3));
 		let controller_path = FaBaseTrace.trace(2)["path"];
 		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Controller.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
@@ -34,10 +32,33 @@ module.exports = class FaControllerHttp extends FaApplicationController {
 
 	/**
 	 *
-	 * @return {module.FaHttpClass}
+	 * @return {FaServerHttp}
 	 */
 	get http() {
-		return this._FaHttp;
+		return this._FaServerHttp;
+	}
+
+
+	/**
+	 *
+	 * @param content
+	 * @param type
+	 * @param status
+	 * @return {FaServerHttpResponse}
+	 */
+	respond(content, type, status) {
+		return this._FaServerHttp.response(content, type, status);
+	}
+
+	/**
+	 *
+	 * @param content
+	 * @param type
+	 * @param status
+	 * @return {FaServerHttpResponse}
+	 */
+	createResponse(content, type, status) {
+		return this._FaServerHttp.response(content, type, status);
 	}
 
 	/**
@@ -59,8 +80,14 @@ module.exports = class FaControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	actionIndex(data) {
-		return this.http.response({
+		return this._FaServerHttp.response({
 			xml: data
-		}, this.http.type.xml);
+		}, this._FaServerHttp.type.xml);
 	}
-};
+}
+
+/**
+ *
+ * @type {FaApplicationControllerHttp}
+ */
+module.exports = FaApplicationControllerHttp;

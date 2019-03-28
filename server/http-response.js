@@ -1,9 +1,6 @@
 "use strict";
-/**
- *
- * @type {module.FaHttpResponseClass}
- */
-module.exports = class FaHttpResponseClass {
+
+class FaServerHttpResponse {
 	/**
 	 *
 	 * @param content {*}
@@ -22,5 +19,11 @@ module.exports = class FaHttpResponseClass {
 		}
 		this.status = status;
 	}
-};
+}
+
+/**
+ *
+ * @type {FaServerHttpResponse}
+ */
+module.exports = FaServerHttpResponse;
 

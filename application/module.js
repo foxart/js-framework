@@ -200,7 +200,6 @@ class FaApplicationModule {
 	 */
 	_loadFromConfiguration() {
 		let path = `${this._path}/config/${this._server_type}s.js`;
-		console.error(path)
 		if (this._FaBaseFile.isFile(path)) {
 			let configuration = require(path);
 			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {

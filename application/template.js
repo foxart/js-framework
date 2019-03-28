@@ -38,7 +38,7 @@ class FaApplicationTemplate {
 		try {
 			this.set = this._FaFile.readFileSync(`${filename}.tpl`).toString();
 		} catch (e) {
-			throw new Error(`template not found: ${this._FaFile.path(`${filename}.tpl`)}`);
+			throw new Error(`template not found: ${this._FaFile.getPath(`${filename}.tpl`)}`);
 		}
 		return this;
 	}

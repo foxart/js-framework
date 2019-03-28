@@ -3,6 +3,9 @@
 const Fs = require("fs");
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
+const FaBaseTrace = require("fa-nodejs/base/trace");
+/*variables*/
+const ErrorExpression = new RegExp("^(.+): (.+)$");
 
 class FaBaseFile {
 	/**
@@ -15,13 +18,28 @@ class FaBaseFile {
 
 	/**
 	 *
-	 * @param filename {string}
+	 * @param error {Error}
+	 * @return {FaError}
+	 * @private
+	 */
+	static _Error(error) {
+		let result = error.message.match(ErrorExpression);
+		if (result) {
+			return new FaError({name: result[1], message: result[2]});
+		} else {
+			return new FaError(error);
+		}
+	}
+
+	/**
+	 *
+	 * @param name {string}
 	 * @returns {string}
 	 */
-	path(filename) {
+	getPath(name) {
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
-		return this._path ? `${this._path}/${filename}` : filename;
+		return this._path ? `${this._path}/${name}` : name;
 	};
 
 	/**
@@ -30,7 +48,7 @@ class FaBaseFile {
 	 * @return {boolean}
 	 */
 	isDirectory(directory) {
-		return !!(Fs.existsSync(this.path(directory)) && Fs.lstatSync(this.path(directory)).isDirectory());
+		return !!(Fs.existsSync(this.getPath(directory)) && Fs.lstatSync(this.getPath(directory)).isDirectory());
 	};
 
 	/**
@@ -39,8 +57,11 @@ class FaBaseFile {
 	 * @returns {boolean}
 	 */
 	isFile(filename) {
-		return !!(Fs.existsSync(this.path(filename)) && Fs.lstatSync(this.path(filename)).isFile());
+		return !!(Fs.existsSync(this.getPath(filename)) && Fs.lstatSync(this.getPath(filename)).isFile());
 	};
+
+	createDirectoryAsync(directory, options) {
+	}
 
 	/**
 	 *
@@ -48,20 +69,26 @@ class FaBaseFile {
 	 * @param options {Object}
 	 */
 	createDirectorySync(directory, options) {
+		let trace = FaBaseTrace.trace(1);
 		try {
-			Fs.mkdirSync(this.path(directory), options);
+			Fs.mkdirSync(this.getPath(directory), options);
 		} catch (e) {
-			throw new FaError(e).pickTrace(3);
+			throw FaBaseFile._Error(e).setTrace(trace);
 		}
 	}
 
+	/**
+	 *
+	 * @param directory
+	 * @return {Promise<[string]|FaError>}
+	 */
 	readDirectoryAsync(directory = "") {
-		let context = this;
-		let error = new FaError();
+		let trace = FaBaseTrace.trace(1);
+		let self = this;
 		return new Promise(function (resolve, reject) {
-			Fs.readdir(context.path(directory), function (e, files) {
+			Fs.readdir(self.path(directory), {}, function (e, files) {
 				if (e) {
-					reject(error.setName(e.message).pickTrace(2));
+					reject(FaBaseFile._Error(e).setTrace(trace));
 				} else {
 					resolve(files);
 				}
@@ -72,28 +99,29 @@ class FaBaseFile {
 	/**
 	 *
 	 * @param directory
-	 * @return {string[]}
+	 * @return {string[] | Buffer[]}
 	 */
 	readDirectorySync(directory = "") {
+		let trace = FaBaseTrace.trace(1);
 		try {
-			return Fs.readdirSync(this.path(directory));
+			return Fs.readdirSync(this.getPath(directory), {});
 		} catch (e) {
-			throw new FaError(e).pickTrace(3);
+			throw FaBaseFile._Error(e).setTrace(trace);
 		}
 	};
 
 	/**
 	 *
 	 * @param filename {string}
-	 * @return {Promise<Buffer>}
+	 * @return {Promise<Buffer|FaError>}
 	 */
 	readFileAsync(filename) {
-		let context = this;
-		let error = new FaError();
+		let trace = FaBaseTrace.trace(1);
+		let self = this;
 		return new Promise(function (resolve, reject) {
-			Fs.readFile(context.path(filename), function (e, buffer) {
+			Fs.readFile(self.path(filename), {}, function (e, buffer) {
 				if (e) {
-					reject(error.setMessage(e.message).pickTrace(2));
+					reject(FaBaseFile._Error(e).setTrace(trace));
 				} else {
 					resolve(buffer);
 				}
@@ -101,29 +129,74 @@ class FaBaseFile {
 		});
 	};
 
-	writeFileAsync(filename, data) {
-	};
-
+	/**
+	 *
+	 * @param filename {string}
+	 * @return {Buffer}
+	 */
 	readFileSync(filename) {
+		let trace = FaBaseTrace.trace(1);
 		try {
-			return Fs.readFileSync(this.path(filename));
+			return Fs.readFileSync(this.getPath(filename), {});
 		} catch (e) {
-			throw new FaError(e).pickTrace(3);
+			throw FaBaseFile._Error(e).setTrace(trace);
 		}
 	};
 
 	/**
 	 *
 	 * @param filename {string}
-	 * @param data
+	 * @param data {string}
+	 * @return {Promise<boolean|FaError>}
+	 */
+	writeFileAsync(filename, data) {
+		let trace = FaBaseTrace.trace(1);
+		let self = this;
+		return new Promise(function (resolve, reject) {
+			Fs.writeFile(self.getPath(filename), data, {}, function (e) {
+				if (e) {
+					reject(FaBaseFile._Error(e).setTrace(trace));
+				} else {
+					resolve(true);
+				}
+			});
+		});
+	};
+
+	/**
+	 *
+	 * @param filename {string}
+	 * @param data {string}
 	 */
 	writeFileSync(filename, data) {
-		let fileStream = Fs.createWriteStream(`${this.path(filename)}`, {
-			flags: 'w'
-		});
-		fileStream.write(data);
-		fileStream.end();
+		// let fileStream = Fs.createWriteStream(`${this.path(filename)}`, {
+		// 	flags: 'w',
+		// });
+		// fileStream.write(data);
+		// fileStream.end();
+		let trace = FaBaseTrace.trace(1);
+		try {
+			Fs.writeFileSync(`${this.getPath(filename)}`, data, {
+				flag: 'w',
+				// mode: 0o755,
+			});
+		} catch (e) {
+			throw FaBaseFile._Error(e).setTrace(trace);
+		}
 	};
+
+	/**
+	 *
+	 * @param filename {string}
+	 */
+	deleteFileSync(filename) {
+		let trace = FaBaseTrace.trace(1);
+		try {
+			Fs.unlinkSync(`${this.getPath(filename)}`);
+		} catch (e) {
+			throw FaBaseFile._Error(e).setTrace(trace);
+		}
+	}
 }
 
 /**

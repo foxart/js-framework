@@ -4,35 +4,27 @@ const Buffer = require("buffer").Buffer;
 const Http = require("http");
 // const Https = require("https");
 const MimeTypes = require("mime-types");
-const Url = require("url");
 /*fa-nodejs*/
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
 const FaFileClass = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
 const FaConverterClass = require("fa-nodejs/base/converter");
-const FaHttpRequestClass = require("fa-nodejs/server/http-request");
-const FaHttpResponseClass = require("fa-nodejs/server/http-response");
-/**
- *
- * @type {module.FaHttpContentType}
- */
-const FaHttpContentType = require("./http-content-type");
+const FaServerHttpRequestClass = require("fa-nodejs/server/http-request");
+const FaHttpResponse = require("fa-nodejs/server/http-response");
+const FaServerHttpContentType = require("./http-content-type");
 const FaServerHttpStatusCode = require("./http-status-code");
-/**
- *
- * @type {module.FaHttpClass}
- */
-module.exports = class FaHttpClass {
+
+class FaServerHttp {
 	constructor(configuration) {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		this._FaFile = new FaFileClass(this.Configuration.path);
 		this._FaAssetsRouterClass = require("../base/router")(this);
-		this._FaHttpResponseClass = FaHttpResponseClass;
+		this._FaHttpResponse = FaHttpResponse;
 		this._FaRouterClass = require("../base/router")(this);
-		this._FaRequest = new FaHttpRequestClass(this.Configuration.converter);
-		this._FaHttpContentType = new FaHttpContentType();
+		this._FaServerHttpRequest = new FaServerHttpRequestClass(this.Configuration.converter);
+		this._FaHttpContentType = new FaServerHttpContentType();
 		this._FaHttpStatusCode = new FaServerHttpStatusCode();
 		this.HttpServer = this._createHttp(this.Configuration);
 		this._trace = FaTrace.trace(1);
@@ -83,7 +75,7 @@ module.exports = class FaHttpClass {
 
 	/**
 	 *
-	 * @return {module.FaHttpContentType}
+	 * @return {FaServerHttpContentType}
 	 */
 	get type() {
 		return this._FaHttpContentType;
@@ -144,7 +136,9 @@ module.exports = class FaHttpClass {
 			context._respondHttp(req, res, error);
 		});
 		req.on("end", function () {
-			context._handleRequest(context._FaRequest.format(req.method, req.headers, Url.parse(req.url), body)).then(function (result) {
+			context._handleRequest(context._FaServerHttpRequest.formatRequest(req, body)).then(function (result) {
+				context._respondHttp(req, res, result);
+			}).catch(function (result) {
 				context._respondHttp(req, res, result);
 			});
 		});
@@ -154,7 +148,7 @@ module.exports = class FaHttpClass {
 	 *
 	 * @param req
 	 * @param res
-	 * @param FaHttpResponse {module.FaHttpResponseClass}
+	 * @param FaHttpResponse {FaServerHttpResponse}
 	 * @private
 	 */
 	_respondHttp(req, res, FaHttpResponse) {
@@ -218,23 +212,23 @@ module.exports = class FaHttpClass {
 	/**
 	 *
 	 * @param data
-	 * @return {Promise<module.FaHttpResponseClass>}
+	 * @return {Promise<FaServerHttpResponse>}
 	 * @private
 	 */
 	_handleRequest(data) {
-		let context = this;
+		let self = this;
 		let mime = MimeTypes.lookup(data.path);
 		let route = this.Router.find(data.path);
 		let asset = this.Assets.find(data.path);
-		return new Promise(function (resolve) {
+		return new Promise(function (resolve, reject) {
 			if (route) {
-				resolve(context._handleRoute(route, data));
+				resolve(self._handleRoute(route, data));
 			} else if (asset) {
-				resolve(context._handleRoute(asset, data));
+				resolve(self._handleRoute(asset, data));
 			} else if (mime) {
-				resolve(context._handleFile(data.path, mime));
+				resolve(self._handleFile(data.path, mime));
 			} else {
-				resolve(context.response(new FaError(`route not found: ${data.path}`).setTrace(context._trace), null, context.status.notImplemented));
+				reject(self.response(new FaError(`route not found: ${data.path}`).setTrace(self._trace), null, self.status.notImplemented));
 			}
 		});
 	}
@@ -243,22 +237,22 @@ module.exports = class FaHttpClass {
 	 *
 	 * @param route {function | string}
 	 * @param data {*}
-	 * @return {Promise<module.FaHttpResponseClass>}
+	 * @return {Promise<FaServerHttpResponse>}
 	 * @private
 	 */
 	_handleRoute(route, data) {
-		let context = this;
+		let self = this;
 		return new Promise(function (resolve) {
-			resolve(route.call(context, data));
+			resolve(route.call(self, data));
 		}).then(function (result) {
-			if (result instanceof FaHttpResponseClass) {
+			if (result instanceof FaHttpResponse) {
 				return result;
 			} else {
-				return context.response(result, null, context.status.ok);
+				return self.response(result, null, self.status.ok);
 			}
 		}).catch(function (e) {
 			console.error(e);
-			return context.response(new FaError(e).pickTrace(0), null, context.status.internalServerError);
+			return self.response(new FaError(e).pickTrace(0), null, self.status.internalServerError);
 		});
 	}
 
@@ -266,7 +260,7 @@ module.exports = class FaHttpClass {
 	 *
 	 * @param filename {string}
 	 * @param type {string}
-	 * @return {module.FaHttpResponseClass}
+	 * @return {FaServerHttpResponse}
 	 * @private
 	 */
 	_handleFile(filename, type) {
@@ -283,9 +277,14 @@ module.exports = class FaHttpClass {
 	 * @param content
 	 * @param type
 	 * @param status
-	 * @return {module.FaHttpResponseClass}
+	 * @return {FaServerHttpResponse}
 	 */
 	response(content, type = null, status = null) {
-		return new this._FaHttpResponseClass(content, type, status);
+		return new this._FaHttpResponse(content, type, status);
 	}
-};
+}
+/**
+ *
+ * @type {FaServerHttp}
+ */
+module.exports = FaServerHttp;
