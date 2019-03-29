@@ -176,7 +176,13 @@ class FaServerHttp {
 				FaHttpResponse.content = this.Converter.toJson(FaHttpResponse.content);
 				break;
 			case this.type.html:
-				FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
+				if (FaHttpResponse.status === this.status.notFound) {
+					let res = this.Converter.toHtml(FaHttpResponse.content);
+					// let res = this.Converter.toHtml({a:1});
+					FaHttpResponse.content = `<html lang="en"><head><title></title><link href="/fa/beautify.css" rel="stylesheet"/><link href="/css/main.css" rel="stylesheet"/></head><body><main>${res}</main></body></html>`;
+				} else {
+					FaHttpResponse.content = this.Converter.toHtml(FaHttpResponse.content);
+				}
 				break;
 			case this.type.urlencoded:
 				FaHttpResponse.content = this.Converter.toUrlencoded(FaHttpResponse.content);
@@ -195,8 +201,8 @@ class FaServerHttp {
 		}
 		for (let property in FaHttpResponse.headers) {
 			if (FaHttpResponse.headers.hasOwnProperty(property)) {
-				if (property === "Content-Type" && FaHttpResponse.headers[property].indexOf("; charset=") === -1) {
-					res.setHeader(property, FaHttpResponse.headers[property] + "; charset=utf-8");
+				if (property === "Content-Type" && FaHttpResponse.headers[property].indexOf(";charset=") === -1) {
+					res.setHeader(property, FaHttpResponse.headers[property] + ";charset=utf-8");
 				} else {
 					res.setHeader(property, FaHttpResponse.headers[property]);
 				}
@@ -228,7 +234,7 @@ class FaServerHttp {
 			} else if (mime) {
 				resolve(self._handleFile(data.path, mime));
 			} else {
-				reject(self.response(new FaError(`route not found: ${data.path}`).setTrace(self._trace), null, self.status.notImplemented));
+				reject(self.response(new FaError(`route not found: ${data.path}`).setTrace(self._trace), null, self.status.notFound));
 			}
 		});
 	}
@@ -283,6 +289,7 @@ class FaServerHttp {
 		return new this._FaHttpResponse(content, type, status);
 	}
 }
+
 /**
  *
  * @type {FaServerHttp}

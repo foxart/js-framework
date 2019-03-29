@@ -1,0 +1,66 @@
+.fa-beautify {
+  font-size: 13px;
+  font-family: "DejaVu Sans Mono", monospace;
+  /*background-color: darkgray;*/
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+.fa-beautify-key {
+  font-weight: bold;
+  color: gray;
+}
+.fa-beautify-bool-true {
+  font-weight: bold;
+  color: green;
+}
+.fa-beautify-bool-false {
+  font-weight: bold;
+  color: red;
+}
+.fa-beautify-buffer {
+  font-weight: bold;
+  color: blue;
+}
+.fa-beautify-circular {
+  font-weight: bold;
+  color: darkcyan;
+}
+.fa-beautify-date {
+  color: darkgoldenrod;
+}
+.fa-beautify-file {
+  font-weight: bold;
+  color: blue;
+}
+.fa-beautify-float {
+  color: red;
+}
+.fa-beautify-function {
+  color: darkcyan;
+}
+.fa-beautify-int {
+  color: green;
+}
+.fa-beautify-mongoId {
+  font-weight: bold;
+  color: black;
+}
+.fa-beautify-null {
+  font-weight: bold;
+  color: darkcyan;
+}
+.fa-beautify-regExp {
+  font-weight: bold;
+  color: darkgoldenrod;
+}
+.fa-beautify-string {
+  color: black;
+}
+.fa-beautify-undefined {
+  font-weight: bold;
+  color: magenta;
+}
+.fa-beautify-default {
+  font-weight: bold;
+  background-color: magenta;
+}

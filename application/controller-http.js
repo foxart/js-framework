@@ -38,7 +38,6 @@ class FaApplicationControllerHttp extends FaApplicationController {
 		return this._FaServerHttp;
 	}
 
-
 	/**
 	 *
 	 * @param content
