@@ -13,7 +13,7 @@
 ## BABEL
 #npm install --save-dev @babel/core
 #npm install --save-dev @babel/preset-env
-npm install --save-dev babelify
+## SCAN FOLDERS
 #for folders in $(find /var/www/projects/fa-nodejs/* -type d )
 #do echo "$folders"
 #done
