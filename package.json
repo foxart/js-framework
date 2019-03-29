@@ -11,20 +11,9 @@
     "url": "git+https://github.com/foxart/fa-nodejs.git"
   },
   "dependencies": {
-    "babelify": "^10.0.0",
     "date-and-time": "^0.6.3",
     "fast-xml-parser": "3.2.0",
     "file-type": "^10.1.0",
-    "gulp": "^4.0.0",
-    "gulp-babel": "^8.0.0",
-    "gulp-browserify": "^0.5.1",
-    "gulp-changed": "^3.2.0",
-    "gulp-debug": "^4.0.0",
-    "gulp-exec": "^3.0.2",
-    "gulp-less": "^4.0.1",
-    "gulp-notify": "^3.2.0",
-    "gulp-plumber": "^1.2.1",
-    "gulp-sourcemaps": "^2.6.5",
     "http-headers": "^3.0.2",
     "js-md5": "^0.7.3",
     "merge-deep": "^3.0.2",
@@ -44,6 +33,17 @@
   },
   "homepage": "https://github.com/foxart/fa-nodejs#readme",
   "devDependencies": {
-    "@babel/preset-env": "^7.4.2"
+    "@babel/core": "^7.4.0",
+    "babelify": "^10.0.0",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-browserify": "^0.5.1",
+    "gulp-changed": "^3.2.0",
+    "gulp-debug": "^4.0.0",
+    "gulp-exec": "^3.0.2",
+    "gulp-less": "^4.0.1",
+    "gulp-notify": "^3.2.0",
+    "gulp-plumber": "^1.2.1",
+    "gulp-sourcemaps": "^2.6.5"
   }
 }

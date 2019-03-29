@@ -9,12 +9,10 @@
 // 	notify = require('gulp-notify'),
 // 	spritesmith = require('gulp.spritesmith'),
 // 	babel = require('gulp-babel'),
-// 	babelify = require('babelify'),
 // 	browserify = require('gulp-browserify'),
 // 	validator = require('gulp-html'),
 // 	fileinclude = require('gulp-file-include');
 "use strict";
-const Babelify = require('babelify');
 const Gulp = require('gulp');
 const GulpBabel = require('gulp-babel');
 const GulpBrowserify = require('gulp-browserify');
