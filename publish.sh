@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 #npm install --save-dev @babel/core
 #npm install --save-dev @babel/preset-env
 
@@ -20,16 +19,17 @@ MESSAGE=`git log -1 --oneline`
 PUBLISHED=`git describe --contains ${COMMIT}`
 
 if [[ -z "$PUBLISHED" ]]; then
-    echo "updating tag <$PREV> to version <$NEXT>"
+    echo "updating $PREV to $NEXT"
+    git add -A
+    git commit -a -m "$PREV->$NEXT: $MESSAGE"
 #    npm version patch
-    git commit -a -m "<$PREV> to <$NEXT>\n$MESSAGE"
-#    npm version ${NEXT}
-#    git push
-#    git tag ${TAG}
-#    git push --tags
-#    npm publish
+    npm version ${NEXT}
+    git push
+    git tag ${NEXT}
+    git push --tags
+    npm publish
 else
-    echo "already have tag <$PREV> on commit <$COMMIT>"
+    echo "already have $PREV on $COMMIT"
 fi
 
 
