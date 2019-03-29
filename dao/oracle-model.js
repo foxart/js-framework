@@ -81,8 +81,8 @@ class FaDaoOracleModel extends FaDaoModel {
 		let connection = await this.client.open();
 		try {
 			let result = await this.client.execute(connection, query);
-			// let result = await connection.execute(query);
 			await this.client.close(connection);
+			// let result = await connection.execute(query);
 			if (result && result["rows"]) {
 				return result["rows"]
 			} else {

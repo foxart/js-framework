@@ -33,6 +33,8 @@ class FaDaoOracleClient extends FaDaoClient {
 	 * @private
 	 */
 	async _connect() {
+
+
 		let options = this._connection.options;
 		Object.entries(options).forEach(function ([key, value]) {
 			OracleDb[key] = value;
@@ -78,7 +80,7 @@ class FaDaoOracleClient extends FaDaoClient {
 					FaDaoClient.attachClient(this._FaDaoOracleModel.connection, result);
 				}
 			} else {
-				console.info("OPEN", this._connection.timeout);
+				// console.info("OPEN", this._connection.timeout);
 				result = await this._connect();
 			}
 			return result;
@@ -111,7 +113,7 @@ class FaDaoOracleClient extends FaDaoClient {
 				// if (!this._connection.persistent) {
 				// 	await connection.release();
 				await connection.close();
-				console.warn("CLOSE", this._connection.timeout);
+				// console.warn("CLOSE", this._connection.timeout);
 				FaDaoConnection.detachConnection(this._FaDaoOracleModel.connection);
 				FaDaoClient.detachClient(this._FaDaoOracleModel.connection);
 				return true;
