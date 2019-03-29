@@ -44,7 +44,6 @@
   },
   "homepage": "https://github.com/foxart/fa-nodejs#readme",
   "devDependencies": {
-    "@babel/core": "^7.4.0",
     "@babel/preset-env": "^7.4.2"
   }
 }
