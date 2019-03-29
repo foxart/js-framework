@@ -22,7 +22,7 @@ PUBLISHED=`git describe --contains ${COMMIT}`
 if [[ -z "$PUBLISHED" ]]; then
     echo "updating tag <$PREV> to version <$NEXT>"
 #    npm version patch
-    git commit -a -m "<$PREV> to <$NEXT>/n$MESSAGE"
+    git commit -a -m "<$PREV> to <$NEXT>\n$MESSAGE"
 #    npm version ${NEXT}
 #    git push
 #    git tag ${TAG}
