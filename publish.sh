@@ -34,9 +34,9 @@ MESSAGE=`git log -1 --oneline` #MESSAGE=`git log -1`
 PUBLISHED=`git describe --contains ${COMMIT}`
 if [[ -z "$PUBLISHED" ]]; then
     echo "updating to tag <$NEXT>"
+    npm version ${NEXT} #npm version patch
     git add -A
     git commit -a -m "update to tag <$NEXT> $COMMIT: $MESSAGE"
-    npm version ${NEXT} #npm version patch
     git push
     git tag ${NEXT}
     git push --tags
