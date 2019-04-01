@@ -9,7 +9,7 @@ const FaSocketClass = require("fa-nodejs/server/socket");
 class FaApplicationModule {
 	/**
 	 *
-	 * @param server {module.FaHttpClass|module.FaSocketClass}
+	 * @param server {FaServerHttp|module.FaSocketClass}
 	 * @param path {string}
 	 */
 	constructor(server, path) {
