@@ -128,6 +128,15 @@ class FaServerHttp {
 	 */
 	_listenHttp(req, res) {
 		let context = this;
+		// let Multiparty = require("multiparty");
+		// let form = new Multiparty.Form();
+		// form.parse(req, function (err, fields, files) {
+		// 	// console.error(err);
+		// 	if (fields || files) {
+		// 		console.info(fields);
+		// 		console.warn(files);
+		// 	}
+		// });
 		let body = "";
 		req.on("data", function (chunk) {
 			body += chunk;

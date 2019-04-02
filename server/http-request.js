@@ -1,8 +1,104 @@
 "use strict";
+/** @type {*} */
 const Cookie = require("cookie");
 const Url = require("url");
 /*fa*/
 const FaServerHttpContentTypeClass = require("fa-nodejs/server/http-content-type");
+let NL = '\r\n'; // RFC2046 S4.1.1
+let BOUNDARY_PREFIX = NL + '--'; // RFC2046 S5.1.1
+let HEADER_PAIR_DELIM = ':';
+let HEADER_SUB_DELIM = '=';
+let MultipartParser = function (contentType, data) {
+	this.parts = {};
+	this.fields = [];
+	this.isMultipart = false;
+	if (typeof contentType == 'string') {
+		contentType = contentType.trim();
+		this.isMultipart = contentType.indexOf('multipart/form-data') === 0;
+		parse.call(this, contentType, data);
+	}
+};
+
+function parse(result, contentType, data) {
+	// let self = this;
+	if (data.substr(0, NL.length) !== NL) {
+		data = NL + data;
+	}
+	let params = parseHeaderValue(contentType);
+	if (params.hasOwnProperty('boundary')) {
+		let parts = data.split(BOUNDARY_PREFIX + params.boundary);
+		parts.forEach(function (chunk, i, arr) {
+			// split the headers and body for this chunk
+			let pieces = splitHeaderBody(chunk);
+			if (pieces.header && pieces.body) {
+				// build headers object
+				console.warn(pieces.header);
+				let headers = parseHeader(pieces.header);
+				// if nested multipart form-data, recurse
+				if (headers.hasOwnProperty('content-type') && headers['content-type'].indexOf('multipart/form-data') === 0) {
+					parse(result, headers['content-type'], pieces.body);
+				} else if (headers.hasOwnProperty('content-disposition')) {
+					let disposition = parseHeaderValue(headers['content-disposition']);
+					if (disposition.hasOwnProperty('name')) {
+						// console.warn(self.fields);
+						result.fields.push(disposition.name);
+						result.parts[disposition.name] = {
+							headers: headers,
+							disposition: disposition,
+							mime: headers['content-type'] || '',
+							body: pieces.body
+						};
+					}
+				}
+			}
+		});
+	}
+	return result;
+}
+
+function splitHeaderBody(data) {
+	let sections = data.split(NL + NL, 2);
+	return {
+		header: sections[0] || '',
+		body: sections[1] || ''
+	};
+}
+
+function parseHeader(header) {
+	let result = {};
+	let parameters = header.split(NL).map(function (item) {
+		return item.trim();
+	}).filter(function (v) {
+		return !!v;
+	});
+	parameters.forEach(function (item) {
+		// let keyValue = item.split(HEADER_PAIR_DELIM, 2);
+		let keyValue = item.split(HEADER_PAIR_DELIM);
+		if (typeof keyValue[1] === 'string') {
+			keyValue[1] = keyValue[1].trim();
+		}
+		result[keyValue[0].toLowerCase().trim()] = keyValue[1];
+	});
+	return result;
+}
+
+function parseHeaderValue(value) {
+	let result = {};
+	let parameters = value.split(';').map(function (item) {
+		return item.trim();
+	}).filter(function (v) {
+		return !!(v || v.indexOf('='));
+	});
+	parameters.forEach(function (item) {
+		// let t = v.split(HEADER_SUB_DELIM, 2);
+		let keyValue = item.split(HEADER_SUB_DELIM);
+		if (typeof keyValue[1] === 'string') {
+			keyValue[1] = keyValue[1].replace(/^[\s'"]+|[\s'"]+$/g, '');
+			result[keyValue[0].toLowerCase().trim()] = keyValue[1];
+		}
+	});
+	return result;
+}
 
 class FaHttpRequestClass {
 	/**
@@ -37,6 +133,10 @@ class FaHttpRequestClass {
 		return this._FaServerHttpContentType;
 	}
 
+	checkMultipar(contentType) {
+		return contentType.trim().indexOf('multipart/form-data') === 0;
+	}
+
 	/**
 	 *
 	 * @param req
@@ -44,15 +144,10 @@ class FaHttpRequestClass {
 	 * @return {{path: string, headers: *, input: *, method: string, post, cookie, get}}
 	 */
 	formatRequest(req, body) {
-		// req.method, req.headers, Url.parse(req.url)
-		let ip = (req.headers['x-forwarded-for'] || '').split(',').pop() ||
-			req.connection.remoteAddress ||
-			req.socket.remoteAddress ||
-			req.connection.socket.remoteAddress;
 		let url = Url.parse(req.url);
-		let get = {};
-		let post = {};
-		let cookie = {};
+		let get = null;
+		let post = null;
+		let cookie = null;
 		let client = {
 			ip: (req.headers['x-forwarded-for'] || '').split(',').pop() ||
 				req.connection.remoteAddress ||
@@ -63,18 +158,23 @@ class FaHttpRequestClass {
 			get = this._converter.fromUrlEncoded(url.query);
 		}
 		if (["PATCH", "POST", "PUT"].has(req.method)) {
-			switch (req.headers["content-type"]) {
-				case this._contentType.json:
-					post = this._converter.fromJson(body);
-					break;
-				case this._contentType.xml:
-					post = this._converter.fromXml(body);
-					break;
-				case this._contentType.urlencoded:
-					post = this._converter.fromUrlEncoded(body);
-					break;
-				default:
-					post = body;
+			if (this.checkMultipar(req.headers["content-type"])) {
+				post = parse({fields: [], parts: {}}, req.headers['content-type'], body);
+				console.info(post)
+			} else {
+				switch (req.headers["content-type"]) {
+					case this._contentType.json:
+						post = this._converter.fromJson(body);
+						break;
+					case this._contentType.xml:
+						post = this._converter.fromXml(body);
+						break;
+					case this._contentType.urlencoded:
+						post = this._converter.fromUrlEncoded(body);
+						break;
+					default:
+						post = body;
+				}
 			}
 		}
 		if (req.headers["cookie"]) {
