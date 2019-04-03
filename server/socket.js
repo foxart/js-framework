@@ -11,7 +11,7 @@ const FaConsoleColor = require("../console/console-helper");
 module.exports = class FaSocketClass {
 	/**
 	 *
-	 * @param FaHttp {module.FaHttpClass}
+	 * @param FaHttp {FaServerHttp}
 	 */
 	constructor(FaHttp) {
 		this.name = "FaSocket";

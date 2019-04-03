@@ -3,6 +3,7 @@
 const Buffer = require("buffer").Buffer;
 const Http = require("http");
 // const Https = require("https");
+/** @type {*} */
 const MimeTypes = require("mime-types");
 /*fa-nodejs*/
 const FaError = require("fa-nodejs/base/error");

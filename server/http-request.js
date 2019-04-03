@@ -8,56 +8,47 @@ let NL = '\r\n'; // RFC2046 S4.1.1
 let BOUNDARY_PREFIX = NL + '--'; // RFC2046 S5.1.1
 let HEADER_PAIR_DELIM = ':';
 let HEADER_SUB_DELIM = '=';
-let MultipartParser = function (contentType, data) {
-	this.parts = {};
-	this.fields = [];
-	this.isMultipart = false;
-	if (typeof contentType == 'string') {
-		contentType = contentType.trim();
-		this.isMultipart = contentType.indexOf('multipart/form-data') === 0;
-		parse.call(this, contentType, data);
-	}
-};
 
 function parse(result, contentType, data) {
-	// let self = this;
 	if (data.substr(0, NL.length) !== NL) {
 		data = NL + data;
 	}
 	let params = parseHeaderValue(contentType);
 	if (params.hasOwnProperty('boundary')) {
 		let parts = data.split(BOUNDARY_PREFIX + params.boundary);
+		console.error(contentType, params, parts);
 		parts.forEach(function (chunk, i, arr) {
 			// split the headers and body for this chunk
 			let pieces = splitHeaderBody(chunk);
-			if (pieces.header && pieces.body) {
-				// build headers object
-				console.warn(pieces.header);
-				let headers = parseHeader(pieces.header);
-				// if nested multipart form-data, recurse
-				if (headers.hasOwnProperty('content-type') && headers['content-type'].indexOf('multipart/form-data') === 0) {
-					parse(result, headers['content-type'], pieces.body);
-				} else if (headers.hasOwnProperty('content-disposition')) {
-					let disposition = parseHeaderValue(headers['content-disposition']);
-					if (disposition.hasOwnProperty('name')) {
-						// console.warn(self.fields);
-						result.fields.push(disposition.name);
-						result.parts[disposition.name] = {
-							headers: headers,
-							disposition: disposition,
-							mime: headers['content-type'] || '',
-							body: pieces.body
-						};
-					}
-				}
-			}
+			// console.warn(pieces)
+			// if (pieces.header && pieces.body) {
+			// 	// build headers object
+			// 	let headers = parseHeader(pieces.header);
+			// 	// if nested multipart form-data, recurse
+			// 	if (headers.hasOwnProperty('content-type') && headers['content-type'].indexOf('multipart/form-data') === 0) {
+			// 		parse(result, headers['content-type'], pieces.body);
+			// 	} else if (headers.hasOwnProperty('content-disposition')) {
+			// 		let disposition = parseHeaderValue(headers['content-disposition']);
+			// 		if (disposition.hasOwnProperty('name')) {
+			// 			// console.warn(self.fields);
+			// 			result.fields.push(disposition.name);
+			// 			result.parts[disposition.name] = {
+			// 				headers: headers,
+			// 				disposition: disposition,
+			// 				mime: headers['content-type'] || '',
+			// 				body: pieces.body
+			// 			};
+			// 		}
+			// 	}
+			// }
 		});
 	}
 	return result;
 }
 
 function splitHeaderBody(data) {
-	let sections = data.split(NL + NL, 2);
+	// let sections = data.split(NL + NL, 2);
+	let sections = data.split(NL + NL);
 	return {
 		header: sections[0] || '',
 		body: sections[1] || ''
@@ -90,7 +81,7 @@ function parseHeaderValue(value) {
 		return !!(v || v.indexOf('='));
 	});
 	parameters.forEach(function (item) {
-		// let t = v.split(HEADER_SUB_DELIM, 2);
+		// let keyValue = item.split(HEADER_SUB_DELIM, 2);
 		let keyValue = item.split(HEADER_SUB_DELIM);
 		if (typeof keyValue[1] === 'string') {
 			keyValue[1] = keyValue[1].replace(/^[\s'"]+|[\s'"]+$/g, '');
@@ -133,8 +124,18 @@ class FaHttpRequestClass {
 		return this._FaServerHttpContentType;
 	}
 
-	checkMultipar(contentType) {
+	checkMultipart(contentType) {
 		return contentType.trim().indexOf('multipart/form-data') === 0;
+	}
+
+	parseMultipart(body) {
+		// console.info(body);
+		// if (body.substr(0, NL.length) !== NL) {
+		// 	body = NL + body;
+		// }
+		let boundary = body.substr(0, body.indexOf(NL));
+		let tmp = body.split(boundary);
+		console.warn(boundary, tmp);
 	}
 
 	/**
@@ -158,9 +159,9 @@ class FaHttpRequestClass {
 			get = this._converter.fromUrlEncoded(url.query);
 		}
 		if (["PATCH", "POST", "PUT"].has(req.method)) {
-			if (this.checkMultipar(req.headers["content-type"])) {
-				post = parse({fields: [], parts: {}}, req.headers['content-type'], body);
-				console.info(post)
+			if (this.checkMultipart(req.headers["content-type"])) {
+				// post = this.parse({fields: [], parts: {}}, req.headers['content-type'], body);
+				post = this.parseMultipart(body);
 			} else {
 				switch (req.headers["content-type"]) {
 					case this._contentType.json:

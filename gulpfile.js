@@ -1,83 +1,76 @@
-// const gulp = require('gulp');
-// less = require('gulp-less'),
-// 	minifyCss = require('gulp-minify-css'),
-// 	browserSync = require('browser-sync'),
-// 	autoprefixer = require('gulp-autoprefixer'),
-// 	sourcemaps = require('gulp-sourcemaps'),
-// 	imagemin = require('gulp-tinypng'),
-// 	uglify = require('gulp-uglify'),
-// 	notify = require('gulp-notify'),
-// 	spritesmith = require('gulp.spritesmith'),
-// 	babel = require('gulp-babel'),
-// 	browserify = require('gulp-browserify'),
-// 	validator = require('gulp-html'),
-// 	fileinclude = require('gulp-file-include');
 "use strict";
+/** @type {*} */
 const Gulp = require('gulp');
-const GulpBabel = require('gulp-babel');
+// const GulpBabel = require('gulp-babel');
+// const GulpAutoprefixer = require('gulp-autoprefixer');
 const GulpBrowserify = require('gulp-browserify');
 const GulpChanged = require('gulp-changed');
+// const GulpLessChanged = require('gulp-less-changed');
 const GulpDebug = require('gulp-debug');
-const GulpExec = require('gulp-exec');
+/** @type {*} */
+// const GulpExec = require('gulp-exec');
 const GulpLess = require('gulp-less');
-const GulpNotify = require('gulp-notify');
+/** @type {*} */
+// const GulpNotify = require('gulp-notify');
 const GulpPlumber = require('gulp-plumber');
+/** @type {*} */
 const GulpSourcemaps = require('gulp-sourcemaps');
-const paths = {
-	beautify_src: "./beautify/src",
-	beautify_dist: "./beautify/dist",
-	src: './src',
-	dist: './dist',
+// const LessPluginAutoprefix = require('less-plugin-autoprefix');
+// let autoprefix = new LessPluginAutoprefix({browsers: ['last 2 versions']});
+/**
+ *
+ * @type {{dist_js: string, src_js: string, dist_css: string, src_css: string}}
+ */
+let paths = {
+	src_js: "./private/fa/js",
+	dist_js: "./public/fa/js",
+	src_css: './private/fa/css',
+	dist_css: './public/fa/css',
 	// build: './build',
 };
-const reporterOptions = {
-	err: true, // default = true, false means don't write err
-	stderr: true, // default = true, false means don't write stderr
-	stdout: true // default = true, false means don't write stdout
-};
+// const reporterOptions = {
+// 	err: true, // default = true, false means don't write err
+// 	stderr: true, // default = true, false means don't write stderr
+// 	stdout: true // default = true, false means don't write stdout
+// };
 /**
  *
  */
 Gulp.task('default', function () {
-	Gulp.watch(`${paths.beautify_src}/*.less`, Gulp.series([
-		"_beautify_css",
+	Gulp.watch(`${paths.src_css}/**/*.less`, Gulp["series"]([
+		"_fa_css",
+	]));
+	Gulp.watch(`${paths.src_js}/**/*.js`, Gulp["series"]([
+		"_fa_js",
 	]));
 });
-/**
- *
- */
-Gulp.task('_beautify_css', () => (
-	Gulp.src(`${paths.beautify_src}/*.less`)
-		// .pipe(GulpPlumber())
-		// .pipe(GulpChanged(paths.beautify_dist))
+/**/
+Gulp.task('_fa_css', function () {
+	return Gulp.src(`${paths.src_css}/**/*.less`)
+		.pipe(GulpChanged(paths.dist_css, {extension: ".css"}))
+		.pipe(GulpPlumber())
+		// .pipe(GulpLessChanged())
 		.pipe(GulpDebug())
 		.pipe(GulpSourcemaps.init())
-		.pipe(GulpLess())
-		.on('error', GulpNotify.onError(err => ({
-				title: '_beautify_css',
-				message: err.message
-			})
-		))
-		.pipe(Gulp.dest(`${paths.beautify_dist}`))
+		.pipe(GulpLess({
+			// plugins: [autoprefix]
+		}))
+		// .on('error', GulpNotify.onError(e => ({
+		// 		title: '_fa_css',
+		// 		message: e.message
+		// 	})
+		// ))
+		.pipe(GulpSourcemaps.write())
+		.pipe(Gulp.dest(paths.dist_css))
 	// .pipe(browserSync.stream())
-));
-// Gulp.task("_fa-client-browserify", function () {
-// 	return Gulp.src(`${paths.src}/*.js`)
-// 		.pipe(GulpPlumber())
-// 		.pipe(GulpChanged(paths.dist))
-// 		.pipe(GulpDebug())
-// 		.pipe(GulpBrowserify({
-// 			debug: true,
-// 		}))
-// 		.pipe(Gulp.dest(`${paths.dist}`))
-// 		/*command line*/
-// 		.pipe(GulpExec.reporter(reporterOptions))
-// });
-/**
- *
- */
-// gulp.task('javascript', () => (
-// 	gulp.src(`${paths.src}scripts/scripts.js`)
-// 		.pipe(plumber())
-// 		.pipe(browserSync.stream())
-// ));
+});
+/**/
+Gulp.task("_fa_js", function () {
+	return Gulp.src(`${paths.src_js}/**/*.js`)
+		.pipe(GulpChanged(paths.dist_js,{extension: ".js"}))
+		.pipe(GulpPlumber())
+		.pipe(GulpDebug())
+		.pipe(GulpBrowserify({debug: true}))
+		.pipe(Gulp.dest(paths.dist_js))
+	// .pipe(GulpExec.reporter(reporterOptions))
+});
