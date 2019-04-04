@@ -8,22 +8,24 @@ const MimeTypes = require("mime-types");
 /*fa-nodejs*/
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
-const FaFileClass = require("fa-nodejs/base/file");
+const FaBaseFile = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
 const FaConverterClass = require("fa-nodejs/base/converter");
 const FaServerHttpRequestClass = require("fa-nodejs/server/http-request");
 const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaServerHttpContentType = require("./http-content-type");
 const FaServerHttpStatusCode = require("./http-status-code");
+const FaBaseRouter = require("fa-nodejs/base/router");
 
 class FaServerHttp {
 	constructor(configuration) {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
-		this._FaFile = new FaFileClass(this.Configuration.path);
-		this._FaAssetsRouterClass = require("../base/router")(this);
+		console.info(configuration);
+		this._FaFile = new FaBaseFile(this.Configuration.path);
+		this._FaRouter = new FaBaseRouter(this);
+		this._FaAssetRouter = new FaBaseRouter(this);
 		this._FaHttpResponse = FaHttpResponse;
-		this._FaRouterClass = require("../base/router")(this);
 		this._FaServerHttpRequest = new FaServerHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaServerHttpContentType();
 		this._FaHttpStatusCode = new FaServerHttpStatusCode();
@@ -63,7 +65,7 @@ class FaServerHttp {
 	 * @return {FaRouterClass}
 	 */
 	get Router() {
-		return this._FaRouterClass;
+		return this._FaRouter;
 	}
 
 	/**
@@ -71,7 +73,7 @@ class FaServerHttp {
 	 * @return {FaRouterClass}
 	 */
 	get Assets() {
-		return this._FaAssetsRouterClass;
+		return this._FaAssetRouter;
 	}
 
 	/**

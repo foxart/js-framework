@@ -6,6 +6,7 @@ const Url = require("url");
 const FaServerHttpContentTypeClass = require("fa-nodejs/server/http-content-type");
 let NL = '\r\n'; // RFC2046 S4.1.1
 let BOUNDARY_PREFIX = NL + '--'; // RFC2046 S5.1.1
+// let BOUNDARY_END = NL + '--'; // RFC2046 S5.1.1
 let HEADER_PAIR_DELIM = ':';
 let HEADER_SUB_DELIM = '=';
 
@@ -20,27 +21,26 @@ function parse(result, contentType, data) {
 		parts.forEach(function (chunk, i, arr) {
 			// split the headers and body for this chunk
 			let pieces = splitHeaderBody(chunk);
-			// console.warn(pieces)
-			// if (pieces.header && pieces.body) {
-			// 	// build headers object
-			// 	let headers = parseHeader(pieces.header);
-			// 	// if nested multipart form-data, recurse
-			// 	if (headers.hasOwnProperty('content-type') && headers['content-type'].indexOf('multipart/form-data') === 0) {
-			// 		parse(result, headers['content-type'], pieces.body);
-			// 	} else if (headers.hasOwnProperty('content-disposition')) {
-			// 		let disposition = parseHeaderValue(headers['content-disposition']);
-			// 		if (disposition.hasOwnProperty('name')) {
-			// 			// console.warn(self.fields);
-			// 			result.fields.push(disposition.name);
-			// 			result.parts[disposition.name] = {
-			// 				headers: headers,
-			// 				disposition: disposition,
-			// 				mime: headers['content-type'] || '',
-			// 				body: pieces.body
-			// 			};
-			// 		}
-			// 	}
-			// }
+			if (pieces.header && pieces.body) {
+				// build headers object
+				let headers = parseHeader(pieces.header);
+				// if nested multipart form-data, recurse
+				if (headers.hasOwnProperty('content-type') && headers['content-type'].indexOf('multipart/form-data') === 0) {
+					parse(result, headers['content-type'], pieces.body);
+				} else if (headers.hasOwnProperty('content-disposition')) {
+					let disposition = parseHeaderValue(headers['content-disposition']);
+					if (disposition.hasOwnProperty('name')) {
+						// console.warn(self.fields);
+						result.fields.push(disposition.name);
+						result.parts[disposition.name] = {
+							headers: headers,
+							disposition: disposition,
+							mime: headers['content-type'] || '',
+							body: pieces.body
+						};
+					}
+				}
+			}
 		});
 	}
 	return result;
@@ -77,8 +77,8 @@ function parseHeaderValue(value) {
 	let result = {};
 	let parameters = value.split(';').map(function (item) {
 		return item.trim();
-	}).filter(function (v) {
-		return !!(v || v.indexOf('='));
+	}).filter(function (value) {
+		return !!(value || value.indexOf('='));
 	});
 	parameters.forEach(function (item) {
 		// let keyValue = item.split(HEADER_SUB_DELIM, 2);
@@ -129,13 +129,71 @@ class FaHttpRequestClass {
 	}
 
 	parseMultipart(body) {
-		// console.info(body);
-		// if (body.substr(0, NL.length) !== NL) {
-		// 	body = NL + body;
-		// }
-		let boundary = body.substr(0, body.indexOf(NL));
-		let tmp = body.split(boundary);
-		console.warn(boundary, tmp);
+		console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		let result = {
+			files: [],
+			post:[],
+		};
+		let lines = body.split(NL);
+		let boundary = lines.shift();
+		// lines.pop(); lines.pop(); let data = lines.join(NL);
+		let data = lines.join(NL).slice(0, -`${NL}${boundary}--${NL}`.length);
+		let sections = data.split(`${NL}${boundary}${NL}`);
+		let sectionsLength = sections.length;
+		for (let i = 0; i < sectionsLength; i++) {
+			let multipart = this.parseMultipartSection(sections[i]);
+			if (Object.keys(multipart).length > 1) {
+				// result.files.push(multipart);
+			} else {
+				// console.info(multipart);
+				result.post.push(multipart);
+			}
+			// this.parseMultipartSection(sections[i].slice(0, -(NL).length));
+		}
+		console.warn(result);
+	}
+
+	parseMultipartSection(section) {
+		let result = {};
+		// console.info(section);
+		let lines = section.split(`${NL}${NL}`);
+		let headers = lines.shift();
+		let content = lines.join(`${NL}${NL}`);
+		headers.split(NL).filter(function (item) {
+			return !!item;
+		}).map(function (item) {
+			// console.error(item);
+			let keyValue = item.split(":");
+			let key = keyValue[0].trim().toLowerCase();
+			let value = keyValue[1].trim();
+			if (key === "content-disposition") {
+				let parameters = value.split(';').filter(function (filter) {
+					return filter.indexOf("=") !== -1;
+				}).map(function (item) {
+					// console.info(item)
+					let result = item.trim().split("=");
+					result[1] = result[1].replace(/^[\s'"]+|[\s'"]+$/g, "");
+					return result;
+				});
+				if (parameters.length > 1) {
+					// result["name"] = parameters[0][1];
+					parameters.map(function (item) {
+						result[item[0]] = item[1];
+					});
+					result["file"] = content;
+					result["length"] = content.length;
+					// result["type"] = value;
+				} else {
+					result[parameters[0][1]] = content;
+				}
+			} else if (key === "content-type") {
+				result["type"] = value;
+			} else {
+				throw new Error(`unknown multipart section type: ${key}`);
+				// result[key] = value;
+			}
+		});
+		return result;
 	}
 
 	/**
@@ -148,7 +206,7 @@ class FaHttpRequestClass {
 		let url = Url.parse(req.url);
 		let get = null;
 		let post = null;
-		let cookie = null;
+		let cookies = null;
 		let client = {
 			ip: (req.headers['x-forwarded-for'] || '').split(',').pop() ||
 				req.connection.remoteAddress ||
@@ -179,7 +237,7 @@ class FaHttpRequestClass {
 			}
 		}
 		if (req.headers["cookie"]) {
-			cookie = Cookie.parse(req.headers["cookie"]);
+			cookies = Cookie.parse(req.headers["cookie"]);
 		}
 		return {
 			client: client,
@@ -188,7 +246,7 @@ class FaHttpRequestClass {
 			path: url.pathname,
 			get: get,
 			post: post,
-			cookie: cookie,
+			cookies: cookies,
 			// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
 			input: body,
 		};
