@@ -1,15 +1,13 @@
 'use strict';
 /*node*/
-const FastXmlParser = require('fast-xml-parser');
-const QueryString = require('qs');
-/*vendor*/
-const FaBeautify = require('../beautify');
+/** @type {*} */
+const FastXmlParser = require("fast-xml-parser");
+/** @type {*} */
+const QueryString = require("qs");
+/*fa*/
+const FaBeautify = require("fa-nodejs/beautify");
 
-/**
- *
- * @type {FaConverterClass}
- */
-class FaConverterClass {
+class FaBaseConverter {
 	/**
 	 *
 	 * @param configuration {{fromXml: *, toXml: *}}
@@ -71,7 +69,7 @@ class FaConverterClass {
 	 */
 	toJson(data) {
 		// data = data.byteLength ? data.toString() : data;
-		return this.isString(data) ? data: JSON.stringify(data) ;
+		return this.isString(data) ? data : JSON.stringify(data);
 	}
 
 	/**
@@ -129,17 +127,9 @@ class FaConverterClass {
 	}
 }
 
-
-
 /**
  *
- * @param configuration {Object}
- * @return {FaConverterClass}
+ * @type {FaBaseConverter}
  */
-module.exports = function (configuration) {
-	if (configuration) {
-		return new FaConverterClass(configuration);
-	} else {
-		return FaConverterClass;
-	}
-};
+module.exports = FaBaseConverter;
+
