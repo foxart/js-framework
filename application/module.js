@@ -25,8 +25,8 @@ class FaApplicationModule {
 		this._path = path;
 		this._controller_list = {};
 		this._routes_list = {};
-		this._loadFromDirectory();
 		this._loadFromConfiguration();
+		this._loadFromDirectory();
 		this._serve();
 	}
 
@@ -167,7 +167,11 @@ class FaApplicationModule {
 		let self = this;
 		let result = {};
 		this._readModules(`${self._path}/modules`).forEach(function (module) {
-			self._routes_list[module] = {};
+			console.log(module);
+			if (!self._routes_list[module]) {
+				self._routes_list[module] = {};
+			}
+			// let module = self._routes_list[folder];
 			self._readControllers(`${self._path}/modules/${module}/${self._server_type}s`).forEach(function (controller) {
 				let methods = self._readMethods(self._loadController(module, controller));
 				methods.forEach(function (action) {
@@ -245,17 +249,21 @@ class FaApplicationModule {
 	 * @private
 	 */
 	_serve() {
+		let self = this;
 		for (let modules = Object.keys(this._routes_list), i = 0, end = modules.length - 1; i <= end; i++) {
 			let module = modules[i];
 			for (let routes = Object.keys(this._routes_list[modules[i]]), j = 0, end = routes.length - 1; j <= end; j++) {
 				let route = routes[j];
 				let controller = this._routes_list[module][route]["controller"];
+				// console.info(this._routes_list[module][route]);
 				let action = this.controllerActionToMethod(this._routes_list[module][route]["action"]);
 				// console.info({route, module, controller, [action]: this._routes_list[module][route]["action"]});
 				let Controller = this._loadController(module, controller);
 				if (Controller[action]) {
 					this._server.Router.attach(route, function () {
-						return Controller[action].apply(Controller, arguments);
+						let res = Controller[action].apply(Controller, arguments);
+						console.log(route, module, controller, action, self._routes_list[module][route]);
+						return res;
 					});
 				} else {
 					throw new FaError(`action not implemented: ${this._path}/${module}/controllers/${this.controllerNameToFilename(controller)}->${action}()`);

@@ -54,11 +54,15 @@ class FaHttpRequestClass {
 	}
 
 	_parseClient(req) {
+		let ip = (req.headers['x-forwarded-for'] || '').split(',').pop()
+			|| req.connection.remoteAddress
+			|| req.socket.remoteAddress
+			|| req.connection.socket.remoteAddress;
+		if (ip.substr(0, 7) === "::ffff:") {
+			ip = ip.substr(7)
+		}
 		return {
-			ip: (req.headers['x-forwarded-for'] || '').split(',').pop()
-				|| req.connection.remoteAddress
-				|| req.socket.remoteAddress
-				|| req.connection.socket.remoteAddress
+			ip: ip
 		}
 	}
 
