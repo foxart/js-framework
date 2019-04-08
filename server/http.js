@@ -21,7 +21,7 @@ class FaServerHttp {
 	constructor(configuration) {
 		this._FaHttpConfigurationClass = require("./http-configuration")(configuration);
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
-		console.info(configuration);
+		// console.info(configuration);
 		this._FaFile = new FaBaseFile(this.Configuration.path);
 		this._FaRouter = new FaBaseRouter(this);
 		this._FaAssetRouter = new FaBaseRouter(this);
