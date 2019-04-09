@@ -40,24 +40,43 @@ class FaApplicationControllerHttp extends FaApplicationController {
 
 	/**
 	 *
-	 * @param content
-	 * @param type
-	 * @param status
+	 * @param content {*}
+	 * @param type {string|null}
+	 * @param status {string|null}
 	 * @return {FaServerHttpResponse}
 	 */
-	respond(content, type, status) {
+	render(content, type = null, status = null) {
 		return this._FaServerHttp.response(content, type, status);
 	}
 
 	/**
 	 *
-	 * @param content
-	 * @param type
-	 * @param status
+	 * @param data {Object}
+	 * @param status {string|null}
 	 * @return {FaServerHttpResponse}
 	 */
-	createResponse(content, type, status) {
-		return this._FaServerHttp.response(content, type, status);
+	renderJson(data, status = null) {
+		return this._FaServerHttp.response(JSON.stringify(data, null, 128), this._FaServerHttp.type.json, status);
+	}
+
+	/**
+	 *
+	 * @param data {string}
+	 * @param status {string|null}
+	 * @return {FaServerHttpResponse}
+	 */
+	renderHtml(data, status = null) {
+		return this._FaServerHttp.response(data, this._FaServerHttp.type.html, status);
+	}
+
+	/**
+	 *
+	 * @param data {Object}
+	 * @param status {string|null}
+	 * @return {FaServerHttpResponse}
+	 */
+	renderXml(data, status = null) {
+		return this._FaServerHttp.response(data, this._FaServerHttp.type.xml, status);
 	}
 
 	/**
@@ -79,9 +98,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	actionIndex(data) {
-		return this._FaServerHttp.response({
-			xml: data
-		}, this._FaServerHttp.type.xml);
+		return this._FaServerHttp.response(data, this._FaServerHttp.type.xml);
 	}
 }
 

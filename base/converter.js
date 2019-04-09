@@ -6,6 +6,8 @@ const FastXmlParser = require("fast-xml-parser");
 const QueryString = require("qs");
 /*fa*/
 const FaBeautify = require("fa-nodejs/beautify");
+const FaError = require("fa-nodejs/base/error");
+const FaBaseTrace = require("fa-nodejs/base/trace");
 
 class FaBaseConverter {
 	/**
@@ -13,6 +15,7 @@ class FaBaseConverter {
 	 * @param configuration {{fromXml: *, toXml: *}}
 	 */
 	constructor(configuration) {
+		this._trace = FaBaseTrace.trace();
 		this._fromXml = configuration.fromXml;
 		this._toXml = configuration.toXml;
 	}
@@ -82,6 +85,24 @@ class FaBaseConverter {
 		return this.isXml(data) ? FastXmlParser.parse(data, Object.assign({}, this._fromXml, options)) : {};
 	}
 
+	walker(obj) {
+		let result = {};
+		for (let key in obj) {
+			if (obj.hasOwnProperty(key)) {
+				if (obj[key] === null) {
+					result[key] = "null";
+				} else if (obj[key] === undefined) {
+					result[key] = "undefined";
+				} else if (typeof obj[key] === "object") {
+					result[key] = this.walker(obj[key]);
+				} else {
+					result[key] = obj[key];
+				}
+			}
+		}
+		return result;
+	}
+
 	/**
 	 *
 	 * @param data {object|string}
@@ -89,7 +110,37 @@ class FaBaseConverter {
 	 * @return {string}
 	 */
 	toXml(data, options = {}) {
-		return this.isString(data) ? data : new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(data);
+		function filter(obj) {
+			let result = {};
+			for (let key in obj) {
+				if (obj.hasOwnProperty(key)) {
+					if (obj[key] === null) {
+						result[key] = "null";
+					} else if (obj[key] === undefined) {
+						result[key] = "undefined";
+					} else if (typeof obj[key] === "object") {
+						result[key] = filter(obj[key]);
+					} else {
+						result[key] = obj[key];
+					}
+				}
+			}
+			return result;
+		}
+		let xml = {};
+		try {
+			if (!data["xml"]) {
+				xml["xml"] = data;
+			} else {
+				xml = data;
+			}
+console.info(data);
+			// return this.isString(data) ? data : new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(data);
+			return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml);
+		} catch (e) {
+			xml["xml"] = filter(data);
+			return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml);
+		}
 	}
 
 	// /**

@@ -23,19 +23,28 @@ class FaApplicationModule {
 		}
 		this._FaBaseFile = new FaBaseFile();
 		this._path = path;
+		this._route_list = {};
 		this._controller_list = {};
-		this._routes_list = {};
 		this._loadFromConfiguration();
 		this._loadFromDirectory();
-		this._serve();
+		this._serveRoutes();
 	}
 
 	/**
 	 *
 	 * @return {string[]}
 	 */
-	get list() {
+	get controllers() {
 		return Object.keys(this._controller_list);
+	}
+
+
+	/**
+	 *
+	 * @return {string[]}
+	 */
+	get routes() {
+		return Object.keys(this._route_list);
 	}
 
 	controllerFilenameToName(controller) {
@@ -147,13 +156,13 @@ class FaApplicationModule {
 	 */
 	_loadController(module, controller) {
 		let path = `${this._path}/modules/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
-		if (this._exist(path)) {
-			return this._find(path);
+		if (!!this._controller_list[path]) {
+			return this._controller_list[path];
 		} else if (this._FaBaseFile.isFile(path)) {
 			let ControllerClass = require(path);
-			// this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
-			this._controller_list[path] = new ControllerClass(this._server);
-			return this._find(path);
+			this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
+			// this._controller_list[path] = new ControllerClass(this._server);
+			return this._controller_list[path];
 		} else {
 			throw new FaError(`controller not found: ${path}`);
 		}
@@ -167,11 +176,6 @@ class FaApplicationModule {
 		let self = this;
 		let result = {};
 		this._readModules(`${self._path}/modules`).forEach(function (module) {
-			console.log(module);
-			if (!self._routes_list[module]) {
-				self._routes_list[module] = {};
-			}
-			// let module = self._routes_list[folder];
 			self._readControllers(`${self._path}/modules/${module}/${self._server_type}s`).forEach(function (controller) {
 				let methods = self._readMethods(self._loadController(module, controller));
 				methods.forEach(function (action) {
@@ -181,17 +185,22 @@ class FaApplicationModule {
 						let item = before.pop();
 						after.push(item);
 						if (item === "index" && after.every(item => (item === "index"))) {
-							// console.error(`${module}`,`/${before.join("/")}`);
-							self._routes_list[module][`/${before.join("/")}`] = {
+							self._route_list[`${module}/${controller}/${action}`] = {
+								module: module,
+								path: `/${before.join("/")}`,
 								controller: controller,
 								action: action,
 							};
 						}
 					}
-					self._routes_list[module][`/${module}/${controller}/${action}`] = {
-						controller: controller,
-						action: action,
-					};
+					if (Object.keys(self._route_list).omit(`${module}/${controller}/${action}`)) {
+						self._route_list[`${module}/${controller}/${action}`] = {
+							module: module,
+							path: `/${module}/${controller}/${action}`,
+							controller: controller,
+							action: action,
+						};
+					}
 				});
 			});
 		});
@@ -203,20 +212,21 @@ class FaApplicationModule {
 	 * @private
 	 */
 	_loadFromConfiguration() {
-		let path = `${this._path}/config/${this._server_type}s.js`;
-		if (this._FaBaseFile.isFile(path)) {
-			let configuration = require(path);
+		let configurationPath = `${this._path}/config/${this._server_type}s.js`;
+		if (this._FaBaseFile.isFile(configurationPath)) {
+			let configuration = require(configurationPath);
 			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
 				let module = modules[i];
-				if (!this._routes_list[module]) {
-					this._routes_list[module] = {};
-				}
-				for (let routes = Object.keys(configuration[modules[i]]), j = 0, end = routes.length - 1; j <= end; j++) {
-					let route = routes[j];
-					if (!this._routes_list[module][route]) {
-						this._routes_list[module][route] = {
-							controller: configuration[module][route]["controller"],
-							action: configuration[module][route]["action"],
+				for (let routes = Object.keys(configuration[module]), j = 0, end = routes.length - 1; j <= end; j++) {
+					let path = routes[j];
+					let controller = configuration[module][path]["controller"];
+					let action = configuration[module][path]["action"];
+					if (Object.keys(this._route_list).omit(`${module}/${controller}/${action}`)) {
+						this._route_list[`${module}/${controller}/${action}`] = {
+							module: module,
+							path: path,
+							controller: controller,
+							action: action,
 						};
 					}
 				}
@@ -226,48 +236,24 @@ class FaApplicationModule {
 
 	/**
 	 *
-	 * @param path
-	 * @return {*}
 	 * @private
 	 */
-	_find(path) {
-		return this._controller_list[path];
-	}
-
-	/**
-	 *
-	 * @param path {string}
-	 * @return {boolean}
-	 * @private
-	 */
-	_exist(path) {
-		return !!this._controller_list[path];
-	}
-
-	/**
-	 *
-	 * @private
-	 */
-	_serve() {
-		let self = this;
-		for (let modules = Object.keys(this._routes_list), i = 0, end = modules.length - 1; i <= end; i++) {
-			let module = modules[i];
-			for (let routes = Object.keys(this._routes_list[modules[i]]), j = 0, end = routes.length - 1; j <= end; j++) {
-				let route = routes[j];
-				let controller = this._routes_list[module][route]["controller"];
-				// console.info(this._routes_list[module][route]);
-				let action = this.controllerActionToMethod(this._routes_list[module][route]["action"]);
-				// console.info({route, module, controller, [action]: this._routes_list[module][route]["action"]});
-				let Controller = this._loadController(module, controller);
-				if (Controller[action]) {
-					this._server.Router.attach(route, function () {
-						let res = Controller[action].apply(Controller, arguments);
-						console.log(route, module, controller, action, self._routes_list[module][route]);
-						return res;
-					});
-				} else {
-					throw new FaError(`action not implemented: ${this._path}/${module}/controllers/${this.controllerNameToFilename(controller)}->${action}()`);
-				}
+	_serveRoutes() {
+		for (let list = Object.keys(this._route_list), i = 0, end = list.length - 1; i <= end; i++) {
+			let index = list[i];
+			let path = this._route_list[index]["path"];
+			let module = this._route_list[index]["module"];
+			let controller = this._route_list[index]["controller"];
+			let action = this.controllerActionToMethod(this._route_list[index]["action"]);
+			let Controller = this._loadController(module, controller);
+			if (Controller[action]) {
+				this._server.Router.attach(path, function () {
+					let res = Controller[action].apply(Controller, arguments);
+					// console.log(path, module, controller, action, self._route_list[index]);
+					return res;
+				});
+			} else {
+				throw new FaError(`action not implemented: ${this._path}/${module}/controllers/${this.controllerNameToFilename(controller)}->${action}()`);
 			}
 		}
 	}
