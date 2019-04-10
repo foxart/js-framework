@@ -5,29 +5,130 @@ const FaBaseFile = require("fa-nodejs/base/file");
 // const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaHttpClass = require("fa-nodejs/server/http");
 const FaSocketClass = require("fa-nodejs/server/socket");
+const FaApplicationConfiguration = require("fa-nodejs/application/application-configuration");
 
 class FaApplicationModule {
 	/**
 	 *
-	 * @param server {FaServerHttp|module.FaSocketClass}
 	 * @param path {string}
+	 * @param http {FaServerHttp}
+	 * @param socket {FaServerSocket}
 	 */
-	constructor(server, path) {
-		this._server = server;
-		if (server instanceof FaHttpClass) {
-			this._server_type = "controller";
-		} else if (this._server instanceof FaSocketClass) {
-			this._server_type = "socket";
-		} else {
-			throw new FaError(`wrong server type`);
-		}
-		this._FaBaseFile = new FaBaseFile();
+	constructor(path, http, socket) {
+		// console.info(path);
+		this._configuration = new FaApplicationConfiguration(path);
+		this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9]+)Controller.js$`);
+		this._regularControllerName = new RegExp("[A-Z][^A-Z]*", "g");
+		this._FaHttp = http;
+		this._FaSocket = socket;
+		/**/
+		this._server = "server";
+		this._server_type = "controller";
+		// this._server = server;
+		// if (server instanceof FaHttpClass) {
+		// 	this._server_type = "controller";
+		// } else if (this._server instanceof FaSocketClass) {
+		// 	this._server_type = "socket";
+		// } else {
+		// 	throw new FaError(`wrong server type`);
+		// }
+		this._FaFile = new FaBaseFile();
 		this._path = path;
 		this._route_list = {};
 		this._controller_list = {};
-		this._loadFromConfiguration();
-		this._loadFromDirectory();
-		this._serveRoutes();
+		// this._loadFromConfiguration();
+		// this._loadFromDirectory();
+		// this._serveRoutes();
+		this.readDefaultRoutes();
+	}
+
+	readDefaultRoutes() {
+		let self = this;
+		Object.entries(this.configuration.modules).forEach(function ([key, value]) {
+			// console.warn(key, value);
+			let module = value["name"];
+			let path = value["path"];
+			// console.error(path);
+			let controllers = self._readModuleControllers(value);
+			// console.error(controllers);
+		})
+	}
+
+	_getControllerName(controller) {
+		let match = controller.match(this._regularControllerFilename);
+		if (match) {
+			return match[1].match(this._regularControllerName).join("-").toLowerCase();
+		} else {
+			return null;
+		}
+	}
+
+	_readModuleControllers(module) {
+		let self = this;
+		let modulePath = module["path"];
+		let moduleName = module["name"];
+		let controllersPath = `${modulePath}/controllers`;
+		// console.info(module);
+		if (self._FaFile.isDirectory(modulePath)) {
+			return this._FaFile.readDirectorySync(controllersPath).map(function (controller) {
+				// console.error(controller)
+				return self._getControllerName(controller);
+			}).filter(item => item).map(function (controller) {
+				console.error(`${modulePath}/controllers/${controller}`);
+				self._loadModuleController(moduleName, controller);
+			});
+		}
+		// if (controllerFilename) {
+		// 		self._loadModuleController(`${path}/${controller}`);
+		// 	if (self._FaFile.isFile(`${path}/${controller}`)) {
+		// 		let ControllerClass = require(`${path}/${controller}`);
+		// 		self._controller_list[`${path}/${controller}`] = new ControllerClass(self._FaHttp, path);
+		// 		// let methods = self._readMethods(self._loadModuleController(module, controller));
+		// 		// let methods = (self._loadModuleController(module, controller));
+		//
+		//
+		//
+		// 	}
+		// }
+		// return {[controller]: self._getControllerName(controller)};
+	}
+
+	_getControllerFilename(controller) {
+		let match = controller.match(this._regularControllerFilename);
+		if (match) {
+			return match[1].match(this._regularControllerName).join("-").toLowerCase();
+		} else {
+			return null;
+		}
+	}
+
+	_loadModuleController(module, controller) {
+		// console.warn(module, controller);
+		let path = `${this._path}/modules/${module}/controllers/${this.controllerNameToFilename(controller)}`;
+		if (!!this._controller_list[path]) {
+			return this._controller_list[path];
+		} else if (this._FaFile.isFile(path)) {
+			let ControllerClass = require(path);
+			// this._controller_list[path] = new ControllerClass(this._FaHttp, `${this._path}/modules/${module}/views/${controller}`);
+			this._controller_list[path] = new ControllerClass(this._FaHttp);
+			return this._controller_list[path];
+		} else {
+			throw new FaError(`controller not found: ${path}`);
+		}
+	}
+
+	/*
+	*
+	*
+	*
+	*
+	*
+	*
+	*
+	*
+	* */
+	get configuration() {
+		return this._configuration;
 	}
 
 	/**
@@ -37,7 +138,6 @@ class FaApplicationModule {
 	get controllers() {
 		return Object.keys(this._controller_list);
 	}
-
 
 	/**
 	 *
@@ -97,9 +197,9 @@ class FaApplicationModule {
 	 */
 	_readModules(path) {
 		let self = this;
-		if (this._FaBaseFile.isDirectory(path)) {
-			return this._FaBaseFile.readDirectorySync(path).reduce(function (result, item) {
-				if (self._FaBaseFile.isDirectory(`${path}/${item}`)) {
+		if (this._FaFile.isDirectory(path)) {
+			return this._FaFile.readDirectorySync(path).reduce(function (result, item) {
+				if (self._FaFile.isDirectory(`${path}/${item}`)) {
 					result.push(item);
 				}
 				return result;
@@ -117,10 +217,10 @@ class FaApplicationModule {
 	 */
 	_readControllers(path) {
 		let self = this;
-		if (this._FaBaseFile.isDirectory(path)) {
-			return this._FaBaseFile.readDirectorySync(path).reduce(function (result, item) {
+		if (this._FaFile.isDirectory(path)) {
+			return this._FaFile.readDirectorySync(path).reduce(function (result, item) {
 				let controller = self.controllerFilenameToName(item);
-				if (self._FaBaseFile.isFile(`${path}/${item}`) && controller) {
+				if (self._FaFile.isFile(`${path}/${item}`) && controller) {
 					result.push(controller);
 				}
 				return result;
@@ -158,7 +258,7 @@ class FaApplicationModule {
 		let path = `${this._path}/modules/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
 		if (!!this._controller_list[path]) {
 			return this._controller_list[path];
-		} else if (this._FaBaseFile.isFile(path)) {
+		} else if (this._FaFile.isFile(path)) {
 			let ControllerClass = require(path);
 			this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
 			// this._controller_list[path] = new ControllerClass(this._server);
@@ -213,7 +313,7 @@ class FaApplicationModule {
 	 */
 	_loadFromConfiguration() {
 		let configurationPath = `${this._path}/config/${this._server_type}s.js`;
-		if (this._FaBaseFile.isFile(configurationPath)) {
+		if (this._FaFile.isFile(configurationPath)) {
 			let configuration = require(configurationPath);
 			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
 				let module = modules[i];

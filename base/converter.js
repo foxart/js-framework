@@ -6,8 +6,8 @@ const FastXmlParser = require("fast-xml-parser");
 const QueryString = require("qs");
 /*fa*/
 const FaBeautify = require("fa-nodejs/beautify");
-const FaError = require("fa-nodejs/base/error");
-const FaBaseTrace = require("fa-nodejs/base/trace");
+// const FaError = require("fa-nodejs/base/error");
+// const FaBaseTrace = require("fa-nodejs/base/trace");
 
 class FaBaseConverter {
 	/**
@@ -15,7 +15,7 @@ class FaBaseConverter {
 	 * @param configuration {{fromXml: *, toXml: *}}
 	 */
 	constructor(configuration) {
-		this._trace = FaBaseTrace.trace();
+		// this._trace = FaBaseTrace.trace();
 		this._fromXml = configuration.fromXml;
 		this._toXml = configuration.toXml;
 	}

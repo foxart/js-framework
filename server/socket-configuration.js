@@ -1,6 +1,5 @@
 /*https://socket.io/docs/server-api/*/
 "use strict";
-const UtilsExtend = require("utils-extend");
 const MergeDeep = require("merge-deep");
 /**
  *

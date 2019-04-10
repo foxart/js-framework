@@ -4,11 +4,8 @@ const SocketIo = require("socket.io");
 /*fa*/
 const FaError = require("../base/error");
 const FaConsoleColor = require("../console/console-helper");
-/**
- *
- * @type {module.FaSocketClass}
- */
-module.exports = class FaSocketClass {
+
+class FaServerSocket {
 	/**
 	 *
 	 * @param FaHttp {FaServerHttp}
@@ -199,3 +196,8 @@ module.exports = class FaSocketClass {
 // 		return FaSocketClass;
 // 	}
 // };
+/**
+ *
+ * @type {FaServerSocket}
+ */
+module.exports = FaServerSocket;
