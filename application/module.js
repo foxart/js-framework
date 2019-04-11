@@ -17,13 +17,15 @@ class FaApplicationModule {
 	constructor(path, http, socket) {
 		// console.info(path);
 		this._configuration = new FaApplicationConfiguration(path);
+		// this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9]+)Controller.js$`);
+		// this._regularPascalCase = new RegExp("[A-Z][^A-Z]*", "g");
 		this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9]+)Controller.js$`);
-		this._regularControllerName = new RegExp("[A-Z][^A-Z]*", "g");
+		this._regularControllerName = new RegExp("^[a-z][a-z0-9-]+$");
+		this._regularControllerMethod = new RegExp("^[a-z][a-z0-9-]+[a-z0-9]$");
+		this._regularControllerAction = new RegExp("^action([A-Z][A-Za-z0-9]+)$");
+		this._FaFile = new FaBaseFile();
 		this._FaHttp = http;
 		this._FaSocket = socket;
-		/**/
-		this._server = "server";
-		this._server_type = "controller";
 		// this._server = server;
 		// if (server instanceof FaHttpClass) {
 		// 	this._server_type = "controller";
@@ -32,101 +34,58 @@ class FaApplicationModule {
 		// } else {
 		// 	throw new FaError(`wrong server type`);
 		// }
-		this._FaFile = new FaBaseFile();
 		this._path = path;
-		this._route_list = {};
 		this._controller_list = {};
+		this._route_list = this.configuration.routes;
 		// this._loadFromConfiguration();
 		// this._loadFromDirectory();
 		// this._serveRoutes();
 		this.readDefaultRoutes();
 	}
 
-	readDefaultRoutes() {
+	test() {
 		let self = this;
-		Object.entries(this.configuration.modules).forEach(function ([key, value]) {
-			// console.warn(key, value);
-			let module = value["name"];
-			let path = value["path"];
-			// console.error(path);
-			let controllers = self._readModuleControllers(value);
-			// console.error(controllers);
-		})
+		let controllers = [
+			"Index-sController.js",
+			"Index1T1TestController.js",
+			"IndexTestController.js",
+			"Index01K_1K__2Controller.js",
+			"I0ndexController.js",
+			"Index_TestController.js",
+		];
+		let controllersName = controllers.map(function (controller) {
+			return self._getControllerName(controller);
+		}).filter(item => item);
+		// console.info(controllersName);
+		/**/
+		let controllersFilename = controllersName.map(function (controller) {
+			return self._getControllerFilename(controller);
+		}).filter(item => item);
+		// console.info(controllersFilename);
+		/**/
+		let actions = [
+			"index",
+			"index1-test",
+			"a-_index",
+			"a-index-test",
+			"a0-aa-ad-index",
+			"ss-as-_1",
+		];
+		/**/
+		let actionsName = actions.map(function (action) {
+			return self._getControllerMethod(action);
+		}).filter(item => item);
+		console.info(actionsName);
+		let methodsName = actionsName.map(function (action) {
+			return self._getControllerAction(action);
+		}).filter(item => item);
+		console.info(methodsName);
 	}
 
-	_getControllerName(controller) {
-		let match = controller.match(this._regularControllerFilename);
-		if (match) {
-			return match[1].match(this._regularControllerName).join("-").toLowerCase();
-		} else {
-			return null;
-		}
-	}
-
-	_readModuleControllers(module) {
-		let self = this;
-		let modulePath = module["path"];
-		let moduleName = module["name"];
-		let controllersPath = `${modulePath}/controllers`;
-		// console.info(module);
-		if (self._FaFile.isDirectory(modulePath)) {
-			return this._FaFile.readDirectorySync(controllersPath).map(function (controller) {
-				// console.error(controller)
-				return self._getControllerName(controller);
-			}).filter(item => item).map(function (controller) {
-				console.error(`${modulePath}/controllers/${controller}`);
-				self._loadModuleController(moduleName, controller);
-			});
-		}
-		// if (controllerFilename) {
-		// 		self._loadModuleController(`${path}/${controller}`);
-		// 	if (self._FaFile.isFile(`${path}/${controller}`)) {
-		// 		let ControllerClass = require(`${path}/${controller}`);
-		// 		self._controller_list[`${path}/${controller}`] = new ControllerClass(self._FaHttp, path);
-		// 		// let methods = self._readMethods(self._loadModuleController(module, controller));
-		// 		// let methods = (self._loadModuleController(module, controller));
-		//
-		//
-		//
-		// 	}
-		// }
-		// return {[controller]: self._getControllerName(controller)};
-	}
-
-	_getControllerFilename(controller) {
-		let match = controller.match(this._regularControllerFilename);
-		if (match) {
-			return match[1].match(this._regularControllerName).join("-").toLowerCase();
-		} else {
-			return null;
-		}
-	}
-
-	_loadModuleController(module, controller) {
-		// console.warn(module, controller);
-		let path = `${this._path}/modules/${module}/controllers/${this.controllerNameToFilename(controller)}`;
-		if (!!this._controller_list[path]) {
-			return this._controller_list[path];
-		} else if (this._FaFile.isFile(path)) {
-			let ControllerClass = require(path);
-			// this._controller_list[path] = new ControllerClass(this._FaHttp, `${this._path}/modules/${module}/views/${controller}`);
-			this._controller_list[path] = new ControllerClass(this._FaHttp);
-			return this._controller_list[path];
-		} else {
-			throw new FaError(`controller not found: ${path}`);
-		}
-	}
-
-	/*
-	*
-	*
-	*
-	*
-	*
-	*
-	*
-	*
-	* */
+	/**
+	 *
+	 * @return {FaApplicationConfiguration}
+	 */
 	get configuration() {
 		return this._configuration;
 	}
@@ -147,86 +106,108 @@ class FaApplicationModule {
 		return Object.keys(this._route_list);
 	}
 
-	controllerFilenameToName(controller) {
-		let regular_filename = new RegExp(`^([A-Z][^-]+)${this._server_type.capitalize()}\.js$`);
-		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
-		let match_filename = controller.match(regular_filename);
-		if (match_filename) {
-			return match_filename[1].match(regular_name).join("-").toLowerCase();
-		} else {
-			return null;
+	readDefaultRoutes() {
+		let self = this;
+		Object.entries(this.configuration.modules).forEach(function ([key, value]) {
+			let module = key;
+			let modulePath = value["path"];
+			let moduleName = value["name"];
+			let moduleAppearance = value["appearance"];
+			let controllersPath = `${modulePath}/controllers`;
+			if (self._FaFile.isDirectory(modulePath)) {
+				return self._FaFile.readDirectorySync(controllersPath).map(function (controllerFilename) {
+					return controllerFilename.match(self._regularControllerFilename) ? controllerFilename : null;
+				}).filter(item => item).map(function (controllerFilename) {
+					// console.info(controllerFilename);
+					let controller = self._getControllerName(controllerFilename);
+					let controllerPath = `${modulePath}/controllers/${controllerFilename}`;
+					let controllerClass = self._loadModuleController(controllerPath);
+					let controllerMethods = self._getControllerMethods(controllerClass);
+					// console.error(controllerFilename, controller, methods);
+					controllerMethods.forEach(function (action) {
+						let result = [];
+						let check = true;
+						let check_list = [module, controller, action];
+						while (check_list.length > 0) {
+							let index_item = check_list.pop();
+							if (check === true) {
+								if (index_item !== "index") {
+									check = false;
+									result.push(index_item);
+								}
+							} else {
+								result.push(index_item);
+							}
+						}
+						let route = `/${result.reverse().join("/")}`;
+						self._storeRoute(`${module}/${controller}/${action}`, {
+							route: route,
+							module: moduleName,
+							controller: controller,
+							action: action,
+							appearance: moduleAppearance,
+						});
+					});
+				});
+			}
+		})
+	}
+
+	_storeRoute(index, route) {
+		if (Object.keys(this._route_list).omit(index)) {
+			this._route_list[index] = route;
 		}
 	}
 
-	controllerNameToFilename(controller) {
-		let pattern = new RegExp("[^-]+", "g");
-		let match = controller.match(pattern);
+	_getControllerFilename(controller) {
+		let match = controller.match(this._regularControllerName);
 		if (match) {
-			return `${match.map(item => item.capitalize()).join("")}${this._server_type.capitalize()}.js`;
+			return `${controller.split("-").map(item => item.capitalize()).join("")}Controller.js`;
 		} else {
 			return null;
 		}
 	}
 
-	controllerMethodToAction(method) {
-		let regular_method = new RegExp("^action([A-Z][^-]+)$");
-		let regular_action = new RegExp("[A-Z][^A-Z]*", "g");
-		let match_method = method.match(regular_method);
-		if (match_method) {
-			return match_method[1].match(regular_action).join("-").toLowerCase();
+	_getControllerName(controller) {
+		let match = controller.match(this._regularControllerFilename);
+		if (match) {
+			return match[1].split(/(?=[A-Z])/).join("-").toLowerCase();
+		} else {
+			return null;
+		}
+	}
+
+	_getControllerMethod(action) {
+		let match = action.match(this._regularControllerMethod);
+		if (match) {
+			return `action${match[0].split("-").map(item => item.capitalize()).join("")}`;
+		} else {
+			// throw new Error(`wrong action: ${action}`);
+			// return `wrong action: ${action}`;
+			return null;
+		}
+	}
+
+	_getControllerAction(method) {
+		this._regularControllerAction = new RegExp("^action([A-Z][A-Za-z0-9_]+)$");
+		let match = method.match(this._regularControllerAction);
+		if (match) {
+			return match[1].split(/(?=[A-Z])/).join("-").toLowerCase();
 		} else {
 			return null
 		}
 	}
 
-	controllerActionToMethod(action) {
-		let regular = new RegExp("[^-]+", "g");
-		let match = action.match(regular);
-		if (match) {
-			return `action${match.map(item => item.capitalize()).join("")}`;
+	_loadModuleController(index) {
+		if (!!this._controller_list[index]) {
+			return this._controller_list[index];
+		} else if (this._FaFile.isFile(index)) {
+			let ControllerClass = require(index);
+			// 	// this._controller_list[path] = new ControllerClass(this._FaHttp, `${this._path}/modules/${module}/views/${controller}`);
+			this._controller_list[index] = new ControllerClass(this._FaHttp);
+			return this._controller_list[index];
 		} else {
-			return null;
-		}
-	}
-
-	/**
-	 *
-	 * @param path
-	 * @return {*}
-	 * @private
-	 */
-	_readModules(path) {
-		let self = this;
-		if (this._FaFile.isDirectory(path)) {
-			return this._FaFile.readDirectorySync(path).reduce(function (result, item) {
-				if (self._FaFile.isDirectory(`${path}/${item}`)) {
-					result.push(item);
-				}
-				return result;
-			}, []);
-		} else {
-			return [];
-		}
-	}
-
-	/**
-	 *
-	 * @param path
-	 * @return {*}
-	 * @private
-	 */
-	_readControllers(path) {
-		let self = this;
-		if (this._FaFile.isDirectory(path)) {
-			return this._FaFile.readDirectorySync(path).reduce(function (result, item) {
-				let controller = self.controllerFilenameToName(item);
-				if (self._FaFile.isFile(`${path}/${item}`) && controller) {
-					result.push(controller);
-				}
-				return result;
-			}, []);
-		} else {
-			return [];
+			throw new FaError(`controller not found: ${index}`);
 		}
 	}
 
@@ -236,10 +217,11 @@ class FaApplicationModule {
 	 * @return {Array}
 	 * @private
 	 */
-	_readMethods(controller) {
-		let context = this;
+	_getControllerMethods(controller) {
+		let self = this;
 		return Reflect.ownKeys(Reflect.getPrototypeOf(controller)).reduce(function (result, item) {
-			let method = context.controllerMethodToAction(item);
+			let method = self._getControllerAction(item);
+			console.error(method)
 			if (method) {
 				result.push(method);
 			}
@@ -247,93 +229,15 @@ class FaApplicationModule {
 		}, []);
 	}
 
-	/**
-	 *
-	 * @param module
-	 * @param controller
-	 * @return {*}
-	 * @private
-	 */
-	_loadController(module, controller) {
-		let path = `${this._path}/modules/${module}/${this._server_type}s/${this.controllerNameToFilename(controller)}`;
-		if (!!this._controller_list[path]) {
-			return this._controller_list[path];
-		} else if (this._FaFile.isFile(path)) {
-			let ControllerClass = require(path);
-			this._controller_list[path] = new ControllerClass(this._server, `${this._path}/modules/${module}/views/${controller}`);
-			// this._controller_list[path] = new ControllerClass(this._server);
-			return this._controller_list[path];
-		} else {
-			throw new FaError(`controller not found: ${path}`);
-		}
-	}
-
-	/**
-	 *
-	 * @private
-	 */
-	_loadFromDirectory() {
-		let self = this;
-		let result = {};
-		this._readModules(`${self._path}/modules`).forEach(function (module) {
-			self._readControllers(`${self._path}/modules/${module}/${self._server_type}s`).forEach(function (controller) {
-				let methods = self._readMethods(self._loadController(module, controller));
-				methods.forEach(function (action) {
-					let before = [module, controller, action];
-					let after = [];
-					while (before.length > 0) {
-						let item = before.pop();
-						after.push(item);
-						if (item === "index" && after.every(item => (item === "index"))) {
-							self._route_list[`${module}/${controller}/${action}`] = {
-								module: module,
-								path: `/${before.join("/")}`,
-								controller: controller,
-								action: action,
-							};
-						}
-					}
-					if (Object.keys(self._route_list).omit(`${module}/${controller}/${action}`)) {
-						self._route_list[`${module}/${controller}/${action}`] = {
-							module: module,
-							path: `/${module}/${controller}/${action}`,
-							controller: controller,
-							action: action,
-						};
-					}
-				});
-			});
-		});
-		return result;
-	}
-
-	/**
-	 *
-	 * @private
-	 */
-	_loadFromConfiguration() {
-		let configurationPath = `${this._path}/config/${this._server_type}s.js`;
-		if (this._FaFile.isFile(configurationPath)) {
-			let configuration = require(configurationPath);
-			for (let modules = Object.keys(configuration), i = 0, end = modules.length - 1; i <= end; i++) {
-				let module = modules[i];
-				for (let routes = Object.keys(configuration[module]), j = 0, end = routes.length - 1; j <= end; j++) {
-					let path = routes[j];
-					let controller = configuration[module][path]["controller"];
-					let action = configuration[module][path]["action"];
-					if (Object.keys(this._route_list).omit(`${module}/${controller}/${action}`)) {
-						this._route_list[`${module}/${controller}/${action}`] = {
-							module: module,
-							path: path,
-							controller: controller,
-							action: action,
-						};
-					}
-				}
-			}
-		}
-	}
-
+	// controllerActionToMethod(action) {
+	// 	let regular = new RegExp("[^-]+", "g");
+	// 	let match = action.match(regular);
+	// 	if (match) {
+	// 		return `action${match.map(item => item.capitalize()).join("")}`;
+	// 	} else {
+	// 		return null;
+	// 	}
+	// }
 	/**
 	 *
 	 * @private

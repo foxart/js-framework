@@ -23,12 +23,12 @@ class FaApplicationConfiguration {
 	extractModules(modules) {
 		let self = this;
 		let result = {};
-		Object.entries(modules).forEach(function ([module, value]) {
-			let path = self._getModulePath(module, value["name"]);
-			result[path] = {
+		Object.entries(modules).forEach(function ([key, value]) {
+			// let path = self._getModulePath(key, value["name"]);
+			result[key] = {
 				name: value["name"],
 				appearance: value["appearance"],
-				path: `${self._path}/modules/${module}`,
+				path: `${self._path}/modules/${key}`,
 			}
 		});
 		return result;
@@ -63,7 +63,6 @@ class FaApplicationConfiguration {
 	// 		return [];
 	// 	}
 	// }
-
 	// _getControllerName(controller) {
 	// 	let match = controller.match(this._regularControllerFilename);
 	// 	if (match) {
@@ -72,7 +71,6 @@ class FaApplicationConfiguration {
 	// 		return null;
 	// 	}
 	// }
-
 	_getModulePath(module, name) {
 		let match = name.match(this._regularModulePath);
 		if (match) {
@@ -90,17 +88,16 @@ class FaApplicationConfiguration {
 				// console.info(route)
 				let controller = value["controller"];
 				let action = value["action"];
-				let appearance = value["appearance"];
+				let appearance = value["appearance"] ? value["appearance"] : self.modules[module]["appearance"];
+				let index = `${module}/${controller}/${action}`;
 				let method = self._getControllerMethod(module, action);
 				let path = self._getControllerPath(module, controller);
-				if (!result[path]) {
-					result[path] = {};
-				}
-				result[path][route] = {
+				console.warn([method]);
+				result[index] = {
+					path: route,
+					module: module,
 					controller: controller,
 					action: action,
-					method: method,
-					path: `${self._path}/modules/${module}`,
 					appearance: appearance,
 				}
 			})
