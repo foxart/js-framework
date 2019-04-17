@@ -132,11 +132,11 @@ exports.https = function (options, data, callback) {
 };
 
 /**
- * @server1.deprecated
+ * @deprecated
  * @param protocol
  * @param options
  * @param data
- * @returns {Promise<any>}
+ * @returns {Promise<void>}
  */
 function requestPromise(protocol, options, data) {
 	// server1.console.info(arguments);

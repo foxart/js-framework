@@ -299,7 +299,7 @@ module.exports = function (configuration) {
 	 * @param filter
 	 * @param data
 	 * @param options
-	 * @returns {Promise<module.FaPromise>}
+	 * @return {Promise<void>}
 	 */
 	module.updateOne = function (collection, filter, data, options) {
 		return new Promise(async function (resolve, reject) {

@@ -27,19 +27,35 @@ class FaServerHttpContentType {
 	}
 
 	checkJson(contentType) {
-		return contentType.indexOf(this.json) === 0;
+		if (contentType) {
+			return contentType.indexOf(this.json) === 0;
+		} else {
+			return false;
+		}
 	}
 
 	checkMultipart(contentType) {
-		return contentType.indexOf(this.multipart) === 0;
+		if (contentType) {
+			return contentType.indexOf(this.multipart) === 0;
+		} else {
+			return false;
+		}
 	}
 
 	checkUrlencoded(contentType) {
-		return contentType.indexOf(this.urlencoded) === 0;
+		if (contentType) {
+			return contentType.indexOf(this.urlencoded) === 0;
+		} else {
+			return false;
+		}
 	}
 
 	checkXml(contentType) {
-		return contentType.indexOf(this.xml) === 0;
+		if (contentType) {
+			return contentType.indexOf(this.xml) === 0;
+		} else {
+			return false;
+		}
 	}
 }
 
