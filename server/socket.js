@@ -168,7 +168,7 @@ class FaServerSocket {
 	message(socket, data) {
 		socket.send(data);
 	}
-};
+}
 // let os = require("os");
 // let ifaces = os.networkInterfaces();
 // server1.console.info(ifaces);

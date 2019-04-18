@@ -52,8 +52,10 @@ module.exports = class deprecatedModel {
 					try {
 						result_function = element.call(item, item, options);
 					} catch (e) {
-						result_function = null;
-						console.error(e);
+						// result_function = null;
+						let error = new FaError(e);
+						error.setName(index);
+						throw error;
 					}
 					result[index] = result_function !== undefined ? result_function : null;
 				} else if (item) {
