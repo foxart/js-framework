@@ -2,7 +2,7 @@
 /*node*/
 const Buffer = require("buffer").Buffer;
 const Http = require("http");
-// const Https = require("https");
+const Https = require("https");
 /** @type {*} */
 const MimeTypes = require("mime-types");
 /*fa-nodejs*/
@@ -23,13 +23,15 @@ class FaServerHttp {
 		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
 		// console.info(configuration);
 		this._FaFile = new FaBaseFile(this.Configuration.path);
+		this._FaFilePrivate = new FaBaseFile(this.Configuration.private);
 		this._FaRouter = new FaBaseRouter(this);
 		this._FaAssetRouter = new FaBaseRouter(this);
 		this._FaHttpResponse = FaHttpResponse;
 		this._FaServerHttpRequest = new FaServerHttpRequestClass(this.Configuration.converter);
 		this._FaHttpContentType = new FaServerHttpContentType();
 		this._FaHttpStatusCode = new FaServerHttpStatusCode();
-		this.HttpServer = this._createHttp(this.Configuration);
+		// this.HttpServer = this._createHttp(this.Configuration);
+		this._createHttp(this.Configuration);
 		this._trace = FaTrace.trace(1);
 	}
 
@@ -58,6 +60,10 @@ class FaServerHttp {
 	 */
 	get File() {
 		return this._FaFile;
+	}
+
+	get FilePrivate() {
+		return this._FaFilePrivate;
 	}
 
 	/**
@@ -99,28 +105,28 @@ class FaServerHttp {
 	 * @private
 	 */
 	_createHttp(configuration) {
-		let context = this;
-		return Http.createServer(function (req, res) {
-			context._listenHttp(req, res);
+		let self = this;
+
+		console.info(configuration, process.cwd());
+		const options = {
+			key: this.FilePrivate.readFileSync("ssl/server.key"),
+			cert: this.FilePrivate.readFileSync("ssl/server.cert")
+		};
+		Https.createServer(options, function (req, res) {
+			self._listenHttp(req, res);
+		}).listen(443, function () {
+			console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
+				return `{${key}}`;
+			}), Object.values(configuration)));
+		});
+		// return _HttpsServer;
+		Http.createServer(function (req, res) {
+			self._listenHttp(req, res);
 		}).listen(configuration.port, function () {
 			console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
 				return `{${key}}`;
 			}), Object.values(configuration)));
 		});
-		// let File = require("../base/file")();
-		// const options = {
-		// 	key: File.readFileSync("/usr/src/ssl/server.key"),
-		// 	cert: File.readFileSync("/usr/src/ssl/server.cert")
-		// };
-		// let _HttpsServer = Https.createServer(options, function (req, res) {
-		// 	console.error("XXX");
-		// 	context._listenHttp(req, res);
-		// }).listen(443, function () {
-		// 	console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
-		// 		return `{${key}}`;
-		// 	}), Object.values(configuration)));
-		// });
-		// return _HttpServer;
 	}
 
 	/**
