@@ -4,6 +4,7 @@ const FaBaseError = require("fa-nodejs/base/error");
 const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 const FaApplicationController = require("fa-nodejs/application/controller");
+const FaHttpResponse = require("fa-nodejs/server/http-response");
 
 class FaApplicationControllerHttp extends FaApplicationController {
 	/**
@@ -13,7 +14,8 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 */
 	constructor(FaServerHttp, views_path = null) {
 		super(views_path);
-		this._FaServerHttp = FaServerHttp;
+		this._response = new FaHttpResponse();
+		this._FaServer = FaServerHttp;
 		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
 	}
 
@@ -35,48 +37,58 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {FaServerHttp}
 	 */
 	get http() {
-		return this._FaServerHttp;
+		return this._FaServer;
 	}
 
 	/**
 	 *
-	 * @param content {*}
-	 * @param type {string|null}
-	 * @param status {string|null}
-	 * @return {FaServerHttpResponse}
+	 * @param data {*}
+	 * @return {*}
 	 */
-	render(content, type = null, status = null) {
-		return this._FaServerHttp.response(content, type, status);
+	render(data) {
+		return this._response.create(data);
+	}
+
+	/**
+	 *
+	 * @param data {*}
+	 * @param type {FaHttpContentType}
+	 * @param status {FaHttpStatusCode}
+	 * @param headers {object}
+	 * @return {*}
+	 */
+	renderCustom(data, type = null, status = null, headers = null) {
+		return this._response.create(data, type, status, headers);
 	}
 
 	/**
 	 *
 	 * @param data {Object}
-	 * @param status {string|null}
-	 * @return {FaServerHttpResponse}
+	 * @param status {FaHttpStatusCode}
+	 * @return {*}
 	 */
 	renderJson(data, status = null) {
-		return this._FaServerHttp.response(JSON.stringify(data, null, 128), this._FaServerHttp.type.json, status);
-	}
-
-	/**
-	 *
-	 * @param data {string}
-	 * @param status {string|null}
-	 * @return {FaServerHttpResponse}
-	 */
-	renderHtml(data, status = null) {
-		return this._FaServerHttp.response(data, this._FaServerHttp.type.html, status);
+		return this._response.create(data, this._FaServer.type.json, status);
 	}
 
 	/**
 	 *
 	 * @param data {Object}
-	 * @param status {string|null}
-	 * @return {FaServerHttpResponse}
+	 * @param status {number|null}
+	 * @return {*}
+	 */
+	renderHtml(data, status = null) {
+		return this._response.create(data, this._FaServer.type.html);
+	}
+
+	/**
+	 *
+	 * @param data {Object}
+	 * @param status {FaHttpStatusCode}
+	 * @return {*}
 	 */
 	renderXml(data, status = null) {
-		return this._FaServerHttp.response(data, this._FaServerHttp.type.xml, status);
+		return this._response.create(data, this._FaServer.type.xml, status);
 	}
 
 	/**
@@ -98,7 +110,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	actionIndex(data) {
-		return this._FaServerHttp.response(data, this._FaServerHttp.type.xml);
+		return this.renderXml(data);
 	}
 }
 

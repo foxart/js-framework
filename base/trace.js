@@ -1,5 +1,6 @@
 "use strict";
-class FaTrace {
+
+class FaBaseTrace {
 	/**
 	 *
 	 * @param stack {Array}
@@ -51,9 +52,13 @@ class FaTrace {
 	 */
 	static trace(level = null) {
 		let stack = new Error()["stack"];
-		let data = stack.split("\n");
+		let data = stack.split("\n").filter(function (item) {
+			if (item) {
+				return item;
+			}
+		});
 		data.splice(0, 2);
-		let result = FaTrace._extractFromStack(data);
+		let result = FaBaseTrace._extractFromStack(data);
 		if (level !== null) {
 			return result[level];
 		} else {
@@ -68,9 +73,13 @@ class FaTrace {
 	 * @return {Array|Object}
 	 */
 	static stack(stack, level = null) {
-		let data = stack.split("\n");
+		let data = stack.split("\n").filter(function (item) {
+			if (item) {
+				return item;
+			}
+		});
 		data.splice(0, 1);
-		let result = FaTrace._extractFromStack(data);
+		let result = FaBaseTrace._extractFromStack(data);
 		if (level !== null) {
 			return result[level];
 		} else {
@@ -118,8 +127,9 @@ class FaTrace {
 	// 	return result;
 	// }
 }
+
 /**
  *
- * @type {FaTrace}
+ * @type {FaBaseTrace}
  */
-module.exports = FaTrace;
+module.exports = FaBaseTrace;

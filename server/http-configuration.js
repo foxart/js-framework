@@ -28,10 +28,10 @@ class FaHttpConfiguration {
 	 */
 	get _http() {
 		return {
-			protocol: 'http',
-			host: 'localhost',
+			protocol: "http",
+			host: "localhost",
 			port: 80,
-			path: '/web',
+			path: "/web",
 			converter: {
 				// fromXml: this._converterFromXml,
 				// toXml: this._converterToXml,

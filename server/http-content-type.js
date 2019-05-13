@@ -1,5 +1,6 @@
 "use strict";
-const a = 1;
+/*fa*/
+const FaConverter = require("fa-nodejs/base/converter");
 
 class FaServerHttpContentType {
 	// https://mediatemple.net/community/products/dv/204403964/mime-types
@@ -14,8 +15,15 @@ class FaServerHttpContentType {
 		this.text = "text/plain";
 		this.urlencoded = "application/x-www-form-urlencoded";
 		this.xml = "application/xml";
+		this._FaConverter = new FaConverter();
 	}
 
+	// todo remove
+	/**
+	 *
+	 * @param contentType
+	 * @return {*}
+	 */
 	getType(contentType) {
 		let result = contentType;
 		Object.entries(this).map(function ([key, value]) {
@@ -56,6 +64,34 @@ class FaServerHttpContentType {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 *
+	 * @param data
+	 * @param type
+	 */
+	convertToType(data, type) {
+		let result;
+		switch (type) {
+			case this.json:
+				result = this._FaConverter.toJson(data);
+				break;
+			case this.html:
+				result = this._FaConverter.toHtml(data);
+				break;
+			case this.urlencoded:
+				result = this._FaConverter.toUrlencoded(data);
+				// console.error(data, result);
+				break;
+			case this.xml:
+				result = this._FaConverter.toXml(data);
+				break;
+			default:
+				result = data;
+		}
+		// console.error([data, type, result]);
+		return result;
 	}
 }
 

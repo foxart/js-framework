@@ -9,6 +9,9 @@ const Querystring = require('querystring');
 const FaBaseAdapter = require("fa-nodejs/base/adapter");
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
+const FaHttpResponse = require("fa-nodejs/server/http-response");
+const FaHttpContentType = require("fa-nodejs/server/http-content-type");
+const FaConverter = require("fa-nodejs/base/converter");
 
 /**
  *
@@ -42,6 +45,9 @@ class FaBaseCurl {
 	 */
 	constructor(options = {}) {
 		this._trace = FaTrace.trace(1);
+		this._FaHttpResponse = new FaHttpResponse();
+		this._ContentType = new FaHttpContentType();
+		this._Converter = new FaConverter();
 		this.options = options;
 	}
 
@@ -102,6 +108,34 @@ class FaBaseCurl {
 		this._options = this._adapter.apply(options);
 	}
 
+	dataFromType(body, type) {
+		let result;
+		if (type) {
+			if (this._ContentType.checkJson(type)) {
+				result = this._Converter.fromJson(body);
+			} else if (this._ContentType.checkXml(type)) {
+				result = this._Converter.fromXml(body);
+			} else if (this._ContentType.checkUrlencoded(type)) {
+				console.error(body, type);
+				result = this._Converter.fromUrlEncoded(body);
+			} else {
+				result = body;
+			}
+		} else {
+			if (this._Converter.isJson(body)) {
+				result = this._Converter.fromJson(body);
+			} else if (this._Converter.isXml(body)) {
+				result = this._Converter.fromXml(body);
+			} else if (this._Converter.checkUrlEncoded(type)) {
+				console.error(type, body, "XXX");
+				result = this._Converter.fromUrlEncoded(body);
+			} else {
+				result = body;
+			}
+		}
+		return result;
+	}
+
 	async execute(data) {
 		let self = this;
 		let request = {
@@ -119,7 +153,9 @@ class FaBaseCurl {
 				if (typeof data === "string") {
 					Request.write(data);
 				} else {
-					Request.write(Querystring.stringify(data));
+					// console.warn([data]);
+					// Request.write(Querystring.stringify(data));
+					Request.write(self._Converter.toUrlencoded(data));
 				}
 			}
 			Request.on("socket", function (Socket) {
@@ -131,15 +167,19 @@ class FaBaseCurl {
 				});
 			});
 			Request.on("response", function (Response) {
-				console.info(Response.headers);
-				console.info(Response.statusCode);
 				Response.setEncoding(self.options.encoding);
 				let body = "";
 				Response.on("data", function (chunk) {
 					body += chunk;
 				});
 				Response.on("end", function () {
-					resolve(body);
+					let data = self.dataFromType(body, Response.headers["content-type"]);
+					// console.info(body, Response.headers["content-type"], data);
+					// console.warn(self.dataFromType("body", Response.headers["content-type"]));
+					// console.warn(Response.headers["content-type"], body, self.dataFromType(body, Response.headers["content-type"]));
+					// console.info(Response.statusCode);
+					let result = self._FaHttpResponse.create(data, Response.headers["content-type"], Response.statusCode, Response.headers);
+					resolve(result);
 				});
 			});
 			Request.on("error", function (e) {

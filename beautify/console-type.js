@@ -19,7 +19,7 @@ class FaBeautifyConsoleType extends FaBeautifyConsole {
 			case "json":
 				return `${tab}${FCH.effect.bold}${key}${FCH.effect.reset} ${FCH.bg.green}${FCH.color.white}${dimension}${FCH.effect.reset}: `;
 			case "xml":
-				return `${tab}${FCH.effect.bold}${key}${FCH.effect.reset} ${FCH.bg.red}${FCH.color.white}${dimension}${FCH.effect.reset}: `;
+				return `${tab}${FCH.effect.bold}${key}${FCH.effect.reset} ${FCH.bg.yellow}${FCH.color.black}${dimension}${FCH.effect.reset}: `;
 			default:
 				return `${tab}${FCH.effect.bold}${key}${FCH.effect.reset} ${FCH.effect.dim}${dimension}${FCH.effect.reset}: `;
 		}

@@ -137,6 +137,7 @@ class FaBaseFile {
 	readFileSync(filename) {
 		let trace = FaBaseTrace.trace(1);
 		try {
+			// console.error(this.getPath(filename));
 			return Fs.readFileSync(this.getPath(filename), {});
 		} catch (e) {
 			throw FaBaseFile._Error(e).setTrace(trace);

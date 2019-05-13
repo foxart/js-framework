@@ -6,17 +6,18 @@ const FastXmlParser = require("fast-xml-parser");
 const QueryString = require("qs");
 /*fa*/
 const FaBeautify = require("fa-nodejs/beautify");
-// const FaError = require("fa-nodejs/base/error");
-// const FaBaseTrace = require("fa-nodejs/base/trace");
+
+// const FaHttpContentType = require("fa-nodejs/server/http-content-type");
 class FaBaseConverter {
 	/**
 	 *
 	 * @param configuration {{fromXml: *, toXml: *}}
 	 */
-	constructor(configuration) {
+	constructor(configuration = {}) {
 		// this._trace = FaBaseTrace.trace();
 		this._fromXml = configuration.fromXml;
 		this._toXml = configuration.toXml;
+		// this._contentType = new FaHttpContentType();
 	}
 
 	/**
@@ -52,7 +53,11 @@ class FaBaseConverter {
 	 * @returns {boolean}
 	 */
 	isXml(data) {
-		return FastXmlParser.validate(data) === true;
+		if (data) {
+			return FastXmlParser.validate(data) === true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -71,7 +76,7 @@ class FaBaseConverter {
 	 */
 	toJson(data) {
 		// data = data.byteLength ? data.toString() : data;
-		return this.isString(data) ? data : JSON.stringify(data);
+		return this.isString(data) ? data : JSON.stringify(data, null, 128);
 	}
 
 	/**
@@ -91,21 +96,50 @@ class FaBaseConverter {
 	 * @return {string}
 	 */
 	toXml(data, options = {}) {
-		function filter(obj) {
+		function filter(data) {
+			// return data;
 			let result = {};
-			for (let key in obj) {
-				if (obj.hasOwnProperty(key)) {
-					if (obj[key] === null) {
-						result[key] = "null";
-					} else if (obj[key] === undefined) {
-						result[key] = "undefined";
-					} else if (typeof obj[key] === "object") {
-						result[key] = filter(obj[key]);
-					} else {
-						result[key] = obj[key];
+			if (data === null) {
+				result = "null";
+			} else if (data === undefined) {
+				result = "undefined";
+			} else if (typeof data === "object") {
+				// result = filter(obj);
+				for (let key in data) {
+					if (data.hasOwnProperty(key)) {
+						console.log(key);
+						result[key] = filter(data[key]);
 					}
 				}
+			} else {
+				console.info(data,typeof data);
+				result = data;
 			}
+			// if (typeof obj === "object") {
+			// 	for (let key in obj) {
+			// 		if (obj.hasOwnProperty(key)) {
+			// 			if (obj[key] === null) {
+			// 				result[key] = "null";
+			// 			} else if (obj[key] === undefined) {
+			// 				result[key] = "undefined";
+			// 			} else if (typeof obj[key] === "object") {
+			// 				console.log(filter(key, obj[key]));
+			// 				result[key] = filter(obj[key]);
+			// 			} else {
+			// 				result[key] = obj[key];
+			// 			}
+			// 		}
+			// 	}
+			// } else {
+			// 	if (obj === null) {
+			// 		result = "null";
+			// 	} else if (obj === undefined) {
+			// 		result = "undefined";
+			// 	} else {
+			// 		result = obj;
+			// 	}
+			// }
+			// console.info(result);
 			return result;
 		}
 
@@ -115,25 +149,28 @@ class FaBaseConverter {
 		} else {
 			xml["xml"] = filter(data);
 		}
-		// console.info(data);
+		console.error(xml.xml.name, xml.xml.message, xml.xml.trace);
+		// log("toXml", xml);
 		return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml);
 	}
 
-	// /**
-	//  *
-	//  * @param data {object|string}
-	//  * @return {string}
-	//  */
-	// toString(data) {
-	// 	return this.isString(data) ? data : FaBeautify.extended(data);
-	// }
+	checkUrlEncoded(data) {
+		console.error(data, typeof this.fromUrlEncoded(data));
+		return typeof this.fromUrlEncoded(data) === "object";
+		// if (data) {
+		// } else {
+		// 	return false;
+		// }
+	}
+
 	/**
 	 *
 	 * @param data {string}
 	 * @return {object|string}
 	 */
 	fromUrlEncoded(data) {
-		return QueryString.parse(data);
+		return QueryString.parse(decodeURIComponent(data));
+		// return QueryString.parse(data);
 	}
 
 	/**
@@ -141,7 +178,8 @@ class FaBaseConverter {
 	 * @param data {object|string}
 	 */
 	toUrlencoded(data) {
-		return (encodeURIComponent(QueryString.stringify(data)));
+		return encodeURIComponent(QueryString.stringify(data));
+		// return QueryString.stringify(data);
 	}
 
 	/**
@@ -159,4 +197,3 @@ class FaBaseConverter {
  * @type {FaBaseConverter}
  */
 module.exports = FaBaseConverter;
-

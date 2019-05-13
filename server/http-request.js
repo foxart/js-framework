@@ -144,15 +144,16 @@ class FaHttpRequestClass {
 		let url = Url.parse(req.url);
 		let post = null;
 		let files = null;
-		let contentType = req.headers["content-type"];
+		// let type = req.headers["content-type"];
+		let type = req.headers["accept"];
 		if (["patch", "post", "put"].has(req.method.toLowerCase())) {
-			if (this._contentType.checkMultipart(contentType)) {
+			if (this._contentType.checkMultipart(type)) {
 				({files, post} = this.parseMultipart(body));
-			} else if (this._contentType.checkJson(contentType)) {
+			} else if (this._contentType.checkJson(type)) {
 				post = this._converter.fromJson(body);
-			} else if (this._contentType.checkXml(contentType)) {
+			} else if (this._contentType.checkXml(type)) {
 				post = this._converter.fromXml(body);
-			} else if (this._contentType.checkUrlencoded(contentType)) {
+			} else if (this._contentType.checkUrlencoded(type)) {
 				post = this._converter.fromUrlEncoded(body);
 			} else {
 				post = body;
