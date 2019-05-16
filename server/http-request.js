@@ -3,14 +3,14 @@
 const Cookie = require("cookie");
 const Url = require("url");
 /*fa*/
-const FaServerHttpContentType = require("fa-nodejs/server/http-content-type");
+const FaHttpContentType = require("fa-nodejs/server/http-content-type");
 const FaBaseConverter = require("fa-nodejs/base/converter");
 /*variables*/
 const BODY_SEPARATOR = "\r\n"; // RFC2046
 const SECTION_SEPARATOR = "\r\n\r\n"; // RFC2046
 const HEADER_SEPARATOR = ":"; // RFC2046
 const PARAMETER_SEPARATOR = "="; // RFC2046
-class FaHttpRequestClass {
+class FaHttpRequest {
 	/**
 	 *
 	 * @param conf
@@ -23,7 +23,7 @@ class FaHttpRequestClass {
 	constructor(conf, method, headers, url, body) {
 		this._Cookie = Cookie;
 		this._FaBaseConverter = new FaBaseConverter(conf);
-		this._FaServerHttpContentType = new FaServerHttpContentType();
+		this._FaHttpContentType = new FaHttpContentType();
 	}
 
 	/**
@@ -37,11 +37,11 @@ class FaHttpRequestClass {
 
 	/**
 	 *
-	 * @return {FaServerHttpContentType}
+	 * @return {FaHttpContentType}
 	 * @private
 	 */
-	get _contentType() {
-		return this._FaServerHttpContentType;
+	get _type() {
+		return this._FaHttpContentType;
 	}
 
 	_parseCookie(cookies) {
@@ -53,7 +53,7 @@ class FaHttpRequestClass {
 		}
 	}
 
-	_parseClient(req) {
+	parseClient(req) {
 		let ip = (req.headers['x-forwarded-for'] || '').split(',').pop()
 			|| req.connection.remoteAddress
 			|| req.socket.remoteAddress
@@ -125,13 +125,17 @@ class FaHttpRequestClass {
 					result = parameters[0][1];
 				}
 			} else if (key === "content-type") {
-				result["type"] = this._contentType.getType(value);
+				result["type"] = this._type.getType(value);
 			} else {
 				throw new Error(`unknown multipart section type: ${key}`);
 				// result[key] = value;
 			}
 		}
 		return result;
+	}
+
+	parseUrl(url) {
+		return Url.parse(url);
 	}
 
 	/**
@@ -144,23 +148,23 @@ class FaHttpRequestClass {
 		let url = Url.parse(req.url);
 		let post = null;
 		let files = null;
-		// let type = req.headers["content-type"];
-		let type = req.headers["accept"];
+		let type = req.headers["content-type"] || req.headers["accept"];
 		if (["patch", "post", "put"].has(req.method.toLowerCase())) {
-			if (this._contentType.checkMultipart(type)) {
+			if (this._type.checkMultipart(type)) {
 				({files, post} = this.parseMultipart(body));
-			} else if (this._contentType.checkJson(type)) {
+			} else if (type.includes(this._type.json)) {
 				post = this._converter.fromJson(body);
-			} else if (this._contentType.checkXml(type)) {
+			} else if (this._type.checkXml(type)) {
 				post = this._converter.fromXml(body);
-			} else if (this._contentType.checkUrlencoded(type)) {
+			} else if (this._type.checkUrlencoded(type)) {
 				post = this._converter.fromUrlEncoded(body);
 			} else {
 				post = body;
 			}
 		}
+		console.error(type, body);
 		return {
-			client: this._parseClient(req),
+			client: this.parseClient(req),
 			headers: req.headers,
 			method: req.method.toLowerCase(),
 			path: url.pathname,
@@ -176,6 +180,6 @@ class FaHttpRequestClass {
 
 /**
  *
- * @type {FaHttpRequestClass}
+ * @type {FaHttpRequest}
  */
-module.exports = FaHttpRequestClass;
+module.exports = FaHttpRequest;

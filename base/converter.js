@@ -17,7 +17,7 @@ class FaBaseConverter {
 		// this._trace = FaBaseTrace.trace();
 		this._fromXml = configuration.fromXml;
 		this._toXml = configuration.toXml;
-		// this._contentType = new FaHttpContentType();
+		// this._type = new FaHttpContentType();
 	}
 
 	/**
@@ -50,6 +50,15 @@ class FaBaseConverter {
 	/**
 	 *
 	 * @param data {string}
+	 * @return {boolean}
+	 */
+	isUrlEncoded(data) {
+		return typeof this.fromUrlEncoded(data) === "object";
+	}
+
+	/**
+	 *
+	 * @param data {string}
 	 * @returns {boolean}
 	 */
 	isXml(data) {
@@ -75,8 +84,37 @@ class FaBaseConverter {
 	 * @return {object|string}
 	 */
 	toJson(data) {
-		// data = data.byteLength ? data.toString() : data;
 		return this.isString(data) ? data : JSON.stringify(data, null, 128);
+	}
+
+	/**
+	 *
+	 * @param data {object}
+	 * @private
+	 */
+	_filterXml(data) {
+		// return data;
+		let self = this;
+		let result = {};
+		// if (data === undefined) {
+		// 	// result = "undefined";
+		// } else
+		if (data === null) {
+			result = "null";
+		} else if (Array.isArray(data)) {
+			let res = [];
+			data.forEach(function (value, key) {
+				res[key] = self._filterXml(value);
+			});
+			result = res;
+		} else if (typeof data === "object") {
+			Object.entries(data).forEach(function ([key, value]) {
+				result[key] = self._filterXml(value);
+			});
+		} else {
+			result = data;
+		}
+		return result;
 	}
 
 	/**
@@ -86,7 +124,8 @@ class FaBaseConverter {
 	 * @return {object|string}
 	 */
 	fromXml(data, options = {}) {
-		return this.isXml(data) ? FastXmlParser.parse(data, Object.assign({}, this._fromXml, options)) : {};
+		let result = this.isXml(data) ? FastXmlParser.parse(data, Object.assign({}, this._fromXml, options)) : {};
+		return result["xml"] ? result["xml"] : result;
 	}
 
 	/**
@@ -96,71 +135,28 @@ class FaBaseConverter {
 	 * @return {string}
 	 */
 	toXml(data, options = {}) {
-		function filter(data) {
-			// return data;
-			let result = {};
-			if (data === null) {
-				result = "null";
-			} else if (data === undefined) {
-				result = "undefined";
-			} else if (typeof data === "object") {
-				// result = filter(obj);
-				for (let key in data) {
-					if (data.hasOwnProperty(key)) {
-						console.log(key);
-						result[key] = filter(data[key]);
-					}
-				}
-			} else {
-				console.info(data,typeof data);
-				result = data;
-			}
-			// if (typeof obj === "object") {
-			// 	for (let key in obj) {
-			// 		if (obj.hasOwnProperty(key)) {
-			// 			if (obj[key] === null) {
-			// 				result[key] = "null";
-			// 			} else if (obj[key] === undefined) {
-			// 				result[key] = "undefined";
-			// 			} else if (typeof obj[key] === "object") {
-			// 				console.log(filter(key, obj[key]));
-			// 				result[key] = filter(obj[key]);
-			// 			} else {
-			// 				result[key] = obj[key];
-			// 			}
-			// 		}
-			// 	}
-			// } else {
-			// 	if (obj === null) {
-			// 		result = "null";
-			// 	} else if (obj === undefined) {
-			// 		result = "undefined";
-			// 	} else {
-			// 		result = obj;
-			// 	}
-			// }
-			// console.info(result);
-			return result;
-		}
-
+		// data = undefined;
+		// data = 0;
+		// data = 1;
+		// data = false;
+		// data = true;
+		// data = {a: undefined};
+		// data = {a: null};
+		// data = {a: true};
+		// data = {xml: false};
+		// data = {xml: undefined};
+		// data = null;
 		let xml = {};
-		if (data["xml"]) {
-			xml = filter(data);
+		data = data === null ? {} : data;
+		if (typeof data === "object" && data.hasOwnProperty("xml") === false) {
+			xml["xml"] = data;
+		} else if (typeof data !== "object") {
+			xml["xml"] = data;
 		} else {
-			xml["xml"] = filter(data);
+			xml = data;
 		}
-		console.error(xml.xml.name, xml.xml.message, xml.xml.trace);
-		// log("toXml", xml);
-		return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml);
-	}
-
-	checkUrlEncoded(data) {
-		console.error(data, typeof this.fromUrlEncoded(data));
-		return typeof this.fromUrlEncoded(data) === "object";
-		// if (data) {
-		// } else {
-		// 	return false;
-		// }
+		// console.warn(xml);
+		return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(this._filterXml(xml));
 	}
 
 	/**
@@ -177,7 +173,7 @@ class FaBaseConverter {
 	 *
 	 * @param data {object|string}
 	 */
-	toUrlencoded(data) {
+	toUrlEncoded(data) {
 		return encodeURIComponent(QueryString.stringify(data));
 		// return QueryString.stringify(data);
 	}

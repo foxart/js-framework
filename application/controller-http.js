@@ -4,7 +4,6 @@ const FaBaseError = require("fa-nodejs/base/error");
 const FaBaseTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 const FaApplicationController = require("fa-nodejs/application/controller");
-const FaHttpResponse = require("fa-nodejs/server/http-response");
 
 class FaApplicationControllerHttp extends FaApplicationController {
 	/**
@@ -14,7 +13,6 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 */
 	constructor(FaServerHttp, views_path = null) {
 		super(views_path);
-		this._response = new FaHttpResponse();
 		this._FaServer = FaServerHttp;
 		this._FaTemplateClass = new FaApplicationTemplate(views_path === null ? this._getTemplatePath : views_path);
 	}
@@ -46,7 +44,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	render(data) {
-		return this._response.create(data);
+		return this.http._createResponse(data);
 	}
 
 	/**
@@ -58,7 +56,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	renderCustom(data, type = null, status = null, headers = null) {
-		return this._response.create(data, type, status, headers);
+		return this.http._createResponse(data, type, status, headers);
 	}
 
 	/**
@@ -68,17 +66,17 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	renderJson(data, status = null) {
-		return this._response.create(data, this._FaServer.type.json, status);
+		return this.http._createResponse(data, this._FaServer.type.json, status);
 	}
 
 	/**
 	 *
 	 * @param data {Object}
-	 * @param status {number|null}
+	 * @param status {FaHttpStatusCode}
 	 * @return {*}
 	 */
 	renderHtml(data, status = null) {
-		return this._response.create(data, this._FaServer.type.html);
+		return this.http._createResponse(data, this._FaServer.type.html, status);
 	}
 
 	/**
@@ -88,7 +86,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @return {*}
 	 */
 	renderXml(data, status = null) {
-		return this._response.create(data, this._FaServer.type.xml, status);
+		return this.http._createResponse(data, this._FaServer.type.xml, status);
 	}
 
 	/**

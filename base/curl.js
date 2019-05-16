@@ -3,14 +3,15 @@
 const Dns = require('dns');
 const Http = require('http');
 const Https = require('https');
-const Querystring = require('querystring');
+// const Querystring = require('querystring');
 // const UtilsExtend = require('utils-extend');
 /*fa*/
 const FaBaseAdapter = require("fa-nodejs/base/adapter");
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
-const FaHttpResponse = require("fa-nodejs/server/http-response");
+// const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpContentType = require("fa-nodejs/server/http-content-type");
+const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
 const FaConverter = require("fa-nodejs/base/converter");
 
 /**
@@ -44,10 +45,9 @@ class FaBaseCurl {
 	 * @param options {{path: string, headers: {}, protocol: string, hostname: string, method: string, port: number, encoding: string, timeout: number}}
 	 */
 	constructor(options = {}) {
-		this._trace = FaTrace.trace(1);
-		this._FaHttpResponse = new FaHttpResponse();
 		this._ContentType = new FaHttpContentType();
-		this._Converter = new FaConverter();
+		this._StatusCode = new FaHttpStatusCode();
+		this._FaConverter = new FaConverter();
 		this.options = options;
 	}
 
@@ -88,7 +88,7 @@ class FaBaseCurl {
 					return this["headers"] ? this["headers"] : {}
 				},
 				encoding: function () {
-					return this["encoding"] ? this["encoding"] : "utf8" //utf8, binary
+					return this["encoding"] ? this["encoding"] : null //utf8, binary, null (buffer)
 				},
 				timeout: function () {
 					return this["timeout"] ? this["timeout"] : 5000
@@ -96,6 +96,15 @@ class FaBaseCurl {
 			});
 		}
 		return this._FaBaseAdapter;
+	}
+
+	/**
+	 *
+	 * @return {FaBaseConverter}
+	 * @private
+	 */
+	get _converter() {
+		return this._FaConverter
 	}
 
 	get options() {
@@ -108,36 +117,71 @@ class FaBaseCurl {
 		this._options = this._adapter.apply(options);
 	}
 
-	dataFromType(body, type) {
+	_dataToType(data, type) {
 		let result;
-		if (type) {
-			if (this._ContentType.checkJson(type)) {
-				result = this._Converter.fromJson(body);
-			} else if (this._ContentType.checkXml(type)) {
-				result = this._Converter.fromXml(body);
-			} else if (this._ContentType.checkUrlencoded(type)) {
-				console.error(body, type);
-				result = this._Converter.fromUrlEncoded(body);
-			} else {
-				result = body;
-			}
+		if (data instanceof Buffer) {
+			result = data;
+		} else if (data instanceof String) {
+			result = data;
 		} else {
-			if (this._Converter.isJson(body)) {
-				result = this._Converter.fromJson(body);
-			} else if (this._Converter.isXml(body)) {
-				result = this._Converter.fromXml(body);
-			} else if (this._Converter.checkUrlEncoded(type)) {
-				console.error(type, body, "XXX");
-				result = this._Converter.fromUrlEncoded(body);
+			type = type ? type : "";
+			// if (type.indexOf(this._ContentType.multipart) === 0) {
+			// ({files, post: result} = this.parseMultipart(data));
+			// } else
+			if (type.includes(this._ContentType.json)) {
+				result = this._converter.toJson(data);
+			} else if (type.includes(this._ContentType.xml)) {
+				result = this._converter.toXml(data);
+			} else if (type.includes(this._ContentType.urlencoded)) {
+				result = this._converter.toUrlEncoded(data);
 			} else {
-				result = body;
+				result = data.toString();
 			}
+		}
+		return result ? result : null;
+	}
+
+	_dataFromType(data, type) {
+		let result;
+		if (data instanceof Buffer) {
+			result = data;
+		} else if (data instanceof String) {
+			result = data;
+		} else {
+			type = type ? type : "";
+			// if (type.indexOf(this._ContentType.multipart) === 0) {
+			// ({files, post: result} = this.parseMultipart(data));
+			// } else
+			if (type.includes(this._ContentType.json)) {
+				result = this._converter.fromJson(data);
+			} else if (type.includes(this._ContentType.xml)) {
+				result = this._converter.fromXml(data);
+			} else if (type.includes(this._ContentType.urlencoded)) {
+				result = this._converter.fromUrlEncoded(data);
+			} else {
+				result = data;
+			}
+		}
+		return result ? result : null;
+	}
+
+	_createResponse(body, type = null, status = null, headers = null) {
+		let result = {body, type, status, headers};
+		if (result.headers && result.headers["content-type"]) {
+			result.type = headers["content-type"];
+		}
+		if (!result.status) {
+			result.status = this._StatusCode.ok;
+		}
+		if (!result.headers) {
+			result.headers = {};
 		}
 		return result;
 	}
 
 	async execute(data) {
 		let self = this;
+		let trace = FaTrace.trace(1);
 		let request = {
 			hostname: this.options.hostname,
 			port: this.options.port,
@@ -148,44 +192,44 @@ class FaBaseCurl {
 		};
 		// checkHost(model).then(function () {
 		return new Promise(function (resolve, reject) {
-			let Request = self.options.protocol === "https" ? Https.request(request) : Http.request(request);
-			if (data && ["patch", "post", "put"].has(self.options.method)) {
-				if (typeof data === "string") {
-					Request.write(data);
-				} else {
-					// console.warn([data]);
-					// Request.write(Querystring.stringify(data));
-					Request.write(self._Converter.toUrlencoded(data));
-				}
+			let body;
+			if (["patch", "post", "put"].has(self.options.method)) {
+				body = self._dataToType(data, request.headers["content-type"] ||request.headers["accept"]);
+				console.warn(request.headers, data, body);
+			} else {
+				request.path = `${request.path}?${self._converter.toUrlEncoded(data)}`;
 			}
-			Request.on("socket", function (Socket) {
+			let req = self.options.protocol === "https" ? Https.request(request) : Http.request(request);
+			if (body) {
+				req.write(body);
+			}
+			req.on("socket", function (Socket) {
 				// self.options.timeout = 1;
 				Socket.setTimeout(self.options.timeout);
 				Socket.on("timeout", function () {
-					Request.abort();
-					reject(new FaError(`curl request timeout: ${self.options.timeout}`).setTrace(self._trace));
+					req.abort();
+					reject(`curl request timeout: ${self.options.timeout}`);
 				});
 			});
-			Request.on("response", function (Response) {
-				Response.setEncoding(self.options.encoding);
+			req.on("response", function (res) {
 				let body = "";
-				Response.on("data", function (chunk) {
+				res.setEncoding(self.options.encoding);
+				res.on("data", function (chunk) {
 					body += chunk;
 				});
-				Response.on("end", function () {
-					let data = self.dataFromType(body, Response.headers["content-type"]);
-					// console.info(body, Response.headers["content-type"], data);
-					// console.warn(self.dataFromType("body", Response.headers["content-type"]));
-					// console.warn(Response.headers["content-type"], body, self.dataFromType(body, Response.headers["content-type"]));
-					// console.info(Response.statusCode);
-					let result = self._FaHttpResponse.create(data, Response.headers["content-type"], Response.statusCode, Response.headers);
-					resolve(result);
+				res.on("end", function () {
+					let data = self._dataFromType(body, res.headers["content-type"]);
+					resolve(self._createResponse(data, res.headers["content-type"], res.statusCode, res.headers));
 				});
 			});
-			Request.on("error", function (e) {
-				reject(new FaError(e));
+			req.on("error", function (e) {
+				console.error(self.options);
+				reject(e);
 			});
-			Request.end();
+			req.end();
+		}).catch(function (e) {
+			// console.error(e);
+			throw new FaError(e).setTrace(trace);
 		});
 	}
 }

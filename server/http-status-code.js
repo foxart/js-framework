@@ -1,6 +1,6 @@
 "use strict";
 
-class FaServerHttpStatusCode {
+class FaHttpStatusCode {
 	constructor() {
 		//http
 		this.badRequest = 400;
@@ -23,6 +23,6 @@ class FaServerHttpStatusCode {
 
 /**
  *
- * @type {FaServerHttpStatusCode}
+ * @type {FaHttpStatusCode}
  */
-module.exports = FaServerHttpStatusCode;
+module.exports = FaHttpStatusCode;

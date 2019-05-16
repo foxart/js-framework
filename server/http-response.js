@@ -32,24 +32,22 @@ class FaServerHttpResponse {
 	 * @param status {FaHttpStatusCode}
 	 * @param headers {string|object|null}
 	 */
-	create(chunk, type = null, status = null, headers = null) {
+	create(chunk, type = null, status = null, headers = {}) {
 		let result = {chunk, type, status, headers};
-		// if (!result.type) {
-		// 	result.type = this._FaHttpContentType.xml;
-		// }
+		if (headers["content-type"]) {
+			result.type = headers["content-type"];
+		}
 		if (!result.status) {
 			result.status = this._FaHttpStatusCode.ok;
 		}
 		if (!result.headers) {
 			result.headers = {};
 		}
-		// console.log(arguments);
-		// console.info(result);
 		return result;
 	}
 
 	check(response) {
-		return !!(response && response["chunk"] && (response["type"] || response["type"] === null) && response["status"] && response["headers"]);
+		return !!(response && response.hasOwnProperty("chunk") && response.hasOwnProperty("type") && response.hasOwnProperty("status") && response.hasOwnProperty("headers"));
 	}
 }
 

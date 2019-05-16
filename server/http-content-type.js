@@ -1,8 +1,7 @@
 "use strict";
-/*fa*/
-const FaConverter = require("fa-nodejs/base/converter");
-
-class FaServerHttpContentType {
+// /*fa*/
+// const FaConverter = require("fa-nodejs/base/converter");
+class FaHttpContentType {
 	// https://mediatemple.net/community/products/dv/204403964/mime-types
 	constructor() {
 		this.bin = "application/octet-stream";
@@ -15,88 +14,60 @@ class FaServerHttpContentType {
 		this.text = "text/plain";
 		this.urlencoded = "application/x-www-form-urlencoded";
 		this.xml = "application/xml";
-		this._FaConverter = new FaConverter();
+		// this._converter = new FaConverter();
 	}
 
 	// todo remove
 	/**
 	 *
-	 * @param contentType
+	 * @param type
 	 * @return {*}
 	 */
-	getType(contentType) {
-		let result = contentType;
+	getType(type) {
+		let result = type;
 		Object.entries(this).map(function ([key, value]) {
-			if (contentType === value) {
+			if (type === value) {
 				result = key;
 			}
 		});
 		return result;
 	}
 
-	checkJson(contentType) {
-		if (contentType) {
-			return contentType.indexOf(this.json) === 0;
+	checkJson(type) {
+		if (type) {
+			return type.indexOf(this.json) === 0;
 		} else {
 			return false;
 		}
 	}
 
-	checkMultipart(contentType) {
-		if (contentType) {
-			return contentType.indexOf(this.multipart) === 0;
+	checkMultipart(type) {
+		if (type) {
+			return type.indexOf(this.multipart) === 0;
 		} else {
 			return false;
 		}
 	}
 
-	checkUrlencoded(contentType) {
-		if (contentType) {
-			return contentType.indexOf(this.urlencoded) === 0;
+	checkUrlencoded(type) {
+		if (type) {
+			return type.indexOf(this.urlencoded) === 0;
 		} else {
 			return false;
 		}
 	}
 
-	checkXml(contentType) {
-		if (contentType) {
-			return contentType.indexOf(this.xml) === 0;
+	checkXml(type) {
+		if (type) {
+			return type.indexOf(this.xml) === 0;
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 *
-	 * @param data
-	 * @param type
-	 */
-	convertToType(data, type) {
-		let result;
-		switch (type) {
-			case this.json:
-				result = this._FaConverter.toJson(data);
-				break;
-			case this.html:
-				result = this._FaConverter.toHtml(data);
-				break;
-			case this.urlencoded:
-				result = this._FaConverter.toUrlencoded(data);
-				// console.error(data, result);
-				break;
-			case this.xml:
-				result = this._FaConverter.toXml(data);
-				break;
-			default:
-				result = data;
-		}
-		// console.error([data, type, result]);
-		return result;
 	}
 }
 
 /**
  *
- * @type {FaServerHttpContentType}
+ * @type {FaHttpContentType}
  */
-module.exports = FaServerHttpContentType;
+module.exports = FaHttpContentType;

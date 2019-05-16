@@ -10,11 +10,10 @@ const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
 const FaBaseFile = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
-const FaConverterClass = require("fa-nodejs/base/converter");
-const FaServerHttpRequestClass = require("fa-nodejs/server/http-request");
-const FaHttpResponse = require("fa-nodejs/server/http-response");
-const FaServerHttpContentType = require("./http-content-type");
-const FaServerHttpStatusCode = require("./http-status-code");
+const FaBaseConverter = require("fa-nodejs/base/converter");
+const FaHttpRequestClass = require("fa-nodejs/server/http-request");
+const FaHttpContentType = require("./http-content-type");
+const FaHttpStatusCode = require("./http-status-code");
 const FaBaseRouter = require("fa-nodejs/base/router");
 const FaHttpConfiguration = require("fa-nodejs/server/http-configuration");
 
@@ -22,17 +21,15 @@ class FaServerHttp {
 	constructor(configuration) {
 		// this._FaHttpConfiguration = require("./http-configuration")(configuration);
 		this.Configuration = configuration;
-		this._FaConverterClass = new FaConverterClass(this.Configuration.converter);
+		this._FaConverter = new FaBaseConverter(this.Configuration.converter);
 		// console.info(configuration);
 		this._FaFile = new FaBaseFile(this.Configuration.path);
 		this._FaFilePrivate = new FaBaseFile(this.Configuration.private);
 		this._FaRouter = new FaBaseRouter(this);
 		this._FaAssetRouter = new FaBaseRouter(this);
-		this._FaHttpResponse = FaHttpResponse;
-		this._NewFaHttpResponse = new FaHttpResponse();
-		this._FaHttpRequest = new FaServerHttpRequestClass(this.Configuration.converter);
-		this._FaHttpContentType = new FaServerHttpContentType();
-		this._FaHttpStatusCode = new FaServerHttpStatusCode();
+		this._FaHttpRequest = new FaHttpRequestClass(this.Configuration.converter);
+		this._FaHttpContentType = new FaHttpContentType();
+		this._FaHttpStatusCode = new FaHttpStatusCode();
 		// this.HttpServer = this._createHttp(this.Configuration);
 		this._createHttp(this.Configuration);
 		this._trace = FaTrace.trace(1);
@@ -61,8 +58,17 @@ class FaServerHttp {
 	 * @return {FaBaseConverter}
 	 * @constructor
 	 */
-	get Converter() {
-		return this._FaConverterClass;
+	get _converter() {
+		return this._FaConverter;
+	}
+
+	/**
+	 *
+	 * @return {FaHttpRequestClass}
+	 * @private
+	 */
+	get _parser() {
+		return this._FaHttpRequest;
 	}
 
 	/**
@@ -96,7 +102,7 @@ class FaServerHttp {
 
 	/**
 	 *
-	 * @return {FaServerHttpContentType}
+	 * @return {FaHttpContentType}
 	 */
 	get type() {
 		return this._FaHttpContentType;
@@ -104,7 +110,7 @@ class FaServerHttp {
 
 	/**
 	 *
-	 * @return {FaServerHttpStatusCode}
+	 * @return {FaHttpStatusCode}
 	 */
 	get status() {
 		return this._FaHttpStatusCode;
@@ -155,35 +161,74 @@ class FaServerHttp {
 			body += chunk;
 		});
 		req.on("error", function (error) {
-			self._respondHttp(req, res, error);
+			console.error(error);
 		});
 		req.on("end", function () {
-			self._handleRequest(self._FaHttpRequest.formatRequest(req, body)).then(function (data) {
-				// console.info(result);
-				// let data = self._respondHttp(req, res, result);
-				if (data["type"] === null) {
-					if (req.headers.accept) {
-						data["type"] = self._extractContentType(req.headers.accept);
-					} else {
-						data["type"] = self.type.urlencoded;
-					}
-				}
-				data["chunk"] = self.type.convertToType(data["chunk"], data["type"]);
-				for (let property in data["headers"]) {
-					if (data["headers"].hasOwnProperty(property)) {
-						res.setHeader(property, data["headers"][property]);
-					}
-				}
-				res.statusCode = data["status"];
-				res.setHeader("Content-Type", data["type"]);
-				if (data["chunk"] instanceof Buffer) {
-					res.setHeader("Content-Length", data["chunk"].byteLength);
-				} else if (data["chunk"] instanceof String) {
-					res.setHeader("Content-Length", data["chunk"].length);
+			let url = self._parser.parseUrl(req.url);
+			let post = null;
+			let files = null;
+			let type = req.headers["content-type"] || req.headers["accept"];
+			if (["patch", "post", "put"].has(req.method.toLowerCase())) {
+				if (type.includes(self.type.multipart)) {
+					({files, post} = self._parser.parseMultipart(body));
+				} else if (type.includes(self.type.json)) {
+					post = self._converter.fromJson(body);
+				} else if (type.includes(self.type.xml)) {
+					post = self._converter.fromXml(body);
+				} else if (type.includes(self.type.urlencoded)) {
+					post = self._converter.fromUrlEncoded(body);
 				} else {
-					// console.info(data)
+					post = body;
 				}
-				res.write(data["chunk"]);
+			}
+			let request = {
+				client: self._parser.parseClient(req),
+				headers: req.headers,
+				method: req.method.toLowerCase(),
+				path: url.pathname,
+				get: url.query ? self._converter.fromUrlEncoded(url.query) : null,
+				post: post,
+				files: files,
+				cookies: req.headers["cookie"] ? this._parseCookie(req.headers["cookie"]) : null,
+				// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
+				// input: body,
+			};
+			// console.error(type, body, request);
+			self._handleRequest(request).then(function (response) {
+				// console.warn(data);
+				if (response["body"] === undefined || response["body"] === null) {
+					response["body"] = "";
+				}
+				if (!response["type"]) {
+					response["type"] = req.headers["accept"] || req.headers["content-type"] || self.type.text;
+				}
+				if (response["type"].includes(self.type.json)) {
+					response["body"] = self._converter.toJson(response["body"]);
+				} else if (response["type"].includes(self.type.html)) {
+					response["body"] = self._converter.toHtml(response["body"]);
+				} else if (response["type"].includes(self.type.urlencoded)) {
+					response["body"] = self._converter.toUrlEncoded(response["body"]);
+				} else if (response["type"].includes(self.type.xml)) {
+					response["body"] = self._converter.toXml(response["body"]);
+				} else if (response["type"].includes(self.type.text)) {
+					response["body"] = response["body"].toString();
+				}
+				Object.entries(response["headers"]).map(function ([key, value]) {
+					res.setHeader(key, value)
+				});
+				if (response["status"]) {
+					res.statusCode = response["status"];
+				}
+				if (response["type"]) {
+					// res.setHeader("content-type", `${data["type"]}; charset=utf8`);
+					res.setHeader("content-type", response["type"]);
+				}
+				if (response["body"] instanceof Buffer) {
+					res.setHeader("content-length", response["body"].byteLength);
+				} else {
+					res.setHeader("content-length", Buffer.from(response["body"]).byteLength);
+				}
+				res.write(response["body"]);
 				res.end();
 			});
 		});
@@ -208,17 +253,10 @@ class FaServerHttp {
 			} else if (mime) {
 				resolve(self._handleFile(data.path, mime));
 			} else {
-				// reject(self.response(new FaError(`route not found: ${data.path}`).setTrace(self._trace), null, self.status.notFound));
-				reject(self._handleNotFound(data.path));
+				resolve(self._handleNotFound(data.path));
 			}
-		}).then(function (result) {
-			return result;
-		}).catch(function (e) {
-			console.error(e);
 		});
 	}
-
-
 
 	_extractContentType(type) {
 		let result;
@@ -238,63 +276,6 @@ class FaServerHttp {
 
 	/**
 	 *
-	 * @param req
-	 * @param res
-	 * @param data {*}
-	 * @private
-	 */
-	_respondHttp(req, res, data) {
-		// try {
-		// 	console.error(typeof data.chunk)
-		if (data.type === null) {
-			if (req.headers.accept) {
-				data.type = this._extractContentType(req.headers.accept);
-			} else {
-				data.type = this.type.urlencoded;
-			}
-		}
-		data.chunk = this.type.convertToType(data.chunk, data.type);
-		// if (data.chunk instanceof Buffer) {
-		// 	data.length = data.chunk.byteLength;
-		// } else if (data.chunk instanceof String) {
-		// 	data.length = data.chunk.length;
-		// }
-		return data;
-		for (let property in data.headers) {
-			if (data.headers.hasOwnProperty(property)) {
-				res.setHeader(property, data.headers[property]);
-			}
-		}
-		if (data.type) {
-			// res.setHeader("Content-Type", `${data.type}; charset=utf-8`);
-			res.setHeader("Content-Type", data.type);
-		}
-		if (data.chunk instanceof Buffer) {
-			res.setHeader("Content-Length", data.chunk.byteLength);
-		} else if (data.chunk instanceof String) {
-			res.setHeader("Content-Length", data.chunk.length);
-		} else {
-			data.chunk = this.Converter.toHtml(data.chunk);
-		}
-		// console.error(data.status);
-		// res.write(FaHttpResponse.chunk, "utf8", function () {
-		// 	FaHttpResponse = null;
-		// });
-		// console.warn(data);
-		// res.writeHead(200, { 'Content-Type': 'text/plain' });
-		res.statusCode = data.status;
-		res.write(data.chunk);
-		res.end();
-		data = null;
-		// } catch (e) {
-		// 	console.error(e);
-		// 	res.write(e.message);
-		// 	res.end();
-		// }
-	}
-
-	/**
-	 *
 	 * @param route {function}
 	 * @param data {*}
 	 * @return {Promise<FaServerHttpResponse>}
@@ -305,13 +286,16 @@ class FaServerHttp {
 		return new Promise(function (resolve) {
 			resolve(route.call(self, data));
 		}).then(function (result) {
-			if (self._NewFaHttpResponse.check(result)) {
+			// console.warn(result, self._checkResponse(result));
+			if (self._checkResponse(result)) {
 				return result;
 			} else {
-				return self._NewFaHttpResponse.create(result);
+				return self._createResponse(result);
 			}
 		}).catch(function (e) {
-			return self._NewFaHttpResponse.create(new FaError(e).pickTrace(0), null, self.status.internalServerError);
+			console.error(e);
+			let error = new FaError(e).pickTrace(0);
+			return self._createResponse(error, null, self.status.internalServerError);
 		});
 	}
 
@@ -323,32 +307,36 @@ class FaServerHttp {
 	 * @private
 	 */
 	_handleFile(filename, type) {
-		// console.error(filename, type);
 		try {
-			// return this.response(this.File.readFileSync(filename.replace(/^\/?/, "")), type, this.status.ok);
-			return this._NewFaHttpResponse.create(this.File.readFileSync(filename.replace(/^\/?/, "")), type);
+			return this._createResponse(this.File.readFileSync(filename.replace(/^\/?/, "")), type);
 		} catch (e) {
-			// return this.response(e.message, null, this.status.notFound);
-			return this._NewFaHttpResponse.create(e.message, null, this.status.notFound);
+			// console.error(e);
+			let body = `${e.message} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
+			return this._createResponse(body, null, this.status.notFound);
 		}
 	}
 
 	_handleNotFound(route) {
-		// let chunk = new FaError(`route not found: ${route}`).setTrace(this._trace);
-		// let chunk = `<html lang="en"><head><title></title><link href="/fa/beautify.css" rel="stylesheet"/><link href="/css/main.css" rel="stylesheet"/></head><body><main>route not found: ${route}</main></body></html>`;
-		let chunk = `route not found: ${route}`;
-		return this._NewFaHttpResponse.create(chunk, null, this.status.internalServerError);
+		let body = `route not found: ${route} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
+		return this._createResponse(body, null, this.status.notFound);
 	}
 
-	/**
-	 *
-	 * @param content
-	 * @param type
-	 * @param status
-	 * @return {FaServerHttpResponse}
-	 */
-	response(content, type = null, status = null) {
-		return new this._FaHttpResponse(content, type, status);
+	_createResponse(body, type = null, status = null, headers = null) {
+		let result = {body, type, status, headers};
+		if (result.headers && result.headers["content-type"]) {
+			result.type = headers["content-type"];
+		}
+		if (!result.status) {
+			result.status = this.status.ok;
+		}
+		if (!result.headers) {
+			result.headers = {};
+		}
+		return result;
+	}
+
+	_checkResponse(response) {
+		return !!(response && response.hasOwnProperty("body") && response.hasOwnProperty("type") && response.hasOwnProperty("status") && response.hasOwnProperty("headers"));
 	}
 }
 
