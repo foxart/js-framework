@@ -195,7 +195,7 @@ class FaBaseCurl {
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
 				body = self._dataToType(data, request.headers["content-type"] || request.headers["accept"]);
-				console.warn(request.headers, data, body);
+				// console.warn(request.headers, data, body);
 			} else {
 				request.path = `${request.path}?${self._converter.toUrlEncoded(data)}`;
 			}
@@ -219,8 +219,7 @@ class FaBaseCurl {
 				});
 				res.on("end", function () {
 					let data = self._dataFromType(body, request.headers["accept"] || res.headers["content-type"]);
-
-					console.warn(res.headers, data, body);
+					// console.warn(res.headers, data, body);
 					resolve(self._createResponse(data, res.headers["content-type"], res.statusCode, res.headers));
 				});
 			});

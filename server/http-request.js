@@ -137,45 +137,6 @@ class FaHttpRequest {
 	parseUrl(url) {
 		return Url.parse(url);
 	}
-
-	/**
-	 *
-	 * @param req
-	 * @param body
-	 * @return {{path: string, headers: *, input: *, method: string, post, cookie, get}}
-	 */
-	formatRequest(req, body) {
-		let url = Url.parse(req.url);
-		let post = null;
-		let files = null;
-		let type = req.headers["content-type"] || req.headers["accept"];
-		if (["patch", "post", "put"].has(req.method.toLowerCase())) {
-			if (this._type.checkMultipart(type)) {
-				({files, post} = this.parseMultipart(body));
-			} else if (type.includes(this._type.json)) {
-				post = this._converter.fromJson(body);
-			} else if (this._type.checkXml(type)) {
-				post = this._converter.fromXml(body);
-			} else if (this._type.checkUrlencoded(type)) {
-				post = this._converter.fromUrlEncoded(body);
-			} else {
-				post = body;
-			}
-		}
-		console.error(type, body);
-		return {
-			client: this.parseClient(req),
-			headers: req.headers,
-			method: req.method.toLowerCase(),
-			path: url.pathname,
-			get: url.query ? this._converter.fromUrlEncoded(url.query) : null,
-			post: post,
-			files: files,
-			cookies: req.headers["cookie"] ? this._parseCookie(req.headers["cookie"]) : null,
-			// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
-			// input: body,
-		};
-	}
 }
 
 /**
