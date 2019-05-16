@@ -44,7 +44,7 @@ class FaHttpRequest {
 		return this._FaHttpContentType;
 	}
 
-	_parseCookie(cookies) {
+	parseCookie(cookies) {
 		let result = this._Cookie.parse(cookies);
 		if (Object.entries(result).length !== 0) {
 			return result;

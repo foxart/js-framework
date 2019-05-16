@@ -189,7 +189,7 @@ class FaServerHttp {
 				get: url.query ? self._converter.fromUrlEncoded(url.query) : null,
 				post: post,
 				files: files,
-				cookies: req.headers["cookie"] ? this._parseCookie(req.headers["cookie"]) : null,
+				cookies: req.headers["cookie"] ? self._parser.parseCookie(req.headers["cookie"]) : null,
 				// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
 				// input: body,
 			};
