@@ -329,8 +329,7 @@ class FaDaoQuery {
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
-		console.info([query]);
-		query = `SELECT * FROM (${query}) WHERE ROWNUM=1`;
+		// console.log([query]);
 		return await this._FaDaoModel.findOne(query);
 	}
 
@@ -348,7 +347,7 @@ class FaDaoQuery {
 			this._getOffset,
 			this._getLimit,
 		].filter(item => item).join("").trim();
-		console.info([query]);
+		// console.info([query]);
 		return await this._FaDaoModel.findMany(query);
 	}
 }

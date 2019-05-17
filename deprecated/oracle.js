@@ -86,7 +86,6 @@ module.exports = function (configuration) {
 	};
 	module.execute = function (query, parameters, options, onSuccess, onError) {
 		Oracle.execute(query, parameters, options, function (error, result) {
-			// console.error("execute", query, Object.keys(result).length);
 			if (error) {
 				/*query execute error*/
 				module.executeCallback(onError, error);
