@@ -1,30 +1,14 @@
 "use strict";
-// function checkJson(json) {
-// 	try {
-// 		JSON.parse(json);
-// 		return true;
-// 	} catch (error) {
-// 		return false;
-// 	}
-// }
-//
-// exports.tryParseJson = function (data) {
-// 	if (checkJson(data)) {
-// 		return JSON.parse(data);
-// 	} else {
-// 		return data;
-// 	}
-// };
 /*node*/
-const
-	Dns = require('dns'),
-	Http = require('http'),
-	Https = require('https'),
-	Querystring = require('querystring'),
-	UtilsExtend = require('utils-extend');
+const Dns = require('dns');
+const Http = require('http');
+const Https = require('https');
+const Querystring = require('querystring');
+const UtilsExtend = require('utils-extend');
 /*fa*/
 // const
 // 	FaPromise = require('./promise/index');
+const FaError = require("fa-nodejs/base/error");
 /*models*/
 const
 	Model = require('./deprecatedModel');
@@ -266,11 +250,11 @@ exports.request = function (options, data) {
 				}
 			}
 			Request.on('socket', function (Socket) {
-				// server1.console.warn(model.timeout);
 				// model.timeout = 10;
 				Socket.setTimeout(model.timeout);
 				Socket.on('timeout', function () {
 					Request.abort();
+					reject(new FaError(`curl request timeout: ${model.timeout}`));
 				});
 			});
 			Request.on('response', function (Response) {
@@ -279,6 +263,7 @@ exports.request = function (options, data) {
 				Response.on('data', function (chunk) {
 					body += chunk;
 				});
+
 				Response.on('end', function () {
 					resolve(body);
 				});

@@ -170,7 +170,7 @@ class FaDaoMongoModel extends FaDaoModel {
 	 * @param filter {Object}
 	 * @param update {Object}
 	 * @param options {Object|null}
-	 * @return {Promise<{filtered: *, modified: *, id: null, upserted: *}>}
+	 * @return {Promise<{filtered: *, modified: *, _id: null, upserted: *}>}
 	 */
 	async updateOne(filter, update, options = null) {
 		let trace = FaTrace.trace(1);
