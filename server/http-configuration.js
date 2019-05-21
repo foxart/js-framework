@@ -49,9 +49,9 @@ class FaHttpConfiguration {
 			attributeNamePrefix: "@_",
 			attrNodeName: "attr", //default is 'false'
 			textNodeName: "#text", //default is '#text'
-			ignoreAttributes: true, //default is 'true'
+			ignoreAttributes: false, //default is 'true'
 			ignoreNameSpace: false, //default is 'false'
-			allowBooleanAttributes: false, //default is 'false'
+			allowBooleanAttributes: true, //default is 'false'
 			parseNodeValue: true, //default is 'true'
 			parseAttributeValue: false, //default is 'false'
 			trimValues: true, //default is 'true'

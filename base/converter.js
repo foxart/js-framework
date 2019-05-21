@@ -93,13 +93,11 @@ class FaBaseConverter {
 	 * @private
 	 */
 	_filterXml(data) {
-		// return data;
 		let self = this;
 		let result = {};
-		// if (data === undefined) {
-		// 	// result = "undefined";
-		// } else
-		if (data === null) {
+		if (data === undefined) {
+			// 	result = "undefined";
+		} else if (data === null) {
 			result = "null";
 		} else if (Array.isArray(data)) {
 			let res = [];
@@ -124,8 +122,16 @@ class FaBaseConverter {
 	 * @return {object|string}
 	 */
 	fromXml(data, options = {}) {
-		let result = this.isXml(data) ? FastXmlParser.parse(data, Object.assign({}, this._fromXml, options)) : {};
-		return result["xml"] ? result["xml"] : result;
+		let result;
+		try {
+			result = FastXmlParser.parse(data, Object.assign({}, this._fromXml, options))
+		} catch (e) {
+			console.error(e);
+			// result = {}
+			result = data
+		}
+		// let result = this.isXml(data) ? FastXmlParser.parse(data, Object.assign({}, this._fromXml, options)) : {};
+		return result["xml"] !== undefined ? result["xml"] : result;
 	}
 
 	/**
@@ -149,14 +155,15 @@ class FaBaseConverter {
 		let xml = {};
 		data = data === null ? {} : data;
 		if (typeof data === "object" && data.hasOwnProperty("xml") === false) {
-			xml["xml"] = data;
+			xml["xml"] = this._filterXml(data);
 		} else if (typeof data !== "object") {
-			xml["xml"] = data;
+			xml["xml"] = this._filterXml(data);
 		} else {
-			xml = data;
+			xml = this._filterXml(data);
 		}
-		// console.warn(xml);
-		return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(this._filterXml(xml));
+		// console.warn(1, xml);
+		// console.warn(2, FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml));
+		return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml);
 	}
 
 	/**

@@ -43,7 +43,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @param data {*}
 	 * @return {*}
 	 */
-	render(data) {
+	render(data = null) {
 		return this.http._createResponse(data);
 	}
 
@@ -55,7 +55,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 * @param headers {object}
 	 * @return {*}
 	 */
-	renderCustom(data, type = null, status = null, headers = null) {
+	renderCustom(data = null, type = null, status = null, headers = null) {
 		return this.http._createResponse(data, type, status, headers);
 	}
 

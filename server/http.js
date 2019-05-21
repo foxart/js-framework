@@ -167,7 +167,7 @@ class FaServerHttp {
 			let url = self._parser.parseUrl(req.url);
 			let post = null;
 			let files = null;
-			let type = req.headers["content-type"] || req.headers["accept"];
+			let type = req.headers["content-type"] || req.headers["accept"] || "";
 			if (["patch", "post", "put"].has(req.method.toLowerCase())) {
 				if (type.includes(self.type.multipart)) {
 					({files, post} = self._parser.parseMultipart(body));
@@ -193,9 +193,7 @@ class FaServerHttp {
 				// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
 				// input: body,
 			};
-			// console.error(type, body, request);
 			self._handleRequest(request).then(function (response) {
-				// console.warn(data);
 				if (response["body"] === undefined || response["body"] === null) {
 					response["body"] = "";
 				}
@@ -212,10 +210,13 @@ class FaServerHttp {
 					response["body"] = self._converter.toXml(response["body"]);
 				} else if (response["type"].includes(self.type.text)) {
 					response["body"] = response["body"].toString();
+				} else {
+					response["body"] = response["body"].toString();
 				}
 				Object.entries(response["headers"]).map(function ([key, value]) {
 					res.setHeader(key, value)
 				});
+				// console.warn(body, response);
 				if (response["status"]) {
 					res.statusCode = response["status"];
 				}
@@ -321,7 +322,7 @@ class FaServerHttp {
 		return this._createResponse(body, null, this.status.notFound);
 	}
 
-	_createResponse(body, type = null, status = null, headers = null) {
+	_createResponse(body = null, type = null, status = null, headers = null) {
 		let result = {body, type, status, headers};
 		if (result.headers && result.headers["content-type"]) {
 			result.type = headers["content-type"];

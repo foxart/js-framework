@@ -1,3 +1,4 @@
+/*https://nodejs.org/api/http.html#http_class_http_clientrequest*/
 "use strict";
 /*node*/
 const Dns = require('dns');
@@ -32,17 +33,10 @@ function checkHost(options) {
 	});
 }
 
-/**
- *
- * @type {{path: string, headers: {}, protocol: string, hostname: string, method: string, port: number, encoding: string, timeout: number}}
- */
-/**
- *
- */
 class FaBaseCurl {
 	/**
 	 *
-	 * @param options {{path: string, headers: {}, protocol: string, hostname: string, method: string, port: number, encoding: string, timeout: number}}
+	 * @param options {Object|null}
 	 */
 	constructor(options = {}) {
 		this._ContentType = new FaHttpContentType();
@@ -179,7 +173,7 @@ class FaBaseCurl {
 		return result;
 	}
 
-	async execute(data) {
+	async execute(data = null) {
 		let self = this;
 		let trace = FaTrace.trace(1);
 		let request = {
@@ -219,12 +213,12 @@ class FaBaseCurl {
 				});
 				res.on("end", function () {
 					let data = self._dataFromType(body, request.headers["accept"] || res.headers["content-type"]);
-					// console.warn(res.headers, data, body);
-					resolve(self._createResponse(data, res.headers["content-type"], res.statusCode, res.headers));
+					// console.error(request.headers["accept"], res.headers["content-type"], body, data);
+					resolve(self._createResponse(data, res.headers["content-type"] || request.headers["accept"], res.statusCode, res.headers));
 				});
 			});
 			req.on("error", function (e) {
-				console.error(self.options);
+				console.error(e);
 				reject(e);
 			});
 			req.end();
