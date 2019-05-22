@@ -211,7 +211,9 @@ class FaServerHttp {
 				} else if (response["type"].includes(self.type.text)) {
 					response["body"] = response["body"].toString();
 				} else {
-					response["body"] = response["body"].toString();
+					if (response["body"] instanceof Buffer === false && typeof response["body"] !== "string") {
+						response["body"] = response["body"].toString();
+					}
 				}
 				Object.entries(response["headers"]).map(function ([key, value]) {
 					res.setHeader(key, value)
@@ -309,9 +311,9 @@ class FaServerHttp {
 	 */
 	_handleFile(filename, type) {
 		try {
+			// console.error(filename, type);
 			return this._createResponse(this.File.readFileSync(filename.replace(/^\/?/, "")), type);
 		} catch (e) {
-			// console.error(e);
 			let body = `${e.message} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
 			return this._createResponse(body, null, this.status.notFound);
 		}
