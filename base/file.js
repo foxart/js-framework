@@ -1,3 +1,14 @@
+/*
+* /var/www/index.html
+* url:			http://localhost/index.html
+* uri:			/index.html
+* path:		 	/var/www/index.html
+* pathname:		/var/www
+* directory:	www
+* filename:		index.html
+* basename:		index
+* extension:	html
+*/
 "use strict";
 /*node*/
 const Fs = require("fs");

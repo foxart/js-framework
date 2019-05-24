@@ -263,7 +263,6 @@ exports.request = function (options, data) {
 				Response.on('data', function (chunk) {
 					body += chunk;
 				});
-
 				Response.on('end', function () {
 					resolve(body);
 				});

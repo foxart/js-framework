@@ -119,17 +119,23 @@ class FaDaoAdapter {
 	 */
 	apply(data) {
 		let result;
-		// let adapter;
-		// if (typeof this._adapter === "function") {
-		// 	adapter = this._adapter.apply(data, this._arguments);
-		// } else {
-		// 	adapter = this._adapter;
-		// }
-		if (Array.isArray(data)) {
-			result = this._extract(this._adapter, data, this._arguments);
+		let adapter;
+		if (typeof this._adapter === "function") {
+			adapter = this._adapter.apply(data, this._arguments);
 		} else {
-			result = this._extract(this._adapter, [data], this._arguments)[0];
+			adapter = this._adapter;
 		}
+		if (Array.isArray(data)) {
+			result = this._extract(adapter, data, this._arguments);
+		} else {
+			result = this._extract(adapter, [data], this._arguments)[0];
+		}
+
+		// if (Array.isArray(data)) {
+		// 	result = this._extract(this._adapter, data, this._arguments);
+		// } else {
+		// 	result = this._extract(this._adapter, [data], this._arguments)[0];
+		// }
 		return result;
 	}
 }

@@ -1,5 +1,6 @@
 "use strict";
-const ObjectId = require('mongodb').ObjectID;
+const MongoDb = require('mongodb');
+const MongoId = MongoDb["ObjectID"];
 /**
  *
  * @return {string}
@@ -35,7 +36,7 @@ String.prototype.escapeHtml = function () {
  * @return {Object}
  */
 String.prototype.toMongoId = function () {
-	return new ObjectId(this);
+	return new MongoId(this);
 };
 /**
  *
