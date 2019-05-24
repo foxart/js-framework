@@ -202,23 +202,29 @@ class FaServerHttp {
 				}
 				if (response["type"].includes(self.type.json)) {
 					response["body"] = self._converter.toJson(response["body"]);
+					response["type"] = self.type.json;
 				} else if (response["type"].includes(self.type.html)) {
 					response["body"] = self._converter.toHtml(response["body"]);
+					response["type"] = self.type.html;
 				} else if (response["type"].includes(self.type.urlencoded)) {
 					response["body"] = self._converter.toUrlEncoded(response["body"]);
+					response["type"] = self.type.urlencoded;
 				} else if (response["type"].includes(self.type.xml)) {
 					response["body"] = self._converter.toXml(response["body"]);
+					response["type"] = self.type.xml;
 				} else if (response["type"].includes(self.type.text)) {
 					response["body"] = response["body"].toString();
+					response["type"] = self.type.text;
 				} else {
 					if (response["body"] instanceof Buffer === false && typeof response["body"] !== "string") {
 						response["body"] = response["body"].toString();
+						response["type"] = self.type.text;
 					}
 				}
 				Object.entries(response["headers"]).map(function ([key, value]) {
 					res.setHeader(key, value)
 				});
-				// console.warn(body, response);
+				// console.warn(response);
 				if (response["status"]) {
 					res.statusCode = response["status"];
 				}
