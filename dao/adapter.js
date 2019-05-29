@@ -62,26 +62,30 @@ class FaDaoAdapter {
 					result = adapter;
 				}
 			} else {
-				Object.entries(adapter).map(function ([key, value]) {
-					if (typeof value === "string" && context._TestExpression.test(value)) {
-						result[key] = context._extractObject(map, value.match(context._MatchExpression));
-					} else if (value && value.constructor === Array) {
-						result[key] = context._extract(value, [map], args)[0];
-					} else if (value && value.constructor === Object) {
-						result[key] = context._extract(value, [map], args)[0];
-					} else if (typeof value === "function") {
-						let result_function;
-						try {
-							result_function = value.apply(map, args);
-						} catch (e) {
-							result_function = new FaError(e).pickTrace(0).setContext(map);
+				if (adapter && adapter.constructor === Object) {//todo check how adapter can possibilly be null or undefined
+					Object.entries(adapter).map(function ([key, value]) {
+						if (typeof value === "string" && context._TestExpression.test(value)) {
+							result[key] = context._extractObject(map, value.match(context._MatchExpression));
+						} else if (value && value.constructor === Array) {
+							result[key] = context._extract(value, [map], args)[0];
+						} else if (value && value.constructor === Object) {
+							result[key] = context._extract(value, [map], args)[0];
+						} else if (typeof value === "function") {
+							let result_function;
+							try {
+								result_function = value.apply(map, args);
+							} catch (e) {
+								result_function = new FaError(e).pickTrace(0).setContext(map);
+							}
+							result[key] = result_function;
+						} else {
+							result[key] = value;
 						}
-						result[key] = result_function;
-					} else {
-						result[key] = value;
-					}
-					result[key] = result[key] === undefined ? null : result[key];
-				});
+						result[key] = result[key] === undefined ? null : result[key];
+					});
+				} else {
+					result = adapter;
+				}
 			}
 			return result;
 		});
@@ -125,12 +129,12 @@ class FaDaoAdapter {
 		} else {
 			adapter = this._adapter;
 		}
+		// adapter = this._adapter;
 		if (Array.isArray(data)) {
 			result = this._extract(adapter, data, this._arguments);
 		} else {
 			result = this._extract(adapter, [data], this._arguments)[0];
 		}
-
 		// if (Array.isArray(data)) {
 		// 	result = this._extract(this._adapter, data, this._arguments);
 		// } else {

@@ -185,6 +185,7 @@ class FaDaoMongoModel extends FaDaoModel {
 				upserted: cursor["upsertedCount"],
 			};
 			await this._client.close(connection);
+			// console.warn(result);
 			return result;
 		} catch (e) {
 			throw new FaError(e).setTrace(trace);

@@ -69,7 +69,7 @@ class FaDaoMongoClient extends FaDaoClient {
 	/**
 	 *
 	 * @param connection {MongoClient}
-	 * @param collection {string}
+	 * @param collection {string|void}
 	 * @return {Promise<Collection>}
 	 */
 	async collection(connection, collection) {

@@ -164,6 +164,7 @@ class FaServerHttp {
 			console.error(error);
 		});
 		req.on("end", function () {
+			// console.log(req.headers, req.url, body);
 			let url = self._parser.parseUrl(req.url);
 			let post = null;
 			let files = null;
@@ -203,6 +204,7 @@ class FaServerHttp {
 				if (response["type"].includes(self.type.json)) {
 					response["body"] = self._converter.toJson(response["body"]);
 					response["type"] = self.type.json;
+
 				} else if (response["type"].includes(self.type.html)) {
 					response["body"] = self._converter.toHtml(response["body"]);
 					response["type"] = self.type.html;
