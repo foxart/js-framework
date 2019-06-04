@@ -131,7 +131,7 @@ class FaApplicationModule {
 				self._FaFile.readDirectorySync(controllersPath).map(function (controllerFilename) {
 					return self._getControllerName(controllerFilename);
 				}).filter(item => item).map(function (controller) {
-					// console.warn(module, controller)
+					// console.error(module, controller)
 					let Controller = self._loadController(module, controller);
 					self._readControllerMethods(Controller).forEach(function (action) {
 						let route_list = [];
@@ -165,6 +165,67 @@ class FaApplicationModule {
 				});
 			}
 		});
+	}
+
+	_loadModuleRoutes(routes, module, pathname, presentation) {
+		let self = this;
+		let route;
+		if (self._FaFile.isDirectory(pathname)) {
+			self._module_list[module] = {
+				// pathname: pathname,
+				// name: name,
+				presentation: presentation,
+			};
+			if (routes[module]) {
+				Object.entries(routes[module]).forEach(function ([routeKey, routeValue]) {
+					route = {
+						uri: routeKey,
+						pathname: pathname,
+						presentation: routeValue["presentation"] ? routeValue["presentation"] : presentation,
+						module: module,
+						controller: routeValue["controller"],
+						action: routeValue["action"],
+					};
+					console.warn(self._getRouteIndex(route));
+					self._storeRoute(route);
+				});
+			}
+			self._FaFile.readDirectorySync(`${pathname}/controllers`).map(function (controllerFilename) {
+				return self._getControllerName(controllerFilename);
+			}).filter(item => item).map(function (controller) {
+				// console.warn(module, controller)
+				let Controller = self._loadController(module, controller);
+				self._readControllerMethods(Controller).forEach(function (action) {
+					let route_list = [];
+					let check = true;
+					let check_list = [module, controller, action];
+					while (check_list.length > 0) {
+						let index_item = check_list.pop();
+						if (check === true) {
+							if (index_item !== "index") {
+								check = false;
+								route_list.push(index_item);
+							}
+						} else {
+							route_list.push(index_item);
+						}
+					}
+					route = {
+						uri: `/${route_list.reverse().join("/")}`,
+						pathname: pathname,
+						presentation: presentation,
+						module: module,
+						controller: controller,
+						action: action,
+					};
+					if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
+						self._storeRoute(route);
+					} else if (route.uri === "/" && self._FaHttp.Router.exist(route.uri) === false) {
+						self._storeRoute(route);
+					}
+				});
+			});
+		}
 	}
 
 	_getModuleFilename(module) {
