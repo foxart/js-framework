@@ -1,6 +1,6 @@
 "use strict";
 
-class FaBaseTrace {
+class FaTrace {
 	/**
 	 *
 	 * @param stack {Array}
@@ -58,7 +58,7 @@ class FaBaseTrace {
 			}
 		});
 		data.splice(0, 2);
-		let result = FaBaseTrace._extractFromStack(data);
+		let result = FaTrace._extractFromStack(data);
 		if (level !== null) {
 			return result[level];
 		} else {
@@ -79,7 +79,7 @@ class FaBaseTrace {
 			}
 		});
 		data.splice(0, 1);
-		let result = FaBaseTrace._extractFromStack(data);
+		let result = FaTrace._extractFromStack(data);
 		if (level !== null) {
 			return result[level];
 		} else {
@@ -130,6 +130,6 @@ class FaBaseTrace {
 
 /**
  *
- * @type {FaBaseTrace}
+ * @type {FaTrace}
  */
-module.exports = FaBaseTrace;
+module.exports = FaTrace;

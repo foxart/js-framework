@@ -1,8 +1,8 @@
+/*https://mediatemple.net/community/products/dv/204403964/mime-types*/
 "use strict";
 // /*fa*/
 // const FaConverter = require("fa-nodejs/base/converter");
 class FaHttpContentType {
-	// https://mediatemple.net/community/products/dv/204403964/mime-types
 	constructor() {
 		this.bin = "application/octet-stream";
 		this.cpp = "text/x-c++src";

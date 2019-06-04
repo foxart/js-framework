@@ -41,10 +41,6 @@ class FaApplicationController {
 			throw new FaBaseError(e).pickTrace(2);
 		}
 	}
-
-	actionIndex(data) {
-		console.log(data);
-	}
 }
 
 /**

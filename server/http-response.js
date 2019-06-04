@@ -1,44 +1,23 @@
 "use strict";
-const FaHttpContentType = require("fa-nodejs/server/http-content-type");
-const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
 
 class FaServerHttpResponse {
+	// constructor() {
+	// }
+	// noinspection JSMethodCanBeStatic
 	/**
 	 *
-	 * @param chunk {*}
-	 * @param headers {object|string|null}
-	 * @param status {number|null}
-	 */
-	constructor(chunk, headers = null, status = null) {
-		this._FaHttpStatusCode = new FaHttpStatusCode();
-		this._FaHttpContentType = new FaHttpContentType();
-		// this.chunk = chunk ? chunk : "";
-		// this.headers = {
-		// 	"Content-Type": null
-		// };
-		// if (typeof headers === "string") {
-		// 	this.headers["Content-Type"] = headers;
-		// } else if (typeof headers === "object") {
-		// 	this.headers = Object.assign({}, this.headers, headers);
-		// }
-		// this.status = status;
-	}
-
-	// * @param chunk {string|Buffer}
-	/**
-	 *
-	 * @param chunk {Object|string|Buffer}
+	 * @param body {Object|string|Buffer}
 	 * @param type {FaHttpContentType}
 	 * @param status {FaHttpStatusCode}
 	 * @param headers {string|object|null}
 	 */
-	create(chunk, type = null, status = null, headers = {}) {
-		let result = {chunk, type, status, headers};
-		if (headers["content-type"]) {
+	create(body, type = null, status = null, headers = {}) {
+		let result = {body, type, status, headers};
+		if (result.headers && result.headers["content-type"]) {
 			result.type = headers["content-type"];
 		}
 		if (!result.status) {
-			result.status = this._FaHttpStatusCode.ok;
+			result.status = 200;
 		}
 		if (!result.headers) {
 			result.headers = {};
@@ -46,8 +25,15 @@ class FaServerHttpResponse {
 		return result;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	check(response) {
-		return !!(response && response.hasOwnProperty("chunk") && response.hasOwnProperty("type") && response.hasOwnProperty("status") && response.hasOwnProperty("headers"));
+		return !!(
+			response
+			&& response.hasOwnProperty("body")
+			&& response.hasOwnProperty("type")
+			&& response.hasOwnProperty("status")
+			&& response.hasOwnProperty("headers")
+		);
 	}
 }
 

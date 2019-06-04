@@ -24,6 +24,7 @@ class FaBaseFile {
 	 * @param path {string|null}
 	 */
 	constructor(path = null) {
+		// console.info(path);
 		this._path = path;
 	};
 

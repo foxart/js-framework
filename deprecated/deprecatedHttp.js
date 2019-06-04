@@ -1,3 +1,4 @@
+
 "use strict";
 /*node*/
 const
@@ -83,6 +84,7 @@ module.exports = function (configuration) {
 	 * @param response
 	 */
 	function serveHttpServer(request, response) {
+		// console.log(request);
 		let url = Url.parse(request.url, true);
 		let http_handler = registerHandler(url.pathname);
 		let body = '';
@@ -99,8 +101,7 @@ module.exports = function (configuration) {
 				get: {},
 				post: {},
 			};
-			// server1.console.log(url);
-			// server1.console.warn(body);
+			// console.log(url);
 			// if (Check.empty(url.query) === false) {
 			if (url.query) {
 				data['get'] = parseParameters(url.query);

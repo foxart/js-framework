@@ -3,9 +3,8 @@
 const FaError = require("fa-nodejs/base/error");
 const FaBaseFile = require("fa-nodejs/base/file");
 // const FaBaseTrace = require("fa-nodejs/base/trace");
-const FaHttpClass = require("fa-nodejs/server/http");
-const FaSocketClass = require("fa-nodejs/server/socket");
-
+// const FaHttpClass = require("fa-nodejs/server/http");
+// const FaSocketClass = require("fa-nodejs/server/socket");
 class FaApplicationModule {
 	/**
 	 *
@@ -35,7 +34,7 @@ class FaApplicationModule {
 		// this._loadFromDirectory();
 		// this._serveRoutes();
 		// this.readConfigurationRoutes();
-		this._loadConfiguration(require(`${path}/config/application.js`));
+		this._loadModules(require(`${path}/config/application.js`));
 		// this.readModuleRoutes();
 	}
 
@@ -52,12 +51,12 @@ class FaApplicationModule {
 		let controllersName = controllers.map(function (controller) {
 			return self._getControllerName(controller);
 		}).filter(item => item);
-		// console.info(controllersName);
+		console.info("controllersName", controllersName);
 		/**/
 		let controllersFilename = controllersName.map(function (controller) {
 			return self._getControllerFilename(controller);
 		}).filter(item => item);
-		// console.info(controllersFilename);
+		console.info("controllersFilename", controllersFilename);
 		/**/
 		let actions = [
 			"index",
@@ -71,11 +70,11 @@ class FaApplicationModule {
 		let actionsName = actions.map(function (action) {
 			return self._getControllerMethod(action);
 		}).filter(item => item);
-		console.info(actionsName);
+		console.info("actionsName", actionsName);
 		let methodsName = actionsName.map(function (action) {
 			return self._getControllerAction(action);
 		}).filter(item => item);
-		console.info(methodsName);
+		console.info("methodsName", methodsName);
 	}
 
 	get modules() {
@@ -98,46 +97,46 @@ class FaApplicationModule {
 		return Object.keys(this._route_list);
 	}
 
-	_loadConfiguration(configuration) {
+	_loadModules(configuration) {
 		let self = this;
 		let modules = configuration["modules"];
 		let routes = configuration["routes"];
 		Object.entries(modules).forEach(function ([moduleKey, moduleValue]) {
-			let path = `${self._path}/modules/${moduleKey}`;
-			// let module = moduleKey;
-			let name = moduleValue["name"];
-			let appearance = moduleValue["appearance"];
-			let controllersPath = `${path}/controllers`;
-			self._module_list[moduleKey] = {
-				path: path,
-				name: name,
-				appearance: appearance,
-			};
-			if (routes[moduleKey]) {
-				Object.entries(routes[moduleKey]).forEach(function ([routeKey, routeValue]) {
-					// let controller = routeValue["controller"];
-					// let action = routeValue["action"];
-					// let appearance = routeValue["appearance"] ? routeValue["appearance"] : appearance;
-					self._storeRoute({
-						route: routeKey,
-						path: path,
-						appearance: routeValue["appearance"] ? routeValue["appearance"] : appearance,
-						module: moduleKey,
-						controller: routeValue["controller"],
-						action: routeValue["action"],
+			let route;
+			let module = moduleKey;
+			let pathname = `${self._path}/modules/${module}`;
+			// let name = moduleValue["name"];
+			let presentation = moduleValue["presentation"];
+			let controllersPath = `${pathname}/controllers`;
+			if (self._FaFile.isDirectory(pathname)) {
+				self._module_list[module] = {
+					// pathname: pathname,
+					// name: name,
+					presentation: presentation,
+				};
+				if (routes[module]) {
+					Object.entries(routes[module]).forEach(function ([routeKey, routeValue]) {
+						route = {
+							uri: routeKey,
+							pathname: pathname,
+							presentation: routeValue["presentation"] ? routeValue["presentation"] : presentation,
+							module: module,
+							controller: routeValue["controller"],
+							action: routeValue["action"],
+						};
+						console.warn(self._getRouteIndex(route));
+						self._storeRoute(route);
 					});
-				});
-			}
-			if (self._FaFile.isDirectory(path)) {
-				return self._FaFile.readDirectorySync(controllersPath).map(function (controllerFilename) {
+				}
+				self._FaFile.readDirectorySync(controllersPath).map(function (controllerFilename) {
 					return self._getControllerName(controllerFilename);
 				}).filter(item => item).map(function (controller) {
 					// console.warn(module, controller)
-					let Controller = self._loadController(moduleKey, controller);
+					let Controller = self._loadController(module, controller);
 					self._readControllerMethods(Controller).forEach(function (action) {
 						let route_list = [];
 						let check = true;
-						let check_list = [moduleKey, controller, action];
+						let check_list = [module, controller, action];
 						while (check_list.length > 0) {
 							let index_item = check_list.pop();
 							if (check === true) {
@@ -149,19 +148,23 @@ class FaApplicationModule {
 								route_list.push(index_item);
 							}
 						}
-						let route = `/${route_list.reverse().join("/")}`;
-						self._storeRoute({
-							route: route,
-							path: path,
-							appearance: appearance,
-							module: moduleKey,
+						route = {
+							uri: `/${route_list.reverse().join("/")}`,
+							pathname: pathname,
+							presentation: presentation,
+							module: module,
 							controller: controller,
 							action: action,
-						});
+						};
+						if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
+							self._storeRoute(route);
+						} else if (route.uri === "/" && self._FaHttp.Router.exist(route.uri) === false) {
+							self._storeRoute(route);
+						}
 					});
 				});
 			}
-		})
+		});
 	}
 
 	_getModuleFilename(module) {
@@ -229,8 +232,8 @@ class FaApplicationModule {
 		if (!!this._controller_list[index]) {
 			return this._controller_list[index];
 		} else if (this._FaFile.isFile(path)) {
+			// console.info(index, `${this._path}/modules/${module}/views/${controller}`);
 			let ControllerClass = require(path);
-			// 	// this._controller_list[path] = new ControllerClass(this._FaHttp, `${this._path}/modules/${module}/views/${controller}`);
 			this._controller_list[index] = new ControllerClass(this._FaHttp);
 			return this._controller_list[index];
 		} else {
@@ -238,23 +241,34 @@ class FaApplicationModule {
 		}
 	}
 
-	_storeRoute(value) {
-		let {route, path, appearance, module, controller, action} = value;
-		let index = `${module}/${controller}/${action}`;
-		if (Object.keys(this._route_list).omit(index)) {
-			this._route_list[index] = value;
-			let Controller = this._loadController(module, controller);
-			let controllerAction = this._getControllerMethod(action);
-			if (Controller[controllerAction]) {
-				this._FaHttp.Router.attach(route, function () {
-					let res = Controller[controllerAction].apply(Controller, arguments);
-					// console.log(res);
-					return res;
-				});
-			} else {
-				throw new FaError(`action not implemented in ${path}/controllers/${this._getControllerFilename(controller)}: ${controllerAction}()`);
-			}
+	_getRouteIndex(data) {
+		let {module, controller, action} = data;
+		// return `${uri}@${module}/${controller}/${action}`;
+		return `${module}/${controller}/${action}`;
+	}
+
+	_storeRoute(route) {
+		let {uri, pathname, presentation, module, controller, action} = route;
+		// let index = `${uri}@${module}/${controller}/${action}`;
+		// console.warn(uri, index);
+		this._route_list[this._getRouteIndex(route)] = route;
+		// console.info(data, index);
+		let Controller = this._loadController(module, controller);
+		let controllerAction = this._getControllerMethod(action);
+		if (Controller[controllerAction]) {
+			// console.log(uri, presentation);
+			this._FaHttp.Router.attach(uri, function () {
+				let res = Controller[controllerAction].apply(Controller, arguments);
+				return res;
+			});
+		} else {
+			throw new FaError(`action not implemented in ${pathname}/controllers/${this._getControllerFilename(controller)}: ${controllerAction}()`);
 		}
+		// if (Object.keys(this._route_list).omit(index)) {
+		// } else if (uri === "/") {
+		// console.error(uri, presentation);
+		// console.error(uri, index);
+		// }
 	}
 }
 

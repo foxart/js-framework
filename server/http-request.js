@@ -3,7 +3,6 @@
 const Cookie = require("cookie");
 const Url = require("url");
 /*fa*/
-const FaHttpContentType = require("fa-nodejs/server/http-content-type");
 const FaBaseConverter = require("fa-nodejs/base/converter");
 /*variables*/
 const BODY_SEPARATOR = "\r\n"; // RFC2046
@@ -23,7 +22,6 @@ class FaHttpRequest {
 	constructor(conf, method, headers, url, body) {
 		this._Cookie = Cookie;
 		this._FaBaseConverter = new FaBaseConverter(conf);
-		this._FaHttpContentType = new FaHttpContentType();
 	}
 
 	/**
@@ -35,15 +33,6 @@ class FaHttpRequest {
 		return this._FaBaseConverter;
 	}
 
-	/**
-	 *
-	 * @return {FaHttpContentType}
-	 * @private
-	 */
-	get _type() {
-		return this._FaHttpContentType;
-	}
-
 	parseCookie(cookies) {
 		let result = this._Cookie.parse(cookies);
 		if (Object.entries(result).length !== 0) {
@@ -53,6 +42,7 @@ class FaHttpRequest {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	parseClient(req) {
 		let ip = (req.headers['x-forwarded-for'] || '').split(',').pop()
 			|| req.connection.remoteAddress
@@ -125,7 +115,7 @@ class FaHttpRequest {
 					result = parameters[0][1];
 				}
 			} else if (key === "content-type") {
-				result["type"] = this._type.getType(value);
+				result["type"] = value;
 			} else {
 				throw new Error(`unknown multipart section type: ${key}`);
 				// result[key] = value;
@@ -134,6 +124,7 @@ class FaHttpRequest {
 		return result;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	parseUrl(url) {
 		return Url.parse(url);
 	}

@@ -12,6 +12,7 @@ const FaBaseFile = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
 const FaBaseConverter = require("fa-nodejs/base/converter");
 const FaHttpRequestClass = require("fa-nodejs/server/http-request");
+const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpContentType = require("./http-content-type");
 const FaHttpStatusCode = require("./http-status-code");
 const FaBaseRouter = require("fa-nodejs/base/router");
@@ -28,10 +29,11 @@ class FaServerHttp {
 		this._FaRouter = new FaBaseRouter(this);
 		this._FaAssetRouter = new FaBaseRouter(this);
 		this._FaHttpRequest = new FaHttpRequestClass(this.Configuration.converter);
+		this._FaHttpResponse = FaHttpResponse;
 		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		// this.HttpServer = this._createHttp(this.Configuration);
-		this._createHttp(this.Configuration);
+		this.HttpServer = this._createHttp(this.Configuration);
 		this._trace = FaTrace.trace(1);
 	}
 
@@ -204,7 +206,6 @@ class FaServerHttp {
 				if (response["type"].includes(self.type.json)) {
 					response["body"] = self._converter.toJson(response["body"]);
 					response["type"] = self.type.json;
-
 				} else if (response["type"].includes(self.type.html)) {
 					response["body"] = self._converter.toHtml(response["body"]);
 					response["type"] = self.type.html;
@@ -256,7 +257,7 @@ class FaServerHttp {
 		let mime = MimeTypes.lookup(data.path);
 		let route = this.Router.find(data.path);
 		let asset = this.Assets.find(data.path);
-		return new Promise(function (resolve, reject) {
+		return new Promise(function (resolve) {
 			if (route) {
 				resolve(self._handleRoute(route, data));
 			} else if (asset) {
@@ -287,17 +288,17 @@ class FaServerHttp {
 
 	/**
 	 *
-	 * @param route {function}
+	 * @param callback {function}
 	 * @param data {*}
 	 * @return {Promise<FaServerHttpResponse>}
 	 * @private
 	 */
-	_handleRoute(route, data) {
+	_handleRoute(callback, data) {
 		let self = this;
 		return new Promise(function (resolve) {
-			resolve(route.call(self, data));
+			resolve(callback.call(self, data));
 		}).then(function (result) {
-			// console.warn(result, self._checkResponse(result));
+			// console.warn(callback, self.Router.list);
 			if (self._checkResponse(result)) {
 				return result;
 			} else {
@@ -346,8 +347,15 @@ class FaServerHttp {
 		return result;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	_checkResponse(response) {
-		return !!(response && response.hasOwnProperty("body") && response.hasOwnProperty("type") && response.hasOwnProperty("status") && response.hasOwnProperty("headers"));
+		return !!(
+			response
+			&& response.hasOwnProperty("body")
+			&& response.hasOwnProperty("type")
+			&& response.hasOwnProperty("status")
+			&& response.hasOwnProperty("headers")
+		);
 	}
 }
 

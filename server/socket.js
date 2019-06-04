@@ -11,9 +11,11 @@ class FaServerSocket {
 	 * @param FaHttp {FaServerHttp}
 	 */
 	constructor(FaHttp) {
-		this.name = "FaSocket";
-		this.folder = "sockets";
-		this._FaSocketConfigurationClass = FaHttp.Configuration;
+		this._configuration = {};
+		this._configuration.host = FaHttp.Configuration.host;
+		this._configuration.port = FaHttp.Configuration.port;
+		this._configuration.path = "/socket/";
+		// console.warn(FaHttp.Configuration)
 		this._FaRouterClass = require("fa-nodejs/base/router")(this);
 		this.SocketIo = this._createSocket(FaHttp);
 	}
@@ -23,9 +25,12 @@ class FaServerSocket {
 	 * @return {{path: string, serveClient: boolean, cookie: boolean, pingInterval: number, pingTimeout: number}}
 	 */
 	get Configuration() {
-		return this._FaSocketConfigurationClass;
+		return this._configuration;
 	};
 
+	// set Configuration(conf){
+	// 	this._configuration;
+	// }
 	/**
 	 *
 	 * @return {FaRouterClass}
@@ -56,7 +61,8 @@ class FaServerSocket {
 	_createSocket(FaHttp) {
 		let context = this;
 		let _SocketIo;
-		_SocketIo = SocketIo(FaHttp.HttpServer, FaHttp.Configuration);
+		// console.warn(this.Configuration);
+		_SocketIo = SocketIo(FaHttp.HttpServer, {path: FaHttp.Configuration.path});
 		_SocketIo.on("connect", function (socket) {
 			context._extendSocket(socket);
 		});
@@ -169,6 +175,7 @@ class FaServerSocket {
 		socket.send(data);
 	}
 }
+
 // let os = require("os");
 // let ifaces = os.networkInterfaces();
 // server1.console.info(ifaces);
