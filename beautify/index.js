@@ -1,6 +1,7 @@
 "use strict";
-/*node*/
+/*modules*/
 const Buffer = require("buffer").Buffer;
+/** @member {Class} */
 const FastXmlParser = require("fast-xml-parser");
 const FileType = require("file-type");
 
@@ -56,9 +57,10 @@ function isCircular(object, circular) {
 		}
 		circular.push(object);
 		for (let key in object) {
-			// if (object.hasOwnProperty(key) && isCircular(object[key], circular)) {
-			if (object[key] && isCircular(object[key], circular)) {
-				return true;
+			if (object.hasOwnProperty(key)) {
+				if (object[key] && isCircular(object[key], circular)) {
+					return true;
+				}
 			}
 		}
 	}
@@ -155,9 +157,14 @@ function beautifyObject(data, wrapper, level) {
 		let itemLength = getLength(item, itemType);
 		let key = wrapper.wrapDataKey(keys[i], itemType, itemLength, level);
 		let value = isCircular(item, circular) ? wrapper.circular(item, level) : beautify(item, wrapper, level);
-		if (i === 0) {
-			result += `${key}${value},${nl}`;
-		} else if (i === end) {
+		// if (i === 0 && i !== end) {
+		// 	result += `${key}${value},${nl}`;
+		// } else if (i === end) {
+		// 	result += `${key}${value}${nl}`;
+		// } else {
+		// 	result += `${key}${value},${nl}`;
+		// }
+		if (i === end) {
 			result += `${key}${value}${nl}`;
 		} else {
 			result += `${key}${value},${nl}`;

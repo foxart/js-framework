@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ *
+ * @class FaTrace
+ */
 class FaTrace {
 	/**
 	 *

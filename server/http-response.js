@@ -1,6 +1,6 @@
 "use strict";
 
-class FaServerHttpResponse {
+class FaHttpResponse {
 	// constructor() {
 	// }
 	// noinspection JSMethodCanBeStatic
@@ -26,7 +26,7 @@ class FaServerHttpResponse {
 	}
 
 	// noinspection JSMethodCanBeStatic
-	check(response) {
+	static check(response) {
 		return !!(
 			response
 			&& response.hasOwnProperty("body")
@@ -39,7 +39,7 @@ class FaServerHttpResponse {
 
 /**
  *
- * @type {FaServerHttpResponse}
+ * @type {FaHttpResponse}
  */
-module.exports = FaServerHttpResponse;
+module.exports = FaHttpResponse;
 

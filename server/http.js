@@ -1,12 +1,13 @@
 "use strict";
-/*node*/
+/*modules*/
 const Buffer = require("buffer").Buffer;
 const Http = require("http");
 const Https = require("https");
-/** @type {*} */
+/** @member {Object} */
 const MimeTypes = require("mime-types");
-/*fa-nodejs*/
+/*fa*/
 const FaError = require("fa-nodejs/base/error");
+/** @member {Class|FaTrace} */
 const FaTrace = require("fa-nodejs/base/trace");
 const FaBaseFile = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
@@ -200,6 +201,7 @@ class FaServerHttp {
 				if (response["body"] === undefined || response["body"] === null) {
 					response["body"] = "";
 				}
+				/*todo make proper content-type and|or charset extractor*/
 				if (!response["type"]) {
 					response["type"] = req.headers["accept"] || req.headers["content-type"] || self.type.text;
 				}
@@ -207,7 +209,9 @@ class FaServerHttp {
 					response["body"] = self._converter.toJson(response["body"]);
 					response["type"] = self.type.json;
 				} else if (response["type"].includes(self.type.html)) {
+					// console.warn(response["body"], response["type"]);
 					response["body"] = self._converter.toHtml(response["body"]);
+					// response["body"] = response["body"].toString();
 					response["type"] = self.type.html;
 				} else if (response["type"].includes(self.type.urlencoded)) {
 					response["body"] = self._converter.toUrlEncoded(response["body"]);
@@ -227,7 +231,6 @@ class FaServerHttp {
 				Object.entries(response["headers"]).map(function ([key, value]) {
 					res.setHeader(key, value)
 				});
-				// console.warn(response);
 				if (response["status"]) {
 					res.statusCode = response["status"];
 				}
@@ -249,7 +252,7 @@ class FaServerHttp {
 	/**
 	 *
 	 * @param data
-	 * @return {Promise<FaServerHttpResponse>}
+	 * @return {Promise<FaHttpResponse>}
 	 * @private
 	 */
 	_handleRequest(data) {
@@ -290,7 +293,7 @@ class FaServerHttp {
 	 *
 	 * @param callback {function}
 	 * @param data {*}
-	 * @return {Promise<FaServerHttpResponse>}
+	 * @return {Promise<FaHttpResponse>}
 	 * @private
 	 */
 	_handleRoute(callback, data) {
@@ -305,7 +308,6 @@ class FaServerHttp {
 				return self._createResponse(result);
 			}
 		}).catch(function (e) {
-			console.error(e);
 			let error = new FaError(e).pickTrace(0);
 			return self._createResponse(error, null, self.status.internalServerError);
 		});

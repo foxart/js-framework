@@ -21,6 +21,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 		this._FaHttpResponse = new FaHttpResponse();
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this._FaTemplateClass = new FaApplicationTemplate(!views_path ? this._getTemplatePath : views_path);
+		// console.warn(this._getTemplatePathname, this["actionIndex"]);
 	}
 
 	/**
@@ -75,15 +76,6 @@ class FaApplicationControllerHttp extends FaApplicationController {
 
 	/**
 	 *
-	 * @param data {*}
-	 * @return {*}
-	 */
-	render(data = null) {
-		return this.response.create(data);
-	}
-
-	/**
-	 *
 	 * @param location {string|null}
 	 * @param status {FaHttpStatusCode}
 	 * @return {*}
@@ -92,6 +84,16 @@ class FaApplicationControllerHttp extends FaApplicationController {
 		return this.renderCustom(null, null, status ? status : this.statusCode.found, {
 			"Location": location ? location : "/",
 		});
+	}
+
+	/**
+	 *
+	 * @param body {*}
+	 * @param status {FaHttpStatusCode}
+	 * @return {*}
+	 */
+	render(body = null, status = null) {
+		return this.response.create(body, this.contentType.html, status);
 	}
 
 	/**
@@ -117,7 +119,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	}
 
 	/**
-	 *
+	 * @deprecated
 	 * @param body {Object}
 	 * @param status {FaHttpStatusCode}
 	 * @return {*}

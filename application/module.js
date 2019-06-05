@@ -1,10 +1,11 @@
 "use strict";
 /*fa-nodejs*/
 const FaError = require("fa-nodejs/base/error");
-const FaBaseFile = require("fa-nodejs/base/file");
+const FaFile = require("fa-nodejs/base/file");
+/** @member {Class|FaHttpResponse} */
+const FaHttpResponse = require("fa-nodejs/server/http-response");
+
 // const FaBaseTrace = require("fa-nodejs/base/trace");
-// const FaHttpClass = require("fa-nodejs/server/http");
-// const FaSocketClass = require("fa-nodejs/server/socket");
 class FaApplicationModule {
 	/**
 	 *
@@ -13,29 +14,19 @@ class FaApplicationModule {
 	 * @param socket {FaServerSocket}
 	 */
 	constructor(path, http, socket) {
-		// console.info(path);
-		// this._configuration = require(`${path}/config/application.js`);
-		// this._configuration = new FaApplicationConfiguration(path);
-		// this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9]+)Controller.js$`);
-		// this._regularPascalCase = new RegExp("[A-Z][^A-Z]*", "g");
 		this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9]+)Controller.js$`);
 		this._regularControllerName = new RegExp("^[a-z][a-z0-9-]+$");
 		this._regularControllerMethod = new RegExp("^[a-z][a-z0-9-]+[a-z0-9]$");
 		this._regularControllerAction = new RegExp("^action([A-Z][A-Za-z0-9]+)$");
-		this._FaFile = new FaBaseFile();
+		this._FaFile = new FaFile();
 		this._FaHttp = http;
 		this._FaSocket = socket;
 		this._path = path;
 		this._module_list = {};
+		this._presentation_list = {};
 		this._route_list = {};
 		this._controller_list = {};
-		// this._route_list = this.configuration.routes;
-		// this._loadFromConfiguration();
-		// this._loadFromDirectory();
-		// this._serveRoutes();
-		// this.readConfigurationRoutes();
 		this._loadModules(require(`${path}/config/application.js`));
-		// this.readModuleRoutes();
 	}
 
 	test() {
@@ -81,6 +72,10 @@ class FaApplicationModule {
 		return Object.keys(this._module_list);
 	}
 
+	get presentations() {
+		return Object.keys(this._presentation_list);
+	}
+
 	/**
 	 *
 	 * @return {string[]}
@@ -102,138 +97,104 @@ class FaApplicationModule {
 		let modules = configuration["modules"];
 		let routes = configuration["routes"];
 		Object.entries(modules).forEach(function ([moduleKey, moduleValue]) {
-			let route;
 			let module = moduleKey;
 			let pathname = `${self._path}/modules/${module}`;
-			// let name = moduleValue["name"];
 			let presentation = moduleValue["presentation"];
-			let controllersPath = `${pathname}/controllers`;
-			if (self._FaFile.isDirectory(pathname)) {
+			if (self._FaFile.isDirectory(`${self._path}/modules/${module}`)) {
 				self._module_list[module] = {
 					// pathname: pathname,
 					// name: name,
 					presentation: presentation,
 				};
-				if (routes[module]) {
-					Object.entries(routes[module]).forEach(function ([routeKey, routeValue]) {
-						route = {
-							uri: routeKey,
-							pathname: pathname,
-							presentation: routeValue["presentation"] ? routeValue["presentation"] : presentation,
-							module: module,
-							controller: routeValue["controller"],
-							action: routeValue["action"],
-						};
-						console.warn(self._getRouteIndex(route));
-						self._storeRoute(route);
-					});
+				if (moduleValue["presentation"]) {
+					// console.info(moduleValue);
+					// let path = `${self._path}/presentations/${module}/${self._getControllerFilename(module)}`;
+					// let PresentationClass = require(path);
+					// self._presentation_list[module] = new PresentationClass();
+					self._loadLayout(module, moduleValue["presentation"]["controller"]);
+					// console.warn(Controller);
+				} else {
+					throw new FaError(`presentation not set for module: ${module}`);
 				}
-				self._FaFile.readDirectorySync(controllersPath).map(function (controllerFilename) {
-					return self._getControllerName(controllerFilename);
-				}).filter(item => item).map(function (controller) {
-					// console.error(module, controller)
-					let Controller = self._loadController(module, controller);
-					self._readControllerMethods(Controller).forEach(function (action) {
-						let route_list = [];
-						let check = true;
-						let check_list = [module, controller, action];
-						while (check_list.length > 0) {
-							let index_item = check_list.pop();
-							if (check === true) {
-								if (index_item !== "index") {
-									check = false;
-									route_list.push(index_item);
-								}
-							} else {
-								route_list.push(index_item);
-							}
-						}
-						route = {
-							uri: `/${route_list.reverse().join("/")}`,
-							pathname: pathname,
-							presentation: presentation,
-							module: module,
-							controller: controller,
-							action: action,
-						};
-						if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
-							self._storeRoute(route);
-						} else if (route.uri === "/" && self._FaHttp.Router.exist(route.uri) === false) {
-							self._storeRoute(route);
-						}
-					});
-				});
+				self._loadRoutes(module, presentation, routes[module]);
 			}
 		});
 	}
 
-	_loadModuleRoutes(routes, module, pathname, presentation) {
+	_loadRoutes(module, presentation, routes) {
 		let self = this;
 		let route;
-		if (self._FaFile.isDirectory(pathname)) {
-			self._module_list[module] = {
-				// pathname: pathname,
-				// name: name,
-				presentation: presentation,
-			};
-			if (routes[module]) {
-				Object.entries(routes[module]).forEach(function ([routeKey, routeValue]) {
-					route = {
-						uri: routeKey,
-						pathname: pathname,
-						presentation: routeValue["presentation"] ? routeValue["presentation"] : presentation,
-						module: module,
-						controller: routeValue["controller"],
-						action: routeValue["action"],
-					};
-					console.warn(self._getRouteIndex(route));
-					self._storeRoute(route);
-				});
-			}
-			self._FaFile.readDirectorySync(`${pathname}/controllers`).map(function (controllerFilename) {
-				return self._getControllerName(controllerFilename);
-			}).filter(item => item).map(function (controller) {
-				// console.warn(module, controller)
-				let Controller = self._loadController(module, controller);
-				self._readControllerMethods(Controller).forEach(function (action) {
-					let route_list = [];
-					let check = true;
-					let check_list = [module, controller, action];
-					while (check_list.length > 0) {
-						let index_item = check_list.pop();
-						if (check === true) {
-							if (index_item !== "index") {
-								check = false;
-								route_list.push(index_item);
-							}
-						} else {
+		let pathname = `${self._path}/modules/${module}`;
+		if (routes) {
+			Object.entries(routes).forEach(function ([routeKey, routeValue]) {
+				route = {
+					uri: routeKey,
+					pathname: pathname,
+					presentation: routeValue["presentation"] ? routeValue["presentation"] : presentation,
+					module: module,
+					controller: routeValue["controller"],
+					action: routeValue["action"],
+				};
+				self._storeRoute(route);
+			});
+		}
+		self._FaFile.readDirectorySync(`${pathname}/controllers`).map(function (controllerFilename) {
+			return self._getControllerName(controllerFilename);
+		}).filter(item => item).map(function (controller) {
+			// console.warn(module, controller)
+			let Controller = self._loadController(module, controller);
+			self._readControllerMethods(Controller).forEach(function (action) {
+				let route_list = [];
+				let check = true;
+				let check_list = [module, controller, action];
+				while (check_list.length > 0) {
+					let index_item = check_list.pop();
+					if (check === true) {
+						if (index_item !== "index") {
+							check = false;
 							route_list.push(index_item);
 						}
+					} else {
+						route_list.push(index_item);
 					}
-					route = {
-						uri: `/${route_list.reverse().join("/")}`,
-						pathname: pathname,
-						presentation: presentation,
-						module: module,
-						controller: controller,
-						action: action,
-					};
-					if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
-						self._storeRoute(route);
-					} else if (route.uri === "/" && self._FaHttp.Router.exist(route.uri) === false) {
-						self._storeRoute(route);
-					}
-				});
+				}
+				route = {
+					uri: `/${route_list.reverse().join("/")}`,
+					pathname: pathname,
+					presentation: presentation,
+					module: module,
+					controller: controller,
+					action: action,
+				};
+				if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
+					self._storeRoute(route);
+				} else if (route.uri === "/" && self._FaHttp.Router.exist(route.uri) === false) {
+					self._storeRoute(route);
+				}
 			});
+		});
+	}
+
+	_getLayoutFilename(module) {
+		let match = module.match(this._regularControllerName);
+		if (match) {
+			return `${module.split("-").map(item => item.capitalize()).join("")}Presentation.js`;
+		} else {
+			return null;
 		}
 	}
 
-	_getModuleFilename(module) {
-		let match = module.match(this._regularControllerName);
-		if (match) {
-			return `${module.split("-").map(item => item.capitalize()).join("")}Module.js`;
+	_loadLayout(module, controller) {
+		let index = `${module}/${controller}`;
+		let path = `${this._path}/presentations/${module}/controllers/${this._getLayoutFilename(controller)}`;
+		if (!!this._presentation_list[index]) {
+			return this._presentation_list[index];
+		} else if (this._FaFile.isFile(path)) {
+			let Presentation = require(path);
+			this._presentation_list[index] = new Presentation();
+			return this._presentation_list[index];
 		} else {
-			return null;
+			throw new FaError(`presentation not found: ${path}`);
 		}
 	}
 
@@ -302,6 +263,7 @@ class FaApplicationModule {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	_getRouteIndex(data) {
 		let {module, controller, action} = data;
 		// return `${uri}@${module}/${controller}/${action}`;
@@ -309,6 +271,7 @@ class FaApplicationModule {
 	}
 
 	_storeRoute(route) {
+		let self = this;
 		let {uri, pathname, presentation, module, controller, action} = route;
 		// let index = `${uri}@${module}/${controller}/${action}`;
 		// console.warn(uri, index);
@@ -319,8 +282,16 @@ class FaApplicationModule {
 		if (Controller[controllerAction]) {
 			// console.log(uri, presentation);
 			this._FaHttp.Router.attach(uri, function () {
-				let res = Controller[controllerAction].apply(Controller, arguments);
-				return res;
+				let data = Controller[controllerAction].apply(Controller, arguments);
+				if (FaHttpResponse.check(data) === false) {
+					return data;
+				} else {
+					// console.info(data);
+					let Presentation = self._loadLayout(presentation["controller"], presentation["action"]);
+					return Presentation["renderIndex"].call(Presentation, data);
+				}
+				// console.warn(presentation);
+				// return res;
 			});
 		} else {
 			throw new FaError(`action not implemented in ${pathname}/controllers/${this._getControllerFilename(controller)}: ${controllerAction}()`);
