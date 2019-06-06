@@ -3,7 +3,7 @@
 const Buffer = require("buffer").Buffer;
 const Http = require("http");
 const Https = require("https");
-/** @member {Object} */
+/** @member {Class} */
 const MimeTypes = require("mime-types");
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
@@ -13,6 +13,7 @@ const FaBaseFile = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
 const FaBaseConverter = require("fa-nodejs/base/converter");
 const FaHttpRequestClass = require("fa-nodejs/server/http-request");
+/** @member {Class|FaHttpResponse}*/
 const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpContentType = require("./http-content-type");
 const FaHttpStatusCode = require("./http-status-code");
@@ -198,45 +199,50 @@ class FaServerHttp {
 				// input: body,
 			};
 			self._handleRequest(request).then(function (response) {
-				if (response["body"] === undefined || response["body"] === null) {
-					response["body"] = "";
-				}
+				// console.warn(response);
+				// if (response["body"] === null) {
+				// 	response["body"] = "";
+				// }
 				/*todo make proper content-type and|or charset extractor*/
-				if (!response["type"]) {
-					response["type"] = req.headers["accept"] || req.headers["content-type"] || self.type.text;
-				}
-				if (response["type"].includes(self.type.json)) {
-					response["body"] = self._converter.toJson(response["body"]);
-					response["type"] = self.type.json;
-				} else if (response["type"].includes(self.type.html)) {
-					// console.warn(response["body"], response["type"]);
-					response["body"] = self._converter.toHtml(response["body"]);
-					// response["body"] = response["body"].toString();
-					response["type"] = self.type.html;
-				} else if (response["type"].includes(self.type.urlencoded)) {
-					response["body"] = self._converter.toUrlEncoded(response["body"]);
-					response["type"] = self.type.urlencoded;
-				} else if (response["type"].includes(self.type.xml)) {
-					response["body"] = self._converter.toXml(response["body"]);
-					response["type"] = self.type.xml;
-				} else if (response["type"].includes(self.type.text)) {
-					response["body"] = response["body"].toString();
-					response["type"] = self.type.text;
-				} else {
-					if (response["body"] instanceof Buffer === false && typeof response["body"] !== "string") {
+				// let contentType = response["headers"]["Content-Type"] || req.headers["accept"] || req.headers["content-type"] || "undefined";
+				let contentType = self._getResponseContentType(response["headers"]["Content-Type"] || req.headers["accept"] || req.headers["content-type"]);
+				// console.error(response);
+				// console.warn(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
+				// console.error([contentType]);
+				// let a = Buffer.from([1, 2]);
+				// let b = {};
+				// console.error(!(a instanceof Buffer));
+				// console.error(!(b instanceof Buffer));
+				if (contentType && !(response["body"] instanceof Buffer)) {
+					console.message(contentType);
+					if (contentType.includes(self.type.json)) {
+						response["body"] = self._converter.toJson(response["body"]);
+					} else if (contentType.includes(self.type.html)) {
+						response["body"] = self._converter.toHtml(response["body"]);
+					} else if (contentType.includes(self.type.urlencoded)) {
+						response["body"] = self._converter.toUrlEncoded(response["body"]);
+					} else if (contentType.includes(self.type.xml)) {
+						response["body"] = self._converter.toXml(response["body"]);
+					} else if (contentType.includes(self.type.text)) {
+						response["body"] = self._converter.toText(response["body"]);
+					} else if (response["body"] instanceof Buffer === false) {
+						/*default converter*/
 						response["body"] = response["body"].toString();
-						response["type"] = self.type.text;
 					}
 				}
+				log(response["body"]);
 				Object.entries(response["headers"]).map(function ([key, value]) {
-					res.setHeader(key, value)
+					if (key === "Content-Type") {
+						// console.error(`${key}: ${value}`, contentType);
+						// 	// res.setHeader("content-type", `${data["type"]}; charset=utf8`);
+						res.setHeader("content-type", contentType);
+					} else {
+						res.setHeader(key, value);
+					}
 				});
+				// console.message("---");
 				if (response["status"]) {
 					res.statusCode = response["status"];
-				}
-				if (response["type"]) {
-					// res.setHeader("content-type", `${data["type"]}; charset=utf8`);
-					res.setHeader("content-type", response["type"]);
 				}
 				if (response["body"] instanceof Buffer) {
 					res.setHeader("content-length", response["body"].byteLength);
@@ -248,6 +254,20 @@ class FaServerHttp {
 			});
 		});
 	};
+
+	_getResponseContentType(contentType, reqAcceptType, reqContentType) {
+		// contentType = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
+		// contentType = "text/html";
+		// contentType = "text/html; charset=utf-8";
+		let type = contentType || reqAcceptType || reqContentType;
+		let result;
+		if (type) {
+			result = type.split(";").map(item => item.trim())[0].split(",")[0];
+		} else {
+			result = null;
+		}
+		return result;
+	}
 
 	/**
 	 *
@@ -305,7 +325,8 @@ class FaServerHttp {
 			if (self._checkResponse(result)) {
 				return result;
 			} else {
-				return self._createResponse(result);
+				// return self._createResponse(result);
+				return FaHttpResponse.createNew(result);
 			}
 		}).catch(function (e) {
 			let error = new FaError(e).pickTrace(0);
@@ -323,7 +344,7 @@ class FaServerHttp {
 	_handleFile(filename, type) {
 		try {
 			// console.error(filename, type);
-			return this._createResponse(this.File.readFileSync(filename.replace(/^\/?/, "")), type);
+			return FaHttpResponse.createNew(this.File.readFileSync(filename.replace(/^\/?/, "")), null, {"Content-Type": type});
 		} catch (e) {
 			let body = `${e.message} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
 			return this._createResponse(body, null, this.status.notFound);
@@ -335,20 +356,19 @@ class FaServerHttp {
 		return this._createResponse(body, null, this.status.notFound);
 	}
 
-	_createResponse(body = null, type = null, status = null, headers = null) {
-		let result = {body, type, status, headers};
-		if (result.headers && result.headers["content-type"]) {
-			result.type = headers["content-type"];
-		}
-		if (!result.status) {
-			result.status = this.status.ok;
-		}
-		if (!result.headers) {
-			result.headers = {};
-		}
-		return result;
-	}
-
+	// _createResponse(body = null, type = null, status = null, headers = null) {
+	// 	let result = {body, type, status, headers};
+	// 	if (result.headers && result.headers["content-type"]) {
+	// 		result.type = headers["content-type"];
+	// 	}
+	// 	if (!result.status) {
+	// 		result.status = this.status.ok;
+	// 	}
+	// 	if (!result.headers) {
+	// 		result.headers = {};
+	// 	}
+	// 	return result;
+	// }
 	// noinspection JSMethodCanBeStatic
 	_checkResponse(response) {
 		return !!(

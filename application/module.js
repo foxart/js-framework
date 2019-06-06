@@ -273,20 +273,18 @@ class FaApplicationModule {
 	_storeRoute(route) {
 		let self = this;
 		let {uri, pathname, presentation, module, controller, action} = route;
-		// let index = `${uri}@${module}/${controller}/${action}`;
-		// console.warn(uri, index);
 		this._route_list[this._getRouteIndex(route)] = route;
-		// console.info(data, index);
 		let Controller = this._loadController(module, controller);
 		let controllerAction = this._getControllerMethod(action);
 		if (Controller[controllerAction]) {
-			// console.log(uri, presentation);
 			this._FaHttp.Router.attach(uri, function () {
 				let data = Controller[controllerAction].apply(Controller, arguments);
+					// console.info(data);
 				if (FaHttpResponse.check(data) === false) {
+					console.info(false);
 					return data;
 				} else {
-					// console.info(data);
+					console.info(true);
 					let Presentation = self._loadLayout(presentation["controller"], presentation["action"]);
 					return Presentation["renderIndex"].call(Presentation, data);
 				}

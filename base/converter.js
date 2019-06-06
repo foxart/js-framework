@@ -190,9 +190,17 @@ class FaBaseConverter {
 	 * @param data {object|string}
 	 * @return {string}
 	 */
-	toHtml(data) {
+	toText(data) {
 		return this.isString(data) ? data : FaBeautify.plain(data);
-		// return this.isString(data) ? data : FaBeautify.html(data);
+	}
+
+	/**
+	 *
+	 * @param data {object|string}
+	 * @return {string}
+	 */
+	toHtml(data) {
+		return this.isString(data) ? data : FaBeautify.html(data);
 	}
 }
 

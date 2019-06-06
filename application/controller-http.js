@@ -19,6 +19,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 		this._FaServer = FaServerHttp;
 		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpResponse = new FaHttpResponse();
+		this._response = FaHttpResponse;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this._FaTemplateClass = new FaApplicationTemplate(!views_path ? this._getTemplatePath : views_path);
 		// console.warn(this._getTemplatePathname, this["actionIndex"]);
@@ -52,7 +53,7 @@ class FaApplicationControllerHttp extends FaApplicationController {
 
 	/**
 	 *
-	 * @return {FaServerHttpResponse}
+	 * @return {FaHttpResponse}
 	 */
 	get response() {
 		return this._FaHttpResponse;
@@ -106,6 +107,10 @@ class FaApplicationControllerHttp extends FaApplicationController {
 	 */
 	renderCustom(body = null, type = null, status = null, headers = null) {
 		return this.response.create(body, type, status, headers);
+	}
+
+	renderCustomNew(body = null, status = null, headers = null) {
+		return this._response.createNew(body, status, headers);
 	}
 
 	/**
