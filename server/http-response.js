@@ -1,31 +1,6 @@
 "use strict";
 
 class FaHttpResponse {
-	// constructor() {
-	// }
-	// noinspection JSMethodCanBeStatic
-	/**
-	 *
-	 * @param body {Object|string|Buffer}
-	 * @param type {FaHttpContentType}
-	 * @param status {FaHttpStatusCode}
-	 * @param headers {string|object|null}
-	 */
-	create(body, type = null, status = null, headers = {}) {
-		let result = {body, type, status, headers};
-		console.warn(result);
-		if (result.headers && result.headers["content-type"]) {
-			result.type = headers["content-type"];
-		}
-		if (!result.status) {
-			result.status = 200;
-		}
-		if (!result.headers) {
-			result.headers = {};
-		}
-		return result;
-	}
-
 	/**
 	 *
 	 * @param body {Buffer|Object|String|null}
@@ -33,21 +8,23 @@ class FaHttpResponse {
 	 * @param headers {Object|String|null}
 	 * @param type {String|null}
 	 */
-	static createNew(body = null, status = null, headers = null, type = null) {
-		let result = {body, status, headers, type};
-		// console.warn(result);
-		// if (result.headers && result.headers["content-type"]) {
-		// 	result.type = headers["content-type"];
-		// }
-		if (!result.status) {
-			result.status = 200;
+	static create(body = null, status = null, headers = null, type = null) {
+		let result = {
+			// body: body === null || body === undefined ? "" : body,
+			body: body === null ? "" : body,
+			status: 200,
+			headers: {},
+			type: type,
+		};
+		if (status) {
+			result.status = status;
 		}
-		if (!result.headers) {
-			result.headers = {};
+		if (headers && typeof headers === "string") {
+			result.headers["Content-Type"] = headers;
+		} else if (headers && typeof headers === "object") {
+			result.headers = headers;
 		}
-		if (!result.headers["Content-Type"]) {
-			result.headers["Content-Type"] = null;
-		}
+		// console.info(result);
 		return result;
 	}
 

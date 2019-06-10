@@ -1,10 +1,11 @@
 'use strict';
-/*node*/
+/*modules*/
 /** @type {*} */
 const FastXmlParser = require("fast-xml-parser");
 /** @type {*} */
 const QueryString = require("qs");
 /*fa*/
+const FaError = require("fa-nodejs/base/error");
 const FaBeautify = require("fa-nodejs/beautify");
 
 // const FaHttpContentType = require("fa-nodejs/server/http-content-type");
@@ -84,6 +85,9 @@ class FaBaseConverter {
 	 * @return {object|string}
 	 */
 	toJson(data) {
+		// if (data instanceof Error) {
+		// 	data = new FaError(data);
+		// }
 		return this.isString(data) ? data : JSON.stringify(data, null, 128);
 	}
 

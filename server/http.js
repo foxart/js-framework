@@ -199,56 +199,54 @@ class FaServerHttp {
 				// input: body,
 			};
 			self._handleRequest(request).then(function (response) {
-				// console.warn(response);
-				// if (response["body"] === null) {
-				// 	response["body"] = "";
-				// }
+
 				/*todo make proper content-type and|or charset extractor*/
-				// let contentType = response["headers"]["Content-Type"] || req.headers["accept"] || req.headers["content-type"] || "undefined";
-				let contentType = self._getResponseContentType(response["headers"]["Content-Type"] || req.headers["accept"] || req.headers["content-type"]);
-				// console.error(response);
-				// console.warn(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
-				// console.error([contentType]);
-				// let a = Buffer.from([1, 2]);
-				// let b = {};
-				// console.error(!(a instanceof Buffer));
-				// console.error(!(b instanceof Buffer));
-				if (contentType && !(response["body"] instanceof Buffer)) {
-					console.message(contentType);
-					if (contentType.includes(self.type.json)) {
-						response["body"] = self._converter.toJson(response["body"]);
-					} else if (contentType.includes(self.type.html)) {
-						response["body"] = self._converter.toHtml(response["body"]);
-					} else if (contentType.includes(self.type.urlencoded)) {
-						response["body"] = self._converter.toUrlEncoded(response["body"]);
-					} else if (contentType.includes(self.type.xml)) {
-						response["body"] = self._converter.toXml(response["body"]);
-					} else if (contentType.includes(self.type.text)) {
-						response["body"] = self._converter.toText(response["body"]);
-					} else if (response["body"] instanceof Buffer === false) {
+				let contentType = self._getResponseContentType(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
+				let charset = self._getResponseCharset(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
+				if (response["body"] instanceof Buffer === false) {
+					if (contentType) {
+						if (contentType.includes(self.type.json)) {
+							console.warn(response);
+							response["body"] = self._converter.toJson(response["body"]);
+							console.warn(response);
+						} else if (contentType.includes(self.type.html)) {
+							response["body"] = self._converter.toHtml(response["body"]);
+						} else if (contentType.includes(self.type.urlencoded)) {
+							response["body"] = self._converter.toUrlEncoded(response["body"]);
+						} else if (contentType.includes(self.type.xml)) {
+							response["body"] = self._converter.toXml(response["body"]);
+						} else if (contentType.includes(self.type.text)) {
+							response["body"] = self._converter.toText(response["body"]);
+						} else {
+							/*default converter*/
+							response["body"] = response["body"].toString();
+						}
+					} else {
 						/*default converter*/
 						response["body"] = response["body"].toString();
 					}
 				}
-				log(response["body"]);
+				if (contentType) {
+					// if (!response["headers"]["Content-Type"]) {
+					// response["headers"]["Content-Type"] = contentType;
+					// console.error(contentType, charset, [contentType, charset].filter(item => item).map(item => item.trim()).join("; "));
+					// response["headers"]["Content-Type"] = [contentType, charset].filter(item => item).map(item => item.trim()).join("; ");
+					res.setHeader("Content-Type", [contentType, charset].filter(item => item).map(item => item.trim()).join("; "));
+				}
 				Object.entries(response["headers"]).map(function ([key, value]) {
-					if (key === "Content-Type") {
-						// console.error(`${key}: ${value}`, contentType);
-						// 	// res.setHeader("content-type", `${data["type"]}; charset=utf8`);
-						res.setHeader("content-type", contentType);
-					} else {
+					if (key !== "Content-Type") {
 						res.setHeader(key, value);
 					}
+					// console.warn(`${key}: ${value}`);
 				});
-				// console.message("---");
-				if (response["status"]) {
-					res.statusCode = response["status"];
-				}
 				if (response["body"] instanceof Buffer) {
-					res.setHeader("content-length", response["body"].byteLength);
+					res.setHeader("Content-Length", response["body"].byteLength);
+					// } else if (response["body"]) {
+					// 	res.setHeader("Content-Length", 0);
 				} else {
-					res.setHeader("content-length", Buffer.from(response["body"]).byteLength);
+					res.setHeader("Content-Length", Buffer.from(response["body"]).byteLength);
 				}
+				res.statusCode = response["status"];
 				res.write(response["body"]);
 				res.end();
 			});
@@ -256,17 +254,28 @@ class FaServerHttp {
 	};
 
 	_getResponseContentType(contentType, reqAcceptType, reqContentType) {
+		// contentType = "text/html  ,application/xhtml+xml,application/xml;  q=0.9;charset=windows-1251";
 		// contentType = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
-		// contentType = "text/html";
-		// contentType = "text/html; charset=utf-8";
-		let type = contentType || reqAcceptType || reqContentType;
-		let result;
-		if (type) {
-			result = type.split(";").map(item => item.trim())[0].split(",")[0];
+		// contentType = "text/html ";
+		// contentType = "  text/plain,a-1; charset=utf-8";
+		// contentType = "charset=utf-8";
+		let check = contentType || reqAcceptType || reqContentType;
+		if (check) {
+			let type = check.split(";");
+			return type[0].split(",").filter(item => item.indexOf("charset=") === -1 ? item : false)[0];
 		} else {
-			result = null;
+			return null;
 		}
-		return result;
+	}
+
+	_getResponseCharset(contentType, reqAcceptType, reqContentType) {
+		let check = contentType || reqAcceptType || reqContentType;
+		if (check) {
+			let type = check.split(";");
+			return type.filter(item => item.indexOf("charset=") !== -1 ? item : false)[0];
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -321,16 +330,17 @@ class FaServerHttp {
 		return new Promise(function (resolve) {
 			resolve(callback.call(self, data));
 		}).then(function (result) {
-			// console.warn(callback, self.Router.list);
-			if (self._checkResponse(result)) {
+			if (FaHttpResponse.check(result)) {
 				return result;
 			} else {
-				// return self._createResponse(result);
-				return FaHttpResponse.createNew(result);
+				// console.error(result, FaHttpResponse.create(result));
+				return FaHttpResponse.create(result);
 			}
 		}).catch(function (e) {
 			let error = new FaError(e).pickTrace(0);
-			return self._createResponse(error, null, self.status.internalServerError);
+			// return self._createResponse(error, null, self.status.internalServerError);
+			console.info(error);
+			return FaHttpResponse.create(error, self.status.internalServerError);
 		});
 	}
 
@@ -344,40 +354,16 @@ class FaServerHttp {
 	_handleFile(filename, type) {
 		try {
 			// console.error(filename, type);
-			return FaHttpResponse.createNew(this.File.readFileSync(filename.replace(/^\/?/, "")), null, {"Content-Type": type});
+			return FaHttpResponse.create(this.File.readFileSync(filename.replace(/^\/?/, "")), null, {"Content-Type": type});
 		} catch (e) {
 			let body = `${e.message} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
-			return this._createResponse(body, null, this.status.notFound);
+			return FaHttpResponse.create(body, this.status.notFound);
 		}
 	}
 
 	_handleNotFound(route) {
 		let body = `route not found: ${route} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
-		return this._createResponse(body, null, this.status.notFound);
-	}
-
-	// _createResponse(body = null, type = null, status = null, headers = null) {
-	// 	let result = {body, type, status, headers};
-	// 	if (result.headers && result.headers["content-type"]) {
-	// 		result.type = headers["content-type"];
-	// 	}
-	// 	if (!result.status) {
-	// 		result.status = this.status.ok;
-	// 	}
-	// 	if (!result.headers) {
-	// 		result.headers = {};
-	// 	}
-	// 	return result;
-	// }
-	// noinspection JSMethodCanBeStatic
-	_checkResponse(response) {
-		return !!(
-			response
-			&& response.hasOwnProperty("body")
-			&& response.hasOwnProperty("type")
-			&& response.hasOwnProperty("status")
-			&& response.hasOwnProperty("headers")
-		);
+		return FaHttpResponse.create(body, this.status.notFound);
 	}
 }
 

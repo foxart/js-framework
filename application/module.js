@@ -277,19 +277,14 @@ class FaApplicationModule {
 		let Controller = this._loadController(module, controller);
 		let controllerAction = this._getControllerMethod(action);
 		if (Controller[controllerAction]) {
-			this._FaHttp.Router.attach(uri, function () {
-				let data = Controller[controllerAction].apply(Controller, arguments);
-					// console.info(data);
-				if (FaHttpResponse.check(data) === false) {
-					console.info(false);
-					return data;
-				} else {
-					console.info(true);
+			this._FaHttp.Router.attach(uri, async function () {
+				let data = await Controller[controllerAction].apply(Controller, arguments);
+				if (data && data["type"] === "layout") {
 					let Presentation = self._loadLayout(presentation["controller"], presentation["action"]);
 					return Presentation["renderIndex"].call(Presentation, data);
+				} else {
+					return data;
 				}
-				// console.warn(presentation);
-				// return res;
 			});
 		} else {
 			throw new FaError(`action not implemented in ${pathname}/controllers/${this._getControllerFilename(controller)}: ${controllerAction}()`);

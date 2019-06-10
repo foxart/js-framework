@@ -36,6 +36,7 @@ class FaHttpConfiguration {
 				// fromXml: this._converterFromXml,
 				// toXml: this._converterToXml,
 			},
+			charset: "utf-8",
 		}
 	};
 
