@@ -5,7 +5,7 @@ const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 
-class FaPresentation {
+class FaLayout {
 	/**
 	 * @constructor
 	 * @param pathname {string|null}
@@ -21,7 +21,7 @@ class FaPresentation {
 	 * @private
 	 */
 	get _getTemplatePathname() {
-		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Presentation.js$`);
+		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Layout.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_path = FaTrace.trace(2)["path"].match(regular_path);
 		if (match_path) {
@@ -57,6 +57,6 @@ class FaPresentation {
 
 /**
  *
- * @type {FaPresentation}
+ * @type {FaLayout}
  */
-module.exports = FaPresentation;
+module.exports = FaLayout;
