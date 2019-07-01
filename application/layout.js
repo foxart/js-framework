@@ -21,11 +21,11 @@ class FaLayout {
 	 * @private
 	 */
 	get _getTemplatePathname() {
-		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Layout.js$`);
+		let regular_path = new RegExp(`^(.+)/layouts/([A-Z][^-]+)Layout.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_path = FaTrace.trace(2)["path"].match(regular_path);
 		if (match_path) {
-			return `${match_path[1]}/views/${match_path[2].match(regular_name).join("-").toLowerCase()}`;
+			return `${match_path[1]}/layouts/${match_path[2].match(regular_name).join("-").toLowerCase()}`;
 		} else {
 			return null;
 		}
