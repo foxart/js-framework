@@ -9,12 +9,22 @@ let lists = {
 	x11: require('./color-x11')
 };
 /**
- *
+ * @deprecated
  * @param color
  * @returns {*}
  */
 exports.nameFromHexUla = function (color) {
 	return ColorUlaConfiguration.map(function (name) {
+		// noinspection JSUnresolvedFunction
+		name.distance = chroma.deltaE(color, name.hex);
+		return name
+	}).sort(function (a, b) {
+		return a.distance - b.distance
+	})
+};
+exports.nameFromScheme = function (color, scheme) {
+	return scheme.map(function (name) {
+		// noinspection JSUnresolvedFunction
 		name.distance = chroma.deltaE(color, name.hex);
 		return name
 	}).sort(function (a, b) {
@@ -22,7 +32,7 @@ exports.nameFromHexUla = function (color) {
 	})
 };
 /**
- *
+ * @deprecated
  * @param color
  * @param options
  */
@@ -38,6 +48,7 @@ exports.nameFromHex = function (color, options) {
 				continue
 			}
 			results[key] = lists[key].map(function (name) {
+				// noinspection JSUnresolvedFunction
 				name.distance = chroma.deltaE(color, name.hex);
 				return name
 			}).sort(function (a, b) {
@@ -47,19 +58,20 @@ exports.nameFromHex = function (color, options) {
 	}
 	return results
 };
-/**
- *
- * @param hex
- */
-exports.hexToName = function (hex) {
-	return this.hexToRgb(hex);
-};
+// exports.hexToName = function (hex) {
+// 	return this.hexToRgb(hex);
+// };
 exports.rgbToHex = function (rgb) {
 	return "#" +
 		("0" + parseInt(rgb['r'], 10).toString(16)).slice(-2) +
 		("0" + parseInt(rgb['g'], 10).toString(16)).slice(-2) +
 		("0" + parseInt(rgb['b'], 10).toString(16)).slice(-2);
 };
+/**
+ * @deprecated
+ * @param color
+ * @return {string}
+ */
 exports.parseRgbToHex = function (color) {
 	let rgb = color.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
 	console.log(rgb);

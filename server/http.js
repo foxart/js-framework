@@ -206,9 +206,9 @@ class FaServerHttp {
 				if (response["body"] instanceof Buffer === false) {
 					if (contentType) {
 						if (contentType.includes(self.type.json)) {
-							console.warn(response);
+							// console.warn(response);
 							response["body"] = self._converter.toJson(response["body"]);
-							console.warn(response);
+							// console.warn(response);
 						} else if (contentType.includes(self.type.html)) {
 							response["body"] = self._converter.toHtml(response["body"]);
 						} else if (contentType.includes(self.type.urlencoded)) {
