@@ -12,18 +12,18 @@ class FaApplicationModule {
 	/**
 	 *
 	 * @param path {string}
-	 * @param http {FaServerHttp}
-	 * @param socket {FaServerSocket}
+	 * @param FaHttp {FaServerHttp}
+	 * @param FaSocket {FaServerSocket}
 	 */
-	constructor(path, http, socket) {
-		this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9]+)Controller.js$`);
-		this._regularControllerName = new RegExp("^[a-z][a-z0-9-]+$");
-		this._regularControllerMethod = new RegExp("^[a-z][a-z0-9-]+[a-z0-9]$");
-		this._regularControllerAction = new RegExp("^action([A-Z][A-Za-z0-9]+)$");
+	constructor(path, FaHttp, FaSocket) {
+		this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9_]+)Controller.js$`);
+		this._regularControllerName = new RegExp("^[a-z][a-z0-9-_]+$");
+		this._regularControllerMethod = new RegExp("^[a-z][a-z0-9-_]+[a-z0-9]$");
+		this._regularControllerAction = new RegExp("^action([A-Z][A-Za-z0-9_]+)$");
 		this._regularLayoutMethod = new RegExp("^[a-z][a-z0-9-]+[a-z0-9]$");
 		this._FaFile = new FaFile();
-		this._FaHttp = http;
-		this._FaSocket = socket;
+		this._FaHttp = FaHttp;
+		this._FaSocket = FaSocket;
 		this._path = path;
 		this._module_list = {};
 		this._layout_list = {};
@@ -42,16 +42,6 @@ class FaApplicationModule {
 			"I0ndexController.js",
 			"Index_TestController.js",
 		];
-		let controllersName = controllers.map(function (controller) {
-			return self._getControllerName(controller);
-		}).filter(item => item);
-		console.info("controllersName", controllersName);
-		/**/
-		let controllersFilename = controllersName.map(function (controller) {
-			return self._getControllerFilename(controller);
-		}).filter(item => item);
-		console.info("controllersFilename", controllersFilename);
-		/**/
 		let actions = [
 			"index",
 			"index1-test",
@@ -61,14 +51,23 @@ class FaApplicationModule {
 			"ss-as-_1",
 		];
 		/**/
+		let controllersName = controllers.map(function (controller) {
+			return self._controllerFilenameToName(controller);
+		}).filter(item => item);
+		let controllersFilename = controllersName.map(function (controller) {
+			return self._controllerFilename("index", controller);
+		}).filter(item => item);
+		console.info("controllersName", controllersName);
+		console.info("controllersFilename", controllersFilename);
+		/**/
 		let actionsName = actions.map(function (action) {
-			return self._getControllerMethod(action);
+			return self._controllerMethodToAction(action);
 		}).filter(item => item);
-		console.info("actionsName", actionsName);
 		let methodsName = actionsName.map(function (action) {
-			return self._getControllerAction(action);
+			return self._controllerActionToMethod(action);
 		}).filter(item => item);
-		console.info("methodsName", methodsName);
+		console.info("methods", methodsName);
+		console.info("actions", actionsName);
 	}
 
 	get modules() {
@@ -92,7 +91,8 @@ class FaApplicationModule {
 	 * @return {string[]}
 	 */
 	get routes() {
-		return Object.keys(this._route_list);
+		// return Object.keys(this._route_list);
+		return this._route_list;
 	}
 
 	_loadModules(configuration) {
@@ -130,7 +130,7 @@ class FaApplicationModule {
 			});
 		}
 		self._FaFile.readDirectorySync(`${pathname}/controllers`).map(function (controllerFilename) {
-			return self._getControllerName(controllerFilename);
+			return self._controllerFilenameToName(controllerFilename);
 		}).filter(item => item).map(function (controller) {
 			// console.warn(module, controller)
 			let Controller = self._loadController(moduleKey, controller);
@@ -166,7 +166,7 @@ class FaApplicationModule {
 		});
 	}
 
-	_getLayoutFilename(module) {
+	_layoutFilename(module) {
 		if (module.layout) {
 			console.error(FaTrace.trace());
 		}
@@ -178,17 +178,17 @@ class FaApplicationModule {
 		}
 	}
 
-	_getLayoutMethod(action) {
-		let match = action.match(this._regularLayoutMethod);
+	_layoutMethodToRender(render) {
+		let match = render.match(this._regularLayoutMethod);
 		if (match) {
 			return `render${match[0].split("-").map(item => item.capitalize()).join("")}`;
 		} else {
-			throw new Error(`wrong layout action: ${action}`);
+			throw new Error(`wrong layout render: ${render}`);
 		}
 	}
 
 	_loadLayout(layout) {
-		let path = this._getLayoutFilename(layout);
+		let path = this._layoutFilename(layout);
 		if (!!this._layout_list[layout]) {
 			return this._layout_list[layout];
 		} else if (this._FaFile.isFile(path)) {
@@ -200,7 +200,7 @@ class FaApplicationModule {
 		}
 	}
 
-	_getControllerFilename(module, controller) {
+	_controllerFilename(module, controller) {
 		let match = controller.match(this._regularControllerName);
 		if (match) {
 			return `${this._path}/modules/${module}/controllers/${controller.split("-").map(item => item.capitalize()).join("")}Controller.js`;
@@ -209,7 +209,7 @@ class FaApplicationModule {
 		}
 	}
 
-	_getControllerName(controller) {
+	_controllerFilenameToName(controller) {
 		let match = controller.match(this._regularControllerFilename);
 		if (match) {
 			return match[1].split(/(?=[A-Z])/).join("-").toLowerCase();
@@ -218,16 +218,17 @@ class FaApplicationModule {
 		}
 	}
 
-	_getControllerMethod(action) {
+	_controllerMethodToAction(action) {
 		let match = action.match(this._regularControllerMethod);
 		if (match) {
 			return `action${match[0].split("-").map(item => item.capitalize()).join("")}`;
 		} else {
-			throw new Error(`wrong controller action: ${action}`);
+			// throw new Error(`wrong controller action: ${action}`);
+			return null;
 		}
 	}
 
-	_getControllerAction(method) {
+	_controllerActionToMethod(method) {
 		let match = method.match(this._regularControllerAction);
 		if (match) {
 			return match[1].split(/(?=[A-Z])/).join("-").toLowerCase();
@@ -245,13 +246,13 @@ class FaApplicationModule {
 	_readControllerMethods(controller) {
 		let self = this;
 		return Reflect.ownKeys(Reflect.getPrototypeOf(controller)).map(function (method) {
-			return self._getControllerAction(method);
+			return self._controllerActionToMethod(method);
 		}).filter(item => item);
 	}
 
 	_loadController(module, controller) {
 		let index = `${module}/${controller}`;
-		let path = this._getControllerFilename(module, controller);
+		let path = this._controllerFilename(module, controller);
 		if (!!this._controller_list[index]) {
 			return this._controller_list[index];
 		} else if (this._FaFile.isFile(path)) {
@@ -275,28 +276,29 @@ class FaApplicationModule {
 		let self = this;
 		let {uri, module, layout, render, controller, action} = route;
 		if (!this._route_list[this._getRouteIndex(route)]) {
-			this._route_list[this._getRouteIndex(route)] = route;
+			this._route_list[this._getRouteIndex(route)] = uri;
+			// this._uri_list.push(route);
 		}
 		// this._route_list[this._getRouteIndex(route)] = route;
 		let Controller = this._loadController(module, controller);
-		let controllerAction = this._getControllerMethod(action);
+		let controllerAction = this._controllerMethodToAction(action);
 		if (Controller[controllerAction]) {
 			this._FaHttp.Router.attach(uri, async function () {
 				let data = await Controller[controllerAction].apply(Controller, arguments);
 				if (data && data["type"] === "layout") {
 					let Layout = self._loadLayout(layout);
-					let layoutRender = self._getLayoutMethod(render);
+					let layoutRender = self._layoutMethodToRender(render);
 					if (Layout[layoutRender]) {
 						return Layout[layoutRender].call(Layout, data);
 					} else {
-						throw new FaError(`${layoutRender} not implemented in ${self._getLayoutFilename(module)}`);
+						throw new FaError(`${layoutRender} not implemented in ${self._layoutFilename(module)}`);
 					}
 				} else {
 					return data;
 				}
 			});
 		} else {
-			throw new FaError(`${controllerAction} not implemented in ${this._getControllerFilename(module, controller)}`);
+			throw new FaError(`${controllerAction} not implemented in ${this._controllerFilename(module, controller)}`);
 		}
 		// }
 	}
