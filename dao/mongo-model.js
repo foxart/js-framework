@@ -1,8 +1,11 @@
 "use strict";
 /*node*/
+// noinspection JSUnresolvedVariable
+/** @member {ObjectID|Class} */
 const ObjectID = require("mongodb").ObjectID;
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
+/** @member {FaTrace|Class} */
 const FaTrace = require("fa-nodejs/base/trace");
 const FaDaoModel = require("fa-nodejs/dao/model");
 const FaDaoMongoClient = require("fa-nodejs/dao/mongo-client");
@@ -55,7 +58,7 @@ class FaDaoMongoModel extends FaDaoModel {
 
 	/**
 	 * @param pipeline {Array|Object}
-	 * @param options {Collection~aggregationCallback|null}
+	 * @param options Object
 	 * @returns {Promise<Array|null>}
 	 */
 	async aggregate(pipeline, options = null) {
@@ -70,6 +73,22 @@ class FaDaoMongoModel extends FaDaoModel {
 			throw new FaError(e).setTrace(trace);
 		}
 	};
+
+	async deleteMany(filter = null, options = null) {
+		let trace = FaTrace.trace(1);
+		try {
+			let connection = await this._client.open();
+			let collection = await this._client.collection(connection, this.table);
+			let cursor = await collection.deleteMany(filter, options);
+			let result = {
+				deleted: cursor["deletedCount"],
+			};
+			await this._client.close(connection);
+			return result;
+		} catch (e) {
+			throw new FaError(e).setTrace(trace);
+		}
+	}
 
 	/**
 	 * @param filter {Object|null}
@@ -121,7 +140,7 @@ class FaDaoMongoModel extends FaDaoModel {
 	 *
 	 * @param document {Object}
 	 * @param options {Object|null}
-	 * @return {Promise<{inserted: number, data: Object, id: ObjectID}>}
+	 * @return {Promise<{inserted: number, data: Object, id: *}>}
 	 */
 	async insertOne(document, options = null) {
 		let trace = FaTrace.trace(1);
@@ -145,7 +164,7 @@ class FaDaoMongoModel extends FaDaoModel {
 	 *
 	 * @param document {Object[]}
 	 * @param options {Object|null}
-	 * @return {Promise<{inserted: number, data: Object, id: ObjectID[]}>}
+	 * @return {Promise<{inserted: number, data: Object, id: ObjectID}>}
 	 */
 	async insertMany(document, options = null) {
 		let trace = FaTrace.trace(1);

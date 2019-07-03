@@ -131,7 +131,7 @@ class FaBaseFile {
 		let trace = FaBaseTrace.trace(1);
 		let self = this;
 		return new Promise(function (resolve, reject) {
-			Fs.readFile(self.path(filename), {}, function (e, buffer) {
+			Fs.readFile(self.getPath(filename), {}, function (e, buffer) {
 				if (e) {
 					reject(FaBaseFile._Error(e).setTrace(trace));
 				} else {
