@@ -43,6 +43,11 @@ class FaBaseFile {
 		}
 	}
 
+
+	get pathname(){
+		return this._path;
+	}
+
 	/**
 	 *
 	 * @param name {string}

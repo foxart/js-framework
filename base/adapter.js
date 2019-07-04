@@ -5,7 +5,7 @@ const FaError = require("fa-nodejs/base/error");
 let TestPattern = "^(?:\\[\\\"([^\\[\\]\\\"]+)\\\"\\])+$";
 let MatchPattern = "[^\\[\\]\\\"]+";
 
-class FaBaseAdapter {
+class FaAdapter {
 	/**
 	 *
 	 * @constructor
@@ -15,7 +15,7 @@ class FaBaseAdapter {
 		this._TestExpression = new RegExp(TestPattern);
 		this._MatchExpression = new RegExp(MatchPattern, "g");
 		this._adapter = adapter;
-		this._use = {};
+		this._arguments = {};
 	};
 
 	/**
@@ -42,47 +42,71 @@ class FaBaseAdapter {
 	 *
 	 * @param adapter {Object}
 	 * @param data {Array}
-	 * @param use
+	 * @param args
 	 * @return {Array|Object}
 	 * @private
 	 */
-	_extract(adapter, data, use) {
-		let context = this;
+	_extract(adapter, data, args) {
+		let self = this;
 		return data.map(function (map) {
 			let result = Array.isArray(adapter) ? [] : {};
 			if (typeof adapter === "function") {
 				try {
-					result = adapter.apply(map, use);
+					result = adapter.apply(map, args);
 				} catch (e) {
 					result = new FaError(e).pickTrace(0).setContext(map);
 				}
 			} else if (typeof adapter === "string") {
-				if (context._TestExpression.test(adapter)) {
-					result = context._extractObject(map, adapter.match(context._MatchExpression));
+				if (self._TestExpression.test(adapter)) {
+					result = self._extractObject(map, adapter.match(self._MatchExpression));
 				} else {
 					result = adapter;
 				}
 			} else {
-				Object.entries(adapter).map(function ([key, value]) {
-					if (typeof value === "string" && context._TestExpression.test(value)) {
-						result[key] = context._extractObject(map, value.match(context._MatchExpression));
-					} else if (value && value.constructor === Array) {
-						result[key] = context._extract(value, [map], use)[0];
-					} else if (value && value.constructor === Object) {
-						result[key] = context._extract(value, [map], use)[0];
-					} else if (typeof value === "function") {
-						let result_function;
-						try {
-							result_function = value.apply(map, use);
-						} catch (e) {
-							result_function = new FaError(e).pickTrace(0).setContext(map);
+				// Object.entries(adapter).map(function ([key, value]) {
+				// 	if (typeof value === "string" && context._TestExpression.test(value)) {
+				// 		result[key] = context._extractObject(map, value.match(context._MatchExpression));
+				// 	} else if (value && value.constructor === Array) {
+				// 		result[key] = context._extract(value, [map], args)[0];
+				// 	} else if (value && value.constructor === Object) {
+				// 		result[key] = context._extract(value, [map], args)[0];
+				// 	} else if (typeof value === "function") {
+				// 		let result_function;
+				// 		try {
+				// 			result_function = value.apply(map, args);
+				// 		} catch (e) {
+				// 			result_function = new FaError(e).pickTrace(0).setContext(map);
+				// 		}
+				// 		result[key] = result_function;
+				// 	} else {
+				// 		result[key] = value;
+				// 	}
+				// 	result[key] = result[key] === undefined ? null : result[key];
+				// });
+				if (adapter && (adapter.constructor === Object || adapter.constructor === Array)) {//todo check how adapter can possibilly be null or undefined
+					Object.entries(adapter).map(function ([key, value]) {
+						if (typeof value === "string" && self._TestExpression.test(value)) {
+							result[key] = self._extractObject(map, value.match(self._MatchExpression));
+						} else if (value && value.constructor === Array) {
+							result[key] = self._extract(value, [map], args)[0];
+						} else if (value && value.constructor === Object) {
+							result[key] = self._extract(value, [map], args)[0];
+						} else if (typeof value === "function") {
+							let result_function;
+							try {
+								result_function = value.apply(map, args);
+							} catch (e) {
+								result_function = new FaError(e).pickTrace(0).setContext(map);
+							}
+							result[key] = result_function;
+						} else {
+							result[key] = value;
 						}
-						result[key] = result_function;
-					} else {
-						result[key] = value;
-					}
-					result[key] = result[key] === undefined ? null : result[key];
-				});
+						result[key] = result[key] === undefined ? null : result[key];
+					});
+				} else {
+					result = adapter;
+				}
 			}
 			return result;
 		});
@@ -102,10 +126,10 @@ class FaBaseAdapter {
 
 	/**
 	 *
-	 * @return {FaBaseAdapter}
+	 * @return {FaAdapter}
 	 */
 	use() {
-		this._use = arguments;
+		this._arguments = arguments;
 		return this;
 	}
 
@@ -115,11 +139,30 @@ class FaBaseAdapter {
 	 * @return {Object|Array<Object>}
 	 */
 	apply(data) {
+		// if (Array.isArray(data)) {
+		// 	result = this._extract(this._adapter, data, this._arguments);
+		// } else {
+		// 	result = this._extract(this._adapter, [data], this._arguments)[0];
+		// }
+		// return result;
+		/**/
 		let result;
-		if (Array.isArray(data)) {
-			result = this._extract(this._adapter, data, this._use);
+		let adapter;
+		if (typeof this.adapter === "function") {
+			adapter = this.adapter.apply(data, this._arguments);
+			// if (Array.isArray(data)) {
+			// 	result = this._extract(adapter, data, this._arguments);
+			// } else {
+			// 	result = this._extract(adapter, [data], this._arguments)[0];
+			// }
+			// return result;
 		} else {
-			result = this._extract(this._adapter, [data], this._use)[0];
+			adapter = this.adapter;
+		}
+		if (Array.isArray(data)) {
+			result = this._extract(adapter, data, this._arguments);
+		} else {
+			result = this._extract(adapter, [data], this._arguments)[0];
 		}
 		return result;
 	}
@@ -127,6 +170,6 @@ class FaBaseAdapter {
 
 /**
  *
- * @type {FaBaseAdapter}
+ * @type {FaAdapter}
  */
-module.exports = FaBaseAdapter;
+module.exports = FaAdapter;
