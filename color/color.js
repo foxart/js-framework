@@ -8,6 +8,40 @@ let lists = {
 	roygbiv: require('./color-roygbiv'),
 	x11: require('./color-x11')
 };
+exports.nameFromScheme = function (hex, scheme) {
+	return scheme.map(function (item) {
+		// noinspection JSUnresolvedFunction
+		item.distance = chroma.deltaE(hex, item.hex);
+		return item;
+	}).sort(function (a, b) {
+		return a.distance - b.distance;
+	})
+};
+exports.hexFromScheme = function (color, scheme) {
+	return scheme.filter(function (item) {
+		if (color === item.name) {
+			// noinspection JSUnresolvedFunction
+			item.distance = chroma.deltaE(color, item.hex);
+			return item;
+		}
+	}).sort(function (a, b) {
+		return a.distance - b.distance;
+	})
+};
+exports.rgbToHex = function (rgb) {
+	return "#" +
+		("0" + parseInt(rgb['r'], 10).toString(16)).slice(-2) +
+		("0" + parseInt(rgb['g'], 10).toString(16)).slice(-2) +
+		("0" + parseInt(rgb['b'], 10).toString(16)).slice(-2);
+};
+exports.hexToRgb = function (hex) {
+	let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? {
+		r: parseInt(result[1], 16),
+		g: parseInt(result[2], 16),
+		b: parseInt(result[3], 16)
+	} : null;
+};
 /**
  * @deprecated
  * @param color
@@ -15,15 +49,6 @@ let lists = {
  */
 exports.nameFromHexUla = function (color) {
 	return ColorUlaConfiguration.map(function (name) {
-		// noinspection JSUnresolvedFunction
-		name.distance = chroma.deltaE(color, name.hex);
-		return name
-	}).sort(function (a, b) {
-		return a.distance - b.distance
-	})
-};
-exports.nameFromScheme = function (color, scheme) {
-	return scheme.map(function (name) {
 		// noinspection JSUnresolvedFunction
 		name.distance = chroma.deltaE(color, name.hex);
 		return name
@@ -58,15 +83,6 @@ exports.nameFromHex = function (color, options) {
 	}
 	return results
 };
-// exports.hexToName = function (hex) {
-// 	return this.hexToRgb(hex);
-// };
-exports.rgbToHex = function (rgb) {
-	return "#" +
-		("0" + parseInt(rgb['r'], 10).toString(16)).slice(-2) +
-		("0" + parseInt(rgb['g'], 10).toString(16)).slice(-2) +
-		("0" + parseInt(rgb['b'], 10).toString(16)).slice(-2);
-};
 /**
  * @deprecated
  * @param color
@@ -80,13 +96,3 @@ exports.parseRgbToHex = function (color) {
 		("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) +
 		("0" + parseInt(rgb[3], 10).toString(16)).slice(-2) : '';
 };
-exports.hexToRgb = function (hex) {
-	let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	return result ? {
-		r: parseInt(result[1], 16),
-		g: parseInt(result[2], 16),
-		b: parseInt(result[3], 16)
-	} : null;
-};
-// namer.chroma = chroma;
-// namer.lists = lists;
