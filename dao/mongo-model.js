@@ -198,7 +198,7 @@ class FaDaoMongoModel extends FaDaoModel {
 			let collection = await this._client.collection(connection, this.table);
 			let cursor = await collection.updateOne(filter, update, options);
 			// let cursor = await collection.findOneAndUpdate(filter, update, options);
-			// console.info(cursor)
+			// log(cursor);
 			let result = {
 				_id: cursor["upsertedId"] === null ? null : cursor["upsertedId"]["_id"],
 				filtered: cursor["matchedCount"],

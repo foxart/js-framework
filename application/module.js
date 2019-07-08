@@ -29,7 +29,7 @@ class FaApplicationModule {
 		this._layout_list = {};
 		this._route_list = {};
 		this._controller_list = {};
-		this._loadModules(require(`${path}/config/application.js`));
+		this._loadModules(require(`${path}/configuration/application.js`));
 	}
 
 	test() {

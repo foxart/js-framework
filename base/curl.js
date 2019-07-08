@@ -70,7 +70,9 @@ class FaBaseCurl {
 						return this["protocol"] === "https" ? 443 : 80;
 					}
 				},
-				path: `["path"]`,
+				path: function () {
+					return this["path"] ? this["path"] : "/";
+				},
 				method: function () {
 					if (this["method"]) {
 						return this["method"].toLowerCase();
