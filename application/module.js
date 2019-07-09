@@ -284,6 +284,7 @@ class FaApplicationModule {
 		let controllerAction = this._controllerMethodToAction(action);
 		if (Controller[controllerAction]) {
 			this._FaHttp.Router.attach(uri, async function () {
+				// console.info(module, controller);
 				let data = await Controller[controllerAction].apply(Controller, arguments);
 				if (data && data["type"] === "layout") {
 					let Layout = self._loadLayout(layout);
