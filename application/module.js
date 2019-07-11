@@ -223,8 +223,8 @@ class FaApplicationModule {
 		if (match) {
 			return `action${match[0].split("-").map(item => item.capitalize()).join("")}`;
 		} else {
-			// throw new Error(`wrong controller action: ${action}`);
-			return null;
+			throw new Error(`wrong controller action: ${action}`);
+			// return null;
 		}
 	}
 
@@ -286,6 +286,7 @@ class FaApplicationModule {
 			this._FaHttp.Router.attach(uri, async function () {
 				// console.info(module, controller);
 				let data = await Controller[controllerAction].apply(Controller, arguments);
+				console.log(data["type"]);
 				if (data && data["type"] === "layout") {
 					let Layout = self._loadLayout(layout);
 					let layoutRender = self._layoutMethodToRender(render);

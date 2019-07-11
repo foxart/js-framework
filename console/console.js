@@ -1,12 +1,11 @@
 "use strict";
-/*nodejs*/
-/**
- * @type {Object}
- */
+/*node*/
+/** @type {Object} */
 const DateAndTime = require("date-and-time");
-/*modules*/
+/*fa*/
 const FaBeautify = require("fa-nodejs/beautify");
 const FCH = require("fa-nodejs/console/console-helper");
+/** @member {FaTrace|Class} */
 const FaTrace = require("fa-nodejs/base/trace");
 /**
  *
@@ -180,7 +179,8 @@ class FaConsoleClass {
 	_log(data, template) {
 		let time = DateAndTime.format(new Date(new Date().setUTCHours(new Date().getUTCHours() + 2)), "H:mm:ss");
 		let trace = FaTrace.trace(2);
-		let path = trace["path"] ? trace["path"].replace(process.cwd(), "") : trace["path"];
+		// let path = trace["path"] ? trace["path"].replace(process.cwd(), "") : trace["path"];
+		let path = trace["path"] ;
 		let line = trace["line"];
 		let column = trace["column"];
 		let string = template.replaceAll([
