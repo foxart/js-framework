@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://ula.lantec.ua:1622/ula/nodejs-core.git"
+    "url": "git+https://github.com/foxart/fa-nodejs.git"
   },
   "dependencies": {
     "date-and-time": "^0.6.3",
