@@ -11,11 +11,13 @@ const FaHttpResponse = require("fa-nodejs/server/http-response");
 class FaApplicationModule {
 	/**
 	 *
-	 * @param path {string}
+	 * @param pathname {string}
 	 * @param FaHttp {FaServerHttp}
 	 * @param FaSocket {FaServerSocket}
 	 */
-	constructor(path, FaHttp, FaSocket) {
+	constructor(pathname, FaHttp, FaSocket) {
+		this._regularAssetFilename = new RegExp(`^([A-Z][A-Za-z0-9_]+)Asset.js$`);
+		this._regularAssetName = new RegExp("^[a-z][a-z0-9-_]+$");
 		this._regularControllerFilename = new RegExp(`^([A-Z][A-Za-z0-9_]+)Controller.js$`);
 		this._regularControllerName = new RegExp("^[a-z][a-z0-9-_]+$");
 		this._regularControllerMethod = new RegExp("^[a-z][a-z0-9-_]+[a-z0-9]$");
@@ -24,12 +26,13 @@ class FaApplicationModule {
 		this._FaFile = new FaFile();
 		this._FaHttp = FaHttp;
 		this._FaSocket = FaSocket;
-		this._path = path;
+		this._pathname = pathname;
 		this._module_list = {};
 		this._layout_list = {};
 		this._route_list = {};
 		this._controller_list = {};
-		this._loadModules(require(`${path}/configuration/application.js`));
+		this._loadModules(require(`${pathname}/configuration/application.js`));
+		this._loadAssets();
 	}
 
 	test() {
@@ -95,12 +98,56 @@ class FaApplicationModule {
 		return this._route_list;
 	}
 
+	_loadAssets() {
+		let self = this;
+		this._FaFile.readDirectorySync(`${this._pathname}/assets`).map(function (asset_filename) {
+			// console.warn([asset_filename]);
+			return self._assetFilenameToName(asset_filename);
+		}).filter(item => item).map(function (asset) {
+			let path = self._assetNameToFilename(asset);
+			if (self._FaFile.isFile(path)) {
+				// console.error(asset, self._assetNameToFilename(asset));
+				let AssetClass = require(path);
+				/** @member {FaAsset} */
+				let Asset = new AssetClass();
+				// console.info(Asset.css);
+				Asset.css.map(function (css) {
+					self._FaHttp.asset.attach(Asset.getCssUrl(css), async function () {
+						// console.warn([Asset.getCssUrl(css), Asset.getCssPath(css)]);
+						return Asset.read(css);
+					});
+				});
+				// console.info(Asset.path, Asset.url, Asset.css);
+			}
+			// console.info(index, `${this._path}/modules/${module}/views/${controller}`);
+			// let controllerAction = this._controllerMethodToAction(action);
+		});
+	}
+
+	_assetFilenameToName(asset) {
+		let match = asset.match(this._regularAssetFilename);
+		if (match) {
+			return match[1].split(/(?=[A-Z])/).join("-").toLowerCase();
+		} else {
+			return null;
+		}
+	}
+
+	_assetNameToFilename(asset) {
+		let match = asset.match(this._regularAssetName);
+		if (match) {
+			return `${this._pathname}/assets/${asset.split("-").map(item => item.capitalize()).join("")}Asset.js`;
+		} else {
+			return null;
+		}
+	}
+
 	_loadModules(configuration) {
 		let self = this;
 		let modules = configuration["modules"];
 		let routes = configuration["routes"];
 		Object.entries(modules).forEach(function ([moduleKey, moduleValue]) {
-			if (self._FaFile.isDirectory(`${self._path}/modules/${moduleKey}`)) {
+			if (self._FaFile.isDirectory(`${self._pathname}/modules/${moduleKey}`)) {
 				self._module_list[moduleKey] = moduleValue;
 				if (moduleValue["layout"]) {
 					self._loadLayout(moduleValue["layout"]);
@@ -115,7 +162,7 @@ class FaApplicationModule {
 	_loadRoutes(moduleKey, moduleValue, routes) {
 		let self = this;
 		let route;
-		let pathname = `${self._path}/modules/${moduleKey}`;
+		let pathname = `${self._pathname}/modules/${moduleKey}`;
 		if (routes) {
 			Object.entries(routes).forEach(function ([routeKey, routeValue]) {
 				route = {
@@ -129,8 +176,8 @@ class FaApplicationModule {
 				self._storeRoute(route);
 			});
 		}
-		self._FaFile.readDirectorySync(`${pathname}/controllers`).map(function (controllerFilename) {
-			return self._controllerFilenameToName(controllerFilename);
+		self._FaFile.readDirectorySync(`${pathname}/controllers`).map(function (controller_filename) {
+			return self._controllerFilenameToName(controller_filename);
 		}).filter(item => item).map(function (controller) {
 			// console.warn(module, controller)
 			let Controller = self._loadController(moduleKey, controller);
@@ -159,7 +206,7 @@ class FaApplicationModule {
 				};
 				if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
 					self._storeRoute(route);
-				} else if (route.uri === "/" && self._FaHttp.Router.exist(route.uri) === false) {
+				} else if (route.uri === "/" && self._FaHttp.router.exist(route.uri) === false) {
 					self._storeRoute(route);
 				}
 			});
@@ -172,7 +219,7 @@ class FaApplicationModule {
 		}
 		let match = module.match(this._regularControllerName);
 		if (match) {
-			return `${this._path}/layouts/${module.split("-").map(item => item.capitalize()).join("")}Layout.js`;
+			return `${this._pathname}/layouts/${module.split("-").map(item => item.capitalize()).join("")}Layout.js`;
 		} else {
 			return null;
 		}
@@ -203,7 +250,7 @@ class FaApplicationModule {
 	_controllerFilename(module, controller) {
 		let match = controller.match(this._regularControllerName);
 		if (match) {
-			return `${this._path}/modules/${module}/controllers/${controller.split("-").map(item => item.capitalize()).join("")}Controller.js`;
+			return `${this._pathname}/modules/${module}/controllers/${controller.split("-").map(item => item.capitalize()).join("")}Controller.js`;
 		} else {
 			return null;
 		}
@@ -223,8 +270,8 @@ class FaApplicationModule {
 		if (match) {
 			return `action${match[0].split("-").map(item => item.capitalize()).join("")}`;
 		} else {
-			throw new Error(`wrong controller action: ${action}`);
-			// return null;
+			// throw new Error(`wrong controller action: ${action}`);
+			return null;
 		}
 	}
 
@@ -265,7 +312,6 @@ class FaApplicationModule {
 		}
 	}
 
-	// noinspection JSMethodCanBeStatic
 	_getRouteIndex(data) {
 		let {module, controller, action} = data;
 		// return `${uri}@${module}/${controller}/${action}`;
@@ -283,10 +329,10 @@ class FaApplicationModule {
 		let Controller = this._loadController(module, controller);
 		let controllerAction = this._controllerMethodToAction(action);
 		if (Controller[controllerAction]) {
-			this._FaHttp.Router.attach(uri, async function () {
-				// console.info(module, controller);
+			this._FaHttp.router.attach(uri, async function (req) {
+				// console.info(this);
 				let data = await Controller[controllerAction].apply(Controller, arguments);
-				console.log(data["type"]);
+				// let data = await Controller[controllerAction].call(Controller, req);
 				if (data && data["type"] === "layout") {
 					let Layout = self._loadLayout(layout);
 					let layoutRender = self._layoutMethodToRender(render);

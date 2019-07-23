@@ -1,11 +1,11 @@
 "use strict";
-/*fa-nodejs*/
+/*fa*/
 const FaHttpContentType = require("fa-nodejs/server/http-content-type");
-/* @member {Class|FaHttpResponse} */
+/** @member {FaHttpResponse|Class} */
 const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
-const FaBaseError = require("fa-nodejs/base/error");
-/** @member {Class|FaTrace} */
+const FaError = require("fa-nodejs/base/error");
+/** @member {FaTrace|Class} */
 const FaTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 
@@ -17,6 +17,7 @@ class FaApplicationController {
 	 * @param pathname {string|null}
 	 */
 	constructor(FaServerHttp, pathname = null) {
+		this.name = "CONTROLLER";
 		this._FaServer = FaServerHttp;
 		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpResponse = new FaHttpResponse();
@@ -98,7 +99,8 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	render(body = null, status = null) {
-		return this._response.create(body, status, this.contentType.html, "layout");
+		// return this._response.create(body, status, this.contentType.html, "layout");
+		return FaHttpResponse.create(body, status, this.contentType.html, "layout");
 	}
 
 	/**
@@ -151,7 +153,7 @@ class FaApplicationController {
 		try {
 			return this._FaTemplate.load(template);
 		} catch (e) {
-			throw new FaBaseError(e).pickTrace(1);
+			throw new FaError(e).pickTrace(1);
 		}
 	}
 }

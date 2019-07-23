@@ -10,17 +10,6 @@ module.exports = class FaServerConfigurationClass {
 		return MergeDeep(this._http, configuration['http']);
 	}
 
-	// _extendConfiguration(what, wherewith) {
-	// 	if (typeof wherewith !== 'object') {
-	// 		wherewith = {};
-	// 	}
-	// 	return Object.assign({}, what, Object.keys(wherewith).filter(function (key) {
-	// 		return Object.keys(what).includes(key)
-	// 	}).reduce(function (obj, key) {
-	// 		obj[key] = wherewith[key];
-	// 		return obj;
-	// 	}, {}));
-	// }
 	/**
 	 *
 	 * @return {{Http: *, socket: *, converter: {fromXml: *, toXml: *}}}

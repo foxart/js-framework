@@ -4,6 +4,7 @@ const SocketIo = require("socket.io");
 /*fa*/
 const FaError = require("../base/error");
 const FaConsoleColor = require("../console/console-helper");
+const FaRouterClass = require("fa-nodejs/base/router");
 
 class FaServerSocket {
 	/**
@@ -16,7 +17,7 @@ class FaServerSocket {
 		this._configuration.port = FaHttp.Configuration.port;
 		this._configuration.path = "/socket/";
 		// console.warn(FaHttp.Configuration)
-		this._FaRouterClass = require("fa-nodejs/base/router")(this);
+		this._FaRouter = new FaRouterClass(this);
 		this.SocketIo = this._createSocket(FaHttp);
 	}
 
@@ -37,7 +38,7 @@ class FaServerSocket {
 	 * @constructor
 	 */
 	get Router() {
-		return this._FaRouterClass;
+		return this._FaRouter;
 	}
 
 	_logConfiguration() {
@@ -97,7 +98,7 @@ class FaServerSocket {
 		socket.on("*", function (event, data, callback) {
 			let handler = context.Router.find(event);
 			if (handler) {
-				context._handleRouter(socket, event, handler, data, callback);
+				context._handleRouter(socket, handler, event, data, callback);
 			} else {
 				context._onSocketError(socket, FaError.pickTrace(`undefined handler for event: ${event}`, 1));
 			}
@@ -107,13 +108,13 @@ class FaServerSocket {
 	/**
 	 *
 	 * @param socket
-	 * @param event
 	 * @param handler
+	 * @param event
 	 * @param data
 	 * @param callback
 	 * @private
 	 */
-	_handleRouter(socket, event, handler, data, callback) {
+	_handleRouter(socket, handler, event, data, callback) {
 		// console.info(`socket event: ${event}`);
 		try {
 			let result = handler.apply(this, [data, socket]);
@@ -176,6 +177,11 @@ class FaServerSocket {
 	}
 }
 
+/**
+ *
+ * @type {FaServerSocket}
+ */
+module.exports = FaServerSocket;
 // let os = require("os");
 // let ifaces = os.networkInterfaces();
 // server1.console.info(ifaces);
@@ -203,8 +209,4 @@ class FaServerSocket {
 // 		return FaSocketClass;
 // 	}
 // };
-/**
- *
- * @type {FaServerSocket}
- */
-module.exports = FaServerSocket;
+

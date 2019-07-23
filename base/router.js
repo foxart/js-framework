@@ -1,11 +1,7 @@
 "use strict";
 /*vendor*/
-const FaError = require("./error");
+const FaError = require("fa-nodejs/base/error");
 
-/**
- *
- * @type {FaRouterClass}
- */
 class FaRouterClass {
 	/**
 	 *
@@ -74,13 +70,6 @@ class FaRouterClass {
 
 /**
  *
- * @param executor {Object}
- * @return {FaRouterClass}
+ * @type {FaRouterClass}
  */
-module.exports = function (executor) {
-	if (executor) {
-		return new FaRouterClass(executor);
-	} else {
-		return FaRouterClass;
-	}
-};
+module.exports = FaRouterClass;

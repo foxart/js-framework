@@ -1,7 +1,7 @@
 "use strict";
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-/** @member {Class|FaTrace} */
+/** @member {FaTrace|Class} */
 const FaTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 

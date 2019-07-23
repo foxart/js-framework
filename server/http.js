@@ -22,14 +22,15 @@ const FaHttpConfiguration = require("fa-nodejs/server/http-configuration");
 
 class FaServerHttp {
 	constructor(configuration) {
-		// this._FaHttpConfiguration = require("./http-configuration")(configuration);
+		this.name = "HTTP";
+		this._FaHttpConfiguration = require("./http-configuration")(configuration);
 		this.Configuration = configuration;
 		this._FaConverter = new FaBaseConverter(this.Configuration.converter);
 		// console.info(configuration);
 		this._FaFile = new FaBaseFile(this.Configuration.path);
 		this._FaFilePrivate = new FaBaseFile(this.Configuration.private);
 		this._FaRouter = new FaBaseRouter(this);
-		this._FaAssetRouter = new FaBaseRouter(this);
+		this._FaAssets = new FaBaseRouter(this);
 		this._FaHttpRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpResponse = FaHttpResponse;
 		this._FaHttpContentType = new FaHttpContentType();
@@ -92,7 +93,7 @@ class FaServerHttp {
 	 *
 	 * @return {FaRouterClass}
 	 */
-	get Router() {
+	get router() {
 		return this._FaRouter;
 	}
 
@@ -100,8 +101,8 @@ class FaServerHttp {
 	 *
 	 * @return {FaRouterClass}
 	 */
-	get Assets() {
-		return this._FaAssetRouter;
+	get asset() {
+		return this._FaAssets;
 	}
 
 	/**
@@ -199,9 +200,11 @@ class FaServerHttp {
 				// input: body,
 			};
 			self._handleRequest(request).then(function (response) {
-
 				/*todo make proper content-type and|or charset extractor*/
 				let contentType = self._getResponseContentType(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
+				console.info(req);
+				console.info(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
+
 				let charset = self._getResponseCharset(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
 				if (response["body"] instanceof Buffer === false) {
 					if (contentType) {
@@ -287,12 +290,13 @@ class FaServerHttp {
 	_handleRequest(data) {
 		let self = this;
 		let mime = MimeTypes.lookup(data.path);
-		let route = this.Router.find(data.path);
-		let asset = this.Assets.find(data.path);
+		let route = this.router.find(data.path);
+		let asset = this.asset.find(data.path);
 		return new Promise(function (resolve) {
 			if (route) {
 				resolve(self._handleRoute(route, data));
 			} else if (asset) {
+				// console.log(asset);
 				resolve(self._handleRoute(asset, data));
 			} else if (mime) {
 				resolve(self._handleFile(data.path, mime));
@@ -328,12 +332,13 @@ class FaServerHttp {
 	_handleRoute(callback, data) {
 		let self = this;
 		return new Promise(function (resolve) {
-			resolve(callback.call(self, data));
+			// resolve(callback.call(self, data));
+			resolve(callback(data));
 		}).then(function (result) {
 			if (FaHttpResponse.check(result)) {
 				return result;
 			} else {
-				// console.error(result, FaHttpResponse.create(result));
+				// console.error(result, false);
 				return FaHttpResponse.create(result);
 			}
 		}).catch(function (e) {
@@ -361,6 +366,12 @@ class FaServerHttp {
 		}
 	}
 
+	/**
+	 *
+	 * @param route
+	 * @return {*}
+	 * @private
+	 */
 	_handleNotFound(route) {
 		let body = `route not found: ${route} at ${this._trace["path"]}:${this._trace["line"]}:${this._trace["column"]}`;
 		return FaHttpResponse.create(body, this.status.notFound);

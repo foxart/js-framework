@@ -50,23 +50,6 @@ function isXml(xml) {
 	}
 }
 
-function isCircular(object, circular) {
-	if (object && typeof object === "object") {
-		if (circular.indexOf(object) !== -1) {
-			return true;
-		}
-		circular.push(object);
-		for (let key in object) {
-			if (object.hasOwnProperty(key)) {
-				if (object[key] && isCircular(object[key], circular)) {
-					return true;
-				}
-			}
-		}
-	}
-	return false;
-}
-
 function getType(data) {
 	if (data === null) {
 		return "null";
@@ -147,6 +130,31 @@ function parseObject(data, type) {
 }
 
 function beautifyObject(data, wrapper, level) {
+	function isCircular(object, circular) {
+		if (object && typeof object === "function") {
+			return false;
+		}
+					console.error([typeof object.constructor ]);
+		if (object && typeof object === "object") {
+			if (circular.indexOf(object) !== -1) {
+				return true;
+			}
+			circular.push(object);
+			for (let key in object) {
+				try {
+					if (object.hasOwnProperty(key)) {
+						if (object[key] && isCircular(object[key], circular)) {
+							return true;
+						}
+					}
+				} catch (e) {
+					// 	return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	let circular = [];
 	let nl = '\n';
 	let object = parseObject(data, getType(data));
