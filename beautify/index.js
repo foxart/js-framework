@@ -134,21 +134,20 @@ function beautifyObject(data, wrapper, level) {
 		if (object && typeof object === "function") {
 			return false;
 		}
-					console.error([typeof object.constructor ]);
 		if (object && typeof object === "object") {
 			if (circular.indexOf(object) !== -1) {
 				return true;
 			}
 			circular.push(object);
 			for (let key in object) {
-				try {
-					if (object.hasOwnProperty(key)) {
-						if (object[key] && isCircular(object[key], circular)) {
-							return true;
-						}
+				// if (object && object.hasOwnProperty(key)) {
+				if (Object.prototype.hasOwnProperty.call(object, key)) {
+					if (object[key] && isCircular(object[key], circular)) {
+						return true;
 					}
+				}
+				try {
 				} catch (e) {
-					// 	return true;
 				}
 			}
 		}

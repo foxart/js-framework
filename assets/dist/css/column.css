@@ -1,0 +1,83 @@
+/*variables*/
+/*mixtures*/
+#fa .row {
+  display: flex;
+}
+#fa .col-1 {
+  flex-shrink: 0;
+  width: 8.33333333%;
+}
+#fa .col-2 {
+  flex-shrink: 0;
+  width: 16.66666667%;
+}
+#fa .col-3 {
+  flex-shrink: 0;
+  width: 25%;
+}
+#fa .col-4 {
+  flex-shrink: 0;
+  width: 33.33333333%;
+}
+#fa .col-5 {
+  flex-shrink: 0;
+  width: 41.66666667%;
+}
+#fa .col-6 {
+  flex-shrink: 0;
+  width: 50%;
+}
+#fa .col-7 {
+  flex-shrink: 0;
+  width: 58.33333333%;
+}
+#fa .col-8 {
+  flex-shrink: 0;
+  width: 66.66666667%;
+}
+#fa .col-9 {
+  flex-shrink: 0;
+  width: 75%;
+}
+#fa .col-10 {
+  flex-shrink: 0;
+  width: 83.33333333%;
+}
+#fa .col-11 {
+  flex-shrink: 0;
+  width: 91.66666667%;
+}
+#fa .col-12 {
+  flex-shrink: 0;
+  width: 100%;
+}
+#fa .indent-1 {
+  display: flex;
+  height: 2px;
+  width: 100%;
+}
+#fa .indent-2 {
+  display: flex;
+  height: 4px;
+  width: 100%;
+}
+#fa .indent-3 {
+  display: flex;
+  height: 6px;
+  width: 100%;
+}
+#fa .indent-4 {
+  display: flex;
+  height: 8px;
+  width: 100%;
+}
+#fa .indent-5 {
+  display: flex;
+  height: 10px;
+  width: 100%;
+}
+#fa .indent-6 {
+  display: flex;
+  height: 12px;
+  width: 100%;
+}

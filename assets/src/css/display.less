@@ -1,0 +1,35 @@
+#fa {
+	.display {
+		&-flex {
+			display: flex;
+		}
+	}
+
+	.pull-left {
+		float: left;
+	}
+
+	.pull-right {
+		float: right;
+	}
+
+	.middle {
+		&-left {
+			display: flex;
+			align-items: center;
+			justify-content: flex-start;
+		}
+
+		&-right {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+		}
+
+		&-center {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+}

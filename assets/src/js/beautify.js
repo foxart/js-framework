@@ -1,0 +1,1 @@
+require("fa-nodejs/beautify");

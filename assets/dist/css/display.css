@@ -1,0 +1,24 @@
+#fa .display-flex {
+  display: flex;
+}
+#fa .pull-left {
+  float: left;
+}
+#fa .pull-right {
+  float: right;
+}
+#fa .middle-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+#fa .middle-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+#fa .middle-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

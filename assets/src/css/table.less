@@ -1,0 +1,36 @@
+#fa {
+	.table {
+		display: flex;
+		flex-direction: column;
+		border: solid 1px #808b96;
+		flex-grow: 1;
+		align-self: flex-start;
+
+		&-row {
+			display: flex;
+			flex-direction: row;
+			flex-grow: 1;
+			//align-items: center;
+			border-bottom: solid 1px #808b96;
+		}
+
+		&-row:last-child {
+			border-bottom: none;
+		}
+
+		&-cell {
+			display: flex;
+			flex-direction: column;
+			flex-grow: 1;
+			align-items: center;
+			justify-content: center;
+			padding: 6px;
+			border-right: solid 1px #808b96;
+			word-break: break-all;
+		}
+
+		&-cell:last-child {
+			border-right: none;
+		}
+	}
+}

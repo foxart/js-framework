@@ -1,0 +1,89 @@
+@color-true: green;
+@color-false: red;
+#fa {
+	.beautify {
+		font-size: 0.8em;
+		font-family: "DejaVu Sans Mono", monospace;
+		/*background-color: darkgray;*/
+		word-break: break-all;
+		white-space: pre-wrap;
+
+		.key {
+			font-weight: bold;
+			color: gray;
+		}
+
+		.bool {
+			.true {
+				font-weight: bold;
+				color: @color-true;
+			}
+
+			.false {
+				font-weight: bold;
+				color: @color-false;
+			}
+		}
+
+		.buffer {
+			font-weight: bold;
+			color: blue;
+		}
+
+		.circular {
+			font-weight: bold;
+			color: darkcyan;
+		}
+
+		.date {
+			color: darkgoldenrod;
+		}
+
+		.file {
+			font-weight: bold;
+			color: blue;
+		}
+
+		.float {
+			color: red;
+		}
+
+		.function {
+			color: darkcyan;
+		}
+
+		.int {
+			color: green;
+		}
+
+		.mongoId {
+			font-weight: bold;
+			color: black;
+		}
+
+		.null {
+			font-weight: bold;
+			color: darkcyan;
+		}
+
+		.regExp {
+			font-weight: bold;
+			color: darkgoldenrod;
+		}
+
+		.string {
+			color: black;
+		}
+
+		.undefined {
+			font-weight: bold;
+			color: magenta;
+		}
+
+		.default {
+			font-weight: bold;
+			background-color: magenta;
+		}
+	}
+}
+

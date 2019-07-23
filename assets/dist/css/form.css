@@ -1,0 +1,42 @@
+/**/
+#fa .form {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 6px 0;
+}
+#fa .form-group {
+  display: flex;
+  align-items: center;
+  padding: 0 0 6px 0;
+}
+#fa .form-group label,
+#fa .form-group input {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+#fa .form-group label {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+}
+#fa .form-group label input {
+  padding: 6px 9px;
+  box-sizing: border-box;
+  border: solid 1px darkgray;
+  color: black;
+  display: flex;
+  flex-grow: 1;
+}
+#fa .form-group input[type=file] {
+  padding: 3px 0;
+  box-sizing: border-box;
+  border: none;
+  color: black;
+}
+#fa .form-group input[type=submit] {
+  padding: 6px 9px;
+  background-color: lightgray;
+  border: none;
+  color: black;
+}

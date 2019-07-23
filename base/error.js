@@ -2,7 +2,7 @@
 /*fa-nodejs*/
 const FaTrace = require("fa-nodejs/base/trace");
 
-class FaBaseError extends Error {
+class FaError extends Error {
 	/**
 	 * @param error {Error|string}
 	 */
@@ -10,7 +10,7 @@ class FaBaseError extends Error {
 		super();
 		this.name = error["name"] ? error["name"] : this.constructor.name;
 		this.message = error["message"] ? error["message"] : error;
-		if (error instanceof FaBaseError) {
+		if (error instanceof FaError) {
 			this.trace = error["trace"];
 			this.stack = error["stack"];
 		} else if (error instanceof Error) {
@@ -25,7 +25,7 @@ class FaBaseError extends Error {
 	/**
 	 *
 	 * @param name {string}
-	 * @return {FaBaseError}
+	 * @return {FaError}
 	 */
 	setName(name) {
 		if (name) {
@@ -37,7 +37,7 @@ class FaBaseError extends Error {
 	/**
 	 *
 	 * @param message {string}
-	 * @return {FaBaseError}
+	 * @return {FaError}
 	 */
 	setMessage(message) {
 		if (message) {
@@ -49,7 +49,7 @@ class FaBaseError extends Error {
 	/**
 	 *
 	 * @param trace
-	 * @return {FaBaseError}
+	 * @return {FaError}
 	 */
 	setTrace(trace) {
 		if (trace) {
@@ -61,7 +61,7 @@ class FaBaseError extends Error {
 	/**
 	 *
 	 * @param context {*}
-	 * @return {FaBaseError}
+	 * @return {FaError}
 	 */
 	setContext(context) {
 		if (context) {
@@ -73,7 +73,7 @@ class FaBaseError extends Error {
 	/**
 	 *
 	 * @param level {number|null}
-	 * @return {FaBaseError}
+	 * @return {FaError}
 	 */
 	pickTrace(level = null) {
 		this.trace = level === null ? this.trace : [this.trace[level]];
@@ -83,6 +83,6 @@ class FaBaseError extends Error {
 
 /**
  *
- * @type {FaBaseError}
+ * @type {FaError}
  */
-module.exports = FaBaseError;
+module.exports = FaError;

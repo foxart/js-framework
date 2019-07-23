@@ -202,9 +202,8 @@ class FaServerHttp {
 			self._handleRequest(request).then(function (response) {
 				/*todo make proper content-type and|or charset extractor*/
 				let contentType = self._getResponseContentType(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
-				console.info(req);
-				console.info(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
-
+				// console.info(req);
+				// console.info(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
 				let charset = self._getResponseCharset(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
 				if (response["body"] instanceof Buffer === false) {
 					if (contentType) {
@@ -343,8 +342,7 @@ class FaServerHttp {
 			}
 		}).catch(function (e) {
 			let error = new FaError(e).pickTrace(0);
-			// return self._createResponse(error, null, self.status.internalServerError);
-			console.info(error);
+			console.error(error);
 			return FaHttpResponse.create(error, self.status.internalServerError);
 		});
 	}

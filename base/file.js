@@ -14,11 +14,12 @@
 const Fs = require("fs");
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-const FaBaseTrace = require("fa-nodejs/base/trace");
+/** @member {FaTrace|Class} */
+const FaTrace = require("fa-nodejs/base/trace");
 /*variables*/
 const ErrorExpression = new RegExp("^(.+): (.+)$");
 
-class FaBaseFile {
+class FaFile {
 	/**
 	 *
 	 * @param path {string|null}
@@ -86,11 +87,11 @@ class FaBaseFile {
 	 * @param options {Object}
 	 */
 	createDirectorySync(directory, options) {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		try {
 			Fs.mkdirSync(this.getPath(directory), options);
 		} catch (e) {
-			throw FaBaseFile._Error(e).setTrace(trace);
+			throw FaFile._Error(e).setTrace(trace);
 		}
 	}
 
@@ -100,12 +101,12 @@ class FaBaseFile {
 	 * @return {Promise<[string]|FaError>}
 	 */
 	readDirectoryAsync(directory = "") {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		let self = this;
 		return new Promise(function (resolve, reject) {
 			Fs.readdir(self.path(directory), {}, function (e, files) {
 				if (e) {
-					reject(FaBaseFile._Error(e).setTrace(trace));
+					reject(FaFile._Error(e).setTrace(trace));
 				} else {
 					resolve(files);
 				}
@@ -119,11 +120,11 @@ class FaBaseFile {
 	 * @return {string[] | Buffer[]}
 	 */
 	readDirectorySync(directory = "") {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		try {
 			return Fs.readdirSync(this.getPath(directory), {});
 		} catch (e) {
-			throw FaBaseFile._Error(e).setTrace(trace);
+			throw FaFile._Error(e).setTrace(trace);
 		}
 	};
 
@@ -133,12 +134,12 @@ class FaBaseFile {
 	 * @return {Promise<Buffer|FaError>}
 	 */
 	readFileAsync(filename) {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		let self = this;
 		return new Promise(function (resolve, reject) {
 			Fs.readFile(self.getPath(filename), {}, function (e, buffer) {
 				if (e) {
-					reject(FaBaseFile._Error(e).setTrace(trace));
+					reject(FaFile._Error(e).setTrace(trace));
 				} else {
 					resolve(buffer);
 				}
@@ -152,12 +153,13 @@ class FaBaseFile {
 	 * @return {Buffer}
 	 */
 	readFileSync(filename) {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
+		// console.info(trace);
 		try {
 			// console.error(this.getPath(filename));
 			return Fs.readFileSync(this.getPath(filename), {});
 		} catch (e) {
-			throw FaBaseFile._Error(e).setTrace(trace);
+			throw FaFile._Error(e).setTrace(trace);
 		}
 	};
 
@@ -168,12 +170,12 @@ class FaBaseFile {
 	 * @return {Promise<boolean|FaError>}
 	 */
 	writeFileAsync(filename, data) {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		let self = this;
 		return new Promise(function (resolve, reject) {
 			Fs.writeFile(self.getPath(filename), data, {}, function (e) {
 				if (e) {
-					reject(FaBaseFile._Error(e).setTrace(trace));
+					reject(FaFile._Error(e).setTrace(trace));
 				} else {
 					resolve(true);
 				}
@@ -192,14 +194,14 @@ class FaBaseFile {
 		// });
 		// fileStream.write(data);
 		// fileStream.end();
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		try {
 			Fs.writeFileSync(`${this.getPath(filename)}`, data, {
 				flag: 'w',
 				// mode: 0o755,
 			});
 		} catch (e) {
-			throw FaBaseFile._Error(e).setTrace(trace);
+			throw FaFile._Error(e).setTrace(trace);
 		}
 	};
 
@@ -208,17 +210,17 @@ class FaBaseFile {
 	 * @param filename {string}
 	 */
 	deleteFileSync(filename) {
-		let trace = FaBaseTrace.trace(1);
+		let trace = FaTrace.trace(1);
 		try {
 			Fs.unlinkSync(`${this.getPath(filename)}`);
 		} catch (e) {
-			throw FaBaseFile._Error(e).setTrace(trace);
+			throw FaFile._Error(e).setTrace(trace);
 		}
 	}
 }
 
 /**
  *
- * @type {FaBaseFile}
+ * @type {FaFile}
  */
-module.exports = FaBaseFile;
+module.exports = FaFile;

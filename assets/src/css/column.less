@@ -1,0 +1,97 @@
+/*variables*/
+@width: 100;
+/*mixtures*/
+#fa {
+	.col(@count) {
+		flex-shrink: 0;
+		width: @count*100/12%;
+	}
+	.indent(@param) {
+		display: flex;
+		height: @param*2px;
+		width: 100%;
+		//background: red;
+	}
+}
+
+#fa {
+	.row {
+		display: flex;
+	}
+
+	.col {
+		&-1 {
+			#fa.col(1);
+		}
+
+		&-2 {
+			#fa.col(2);
+		}
+
+		&-3 {
+			#fa.col(3);
+		}
+
+		&-4 {
+			#fa.col(4);
+		}
+
+		&-5 {
+			#fa.col(5);
+		}
+
+		&-6 {
+			#fa.col(6);
+		}
+
+		&-7 {
+			#fa.col(7);
+		}
+
+		&-8 {
+			#fa.col(8);
+		}
+
+		&-9 {
+			#fa.col(9);
+		}
+
+		&-10 {
+			#fa.col(10);
+		}
+
+		&-11 {
+			#fa.col(11);
+		}
+
+		&-12 {
+			#fa.col(12);
+		}
+	}
+
+	.indent {
+		&-1 {
+			#fa.indent(1);
+		}
+
+		&-2 {
+			#fa.indent(2);
+		}
+
+		&-3 {
+			#fa.indent(3);
+		}
+
+		&-4 {
+			#fa.indent(4);
+		}
+
+		&-5 {
+			#fa.indent(5);
+		}
+
+		&-6 {
+			#fa.indent(6);
+		}
+	}
+}
