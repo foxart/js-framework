@@ -5,11 +5,10 @@ const FastXmlParser = require("fast-xml-parser");
 /** @type {*} */
 const QueryString = require("qs");
 /*fa*/
-const FaError = require("fa-nodejs/base/error");
+// const FaError = require("fa-nodejs/base/error");
 const FaBeautify = require("fa-nodejs/beautify");
 
-// const FaHttpContentType = require("fa-nodejs/server/http-content-type");
-class FaBaseConverter {
+class FaConverter {
 	/**
 	 *
 	 * @param configuration {{fromXml: *, toXml: *}}
@@ -26,7 +25,7 @@ class FaBaseConverter {
 	 * @param data {string}
 	 * @returns {boolean}
 	 */
-	isJson(data) {
+	static isJson(data) {
 		try {
 			JSON.parse(data);
 			return true;
@@ -35,7 +34,7 @@ class FaBaseConverter {
 		}
 	}
 
-	isObject(data) {
+	static isObject(data) {
 		return typeof data === "object";
 	}
 
@@ -44,7 +43,7 @@ class FaBaseConverter {
 	 * @param data
 	 * @return {boolean}
 	 */
-	isString(data) {
+	static isString(data) {
 		return typeof data === 'string';
 	}
 
@@ -53,8 +52,8 @@ class FaBaseConverter {
 	 * @param data {string}
 	 * @return {boolean}
 	 */
-	isUrlEncoded(data) {
-		return typeof this.fromUrlEncoded(data) === "object";
+	static isUrlEncoded(data) {
+		return typeof FaConverter.fromUrlEncoded(data) === "object";
 	}
 
 	/**
@@ -62,7 +61,7 @@ class FaBaseConverter {
 	 * @param data {string}
 	 * @returns {boolean}
 	 */
-	isXml(data) {
+	static isXml(data) {
 		if (data) {
 			return FastXmlParser.validate(data) === true;
 		} else {
@@ -75,8 +74,8 @@ class FaBaseConverter {
 	 * @param data {string}
 	 * @return {object|string}
 	 */
-	fromJson(data) {
-		return this.isJson(data) ? JSON.parse(data) : {};
+	static fromJson(data) {
+		return FaConverter.isJson(data) ? JSON.parse(data) : {};
 	}
 
 	/**
@@ -84,20 +83,19 @@ class FaBaseConverter {
 	 * @param data {Buffer|object|string}
 	 * @return {object|string}
 	 */
-	toJson(data) {
+	static toJson(data) {
 		// if (data instanceof Error) {
 		// 	data = new FaError(data);
 		// }
-		return this.isString(data) ? data : JSON.stringify(data, null, 128);
+		return FaConverter.isString(data) ? data : JSON.stringify(data, null, 128);
 	}
 
 	/**
 	 *
-	 * @param data {object}
+	 * @param data
 	 * @private
 	 */
-	_filterXml(data) {
-		let self = this;
+	static _filterXml(data) {
 		let result = {};
 		if (data === undefined) {
 			// 	result = "undefined";
@@ -106,12 +104,12 @@ class FaBaseConverter {
 		} else if (Array.isArray(data)) {
 			let res = [];
 			data.forEach(function (value, key) {
-				res[key] = self._filterXml(value);
+				res[key] = FaConverter._filterXml(value);
 			});
 			result = res;
 		} else if (typeof data === "object") {
 			Object.entries(data).forEach(function ([key, value]) {
-				result[key] = self._filterXml(value);
+				result[key] = FaConverter._filterXml(value);
 			});
 		} else {
 			result = data;
@@ -125,10 +123,10 @@ class FaBaseConverter {
 	 * @param options {object}
 	 * @return {object|string}
 	 */
-	fromXml(data, options = {}) {
+	static fromXml(data, options = {}) {
 		let result;
 		try {
-			result = FastXmlParser.parse(data, Object.assign({}, this._fromXml, options))
+			result = FastXmlParser.parse(data, options)
 		} catch (e) {
 			console.error(e);
 			// result = {}
@@ -144,7 +142,7 @@ class FaBaseConverter {
 	 * @param options {object}
 	 * @return {string}
 	 */
-	toXml(data, options = {}) {
+	static toXml(data, options = {}) {
 		// data = undefined;
 		// data = 0;
 		// data = 1;
@@ -159,15 +157,14 @@ class FaBaseConverter {
 		let xml = {};
 		data = data === null ? {} : data;
 		if (typeof data === "object" && data.hasOwnProperty("xml") === false) {
-			xml["xml"] = this._filterXml(data);
+			xml["xml"] = FaConverter._filterXml(data);
 		} else if (typeof data !== "object") {
-			xml["xml"] = this._filterXml(data);
+			xml["xml"] = FaConverter._filterXml(data);
 		} else {
-			xml = this._filterXml(data);
+			xml = FaConverter._filterXml(data);
 		}
-		// console.warn(1, xml);
-		// console.warn(2, FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml));
-		return new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml);
+		// console.info(xml, new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml));
+		return new FastXmlParser.j2xParser(options).parse(xml);
 	}
 
 	/**
@@ -175,7 +172,7 @@ class FaBaseConverter {
 	 * @param data {string}
 	 * @return {object|string}
 	 */
-	fromUrlEncoded(data) {
+	static fromUrlEncoded(data) {
 		return QueryString.parse(decodeURIComponent(data));
 		// return QueryString.parse(data);
 	}
@@ -184,7 +181,7 @@ class FaBaseConverter {
 	 *
 	 * @param data {object|string}
 	 */
-	toUrlEncoded(data) {
+	static toUrlEncoded(data) {
 		return encodeURIComponent(QueryString.stringify(data));
 		// return QueryString.stringify(data);
 	}
@@ -194,8 +191,8 @@ class FaBaseConverter {
 	 * @param data {object|string}
 	 * @return {string}
 	 */
-	toText(data) {
-		return this.isString(data) ? data : FaBeautify.plain(data);
+	static toText(data) {
+		return FaConverter.isString(data) ? data : FaBeautify.plain(data);
 	}
 
 	/**
@@ -203,13 +200,13 @@ class FaBaseConverter {
 	 * @param data {object|string}
 	 * @return {string}
 	 */
-	toHtml(data) {
-		return this.isString(data) ? data : FaBeautify.html(data);
+	static toHtml(data) {
+		return FaConverter.isString(data) ? data : FaBeautify.html(data);
 	}
 }
 
 /**
  *
- * @type {FaBaseConverter}
+ * @type {FaConverter|Class}
  */
-module.exports = FaBaseConverter;
+module.exports = FaConverter;

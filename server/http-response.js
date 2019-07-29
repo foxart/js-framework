@@ -41,7 +41,7 @@ class FaHttpResponse {
 
 /**
  *
- * @type {FaHttpResponse}
+ * @type {FaHttpResponse|Class}
  */
 module.exports = FaHttpResponse;
 

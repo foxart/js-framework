@@ -1,45 +1,36 @@
 /*https://nodejs.org/api/http.html#http_class_http_clientrequest*/
 "use strict";
 /*node*/
-const Dns = require('dns');
 const Http = require('http');
 const Https = require('https');
-// const Querystring = require('querystring');
-// const UtilsExtend = require('utils-extend');
 /*fa*/
 const FaBaseAdapter = require("fa-nodejs/base/adapter");
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
-// const FaHttpResponse = require("fa-nodejs/server/http-response");
+const FaHttpHeaders = require("fa-nodejs/server/http-headers");
 const FaHttpContentType = require("fa-nodejs/server/http-content-type");
+const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
 const FaConverter = require("fa-nodejs/base/converter");
-
-/**
- *
- * @param options
- * @returns {Promise}
- */
-function checkHost(options) {
-	return new Promise(function (resolve, reject) {
-		// Dns.lookup('test', function (error) {
-		Dns.lookup(options['request']['hostname'], function (error) {
-			if (error === null) {
-				resolve(true);
-			} else {
-				reject(error);
-			}
-		});
-	});
-}
-
-class FaBaseCurl {
+// const Dns = require('dns');
+// function checkHost(options) {
+// 	return new Promise(function (resolve, reject) {
+// 		// Dns.lookup('test', function (error) {
+// 		Dns.lookup(options['request']['hostname'], function (error) {
+// 			if (error === null) {
+// 				resolve(true);
+// 			} else {
+// 				reject(error);
+// 			}
+// 		});
+// 	});
+// }
+class FaCurl {
 	/**
 	 *
 	 * @param options {Object|null}
 	 */
 	constructor(options = {}) {
-		this._ContentType = new FaHttpContentType();
 		this._StatusCode = new FaHttpStatusCode();
 		this._FaConverter = new FaConverter();
 		this.options = options;
@@ -94,15 +85,6 @@ class FaBaseCurl {
 		return this._FaBaseAdapter;
 	}
 
-	/**
-	 *
-	 * @return {FaBaseConverter}
-	 * @private
-	 */
-	get _converter() {
-		return this._FaConverter
-	}
-
 	get options() {
 		// console.error("GET");
 		return this._options;
@@ -113,7 +95,7 @@ class FaBaseCurl {
 		this._options = this._adapter.apply(options);
 	}
 
-	_dataToType(data, type) {
+	static _dataToType(data, type) {
 		let result;
 		if (data instanceof Buffer) {
 			result = data;
@@ -121,15 +103,15 @@ class FaBaseCurl {
 			result = data;
 		} else {
 			type = type ? type : "";
-			// if (type.indexOf(this._ContentType.multipart) === 0) {
+			// if (type.indexOf(FaHttpContentType.multipart) === 0) {
 			// ({files, post: result} = this.parseMultipart(data));
 			// } else
-			if (type.includes(this._ContentType.json)) {
-				result = this._converter.toJson(data);
-			} else if (type.includes(this._ContentType.xml)) {
-				result = this._converter.toXml(data);
-			} else if (type.includes(this._ContentType.urlencoded)) {
-				result = this._converter.toUrlEncoded(data);
+			if (type.includes(FaHttpContentType.json)) {
+				result = FaConverter.toJson(data);
+			} else if (type.includes(FaHttpContentType.xml)) {
+				result = FaConverter.toXml(data);
+			} else if (type.includes(FaHttpContentType.urlencoded)) {
+				result = FaConverter.toUrlEncoded(data);
 			} else {
 				result = data.toString();
 			}
@@ -137,7 +119,7 @@ class FaBaseCurl {
 		return result ? result : null;
 	}
 
-	_dataFromType(data, type) {
+	static _dataFromType(data, type) {
 		let result;
 		if (data instanceof Buffer) {
 			result = data;
@@ -145,16 +127,17 @@ class FaBaseCurl {
 			result = data;
 		} else {
 			type = type ? type : "";
-			// if (type.indexOf(this._ContentType.multipart) === 0) {
+			// if (type.indexOf(FaHttpContentType.multipart) === 0) {
 			// ({files, post: result} = this.parseMultipart(data));
 			// } else
-			if (type.includes(this._ContentType.json)) {
-				result = this._converter.fromJson(data);
-			} else if (type.includes(this._ContentType.xml)) {
-				result = this._converter.fromXml(data);
-			} else if (type.includes(this._ContentType.urlencoded)) {
-				result = this._converter.fromUrlEncoded(data);
+			if (type.includes(FaHttpContentType.json)) {
+				result = FaConverter.fromJson(data);
+			} else if (type.includes(FaHttpContentType.xml)) {
+				result = FaConverter.fromXml(data);
+			} else if (type.includes(FaHttpContentType.urlencoded)) {
+				result = FaConverter.fromUrlEncoded(data);
 			} else {
+				console.warn(data);
 				result = data;
 			}
 		}
@@ -178,7 +161,7 @@ class FaBaseCurl {
 	async execute(data = null) {
 		let self = this;
 		let trace = FaTrace.trace(1);
-		let request = {
+		let curl = {
 			hostname: this.options.hostname,
 			port: this.options.port,
 			method: this.options.method,
@@ -190,12 +173,12 @@ class FaBaseCurl {
 		return new Promise(function (resolve, reject) {
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
-				body = self._dataToType(data, request.headers["content-type"] || request.headers["accept"]);
-				// console.warn(request.headers, data, body);
+				body = FaCurl._dataToType(data, FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]));
 			} else {
-				request.path = `${request.path}?${self._converter.toUrlEncoded(data)}`;
+				curl.path = `${curl.path}?${FaConverter.toUrlEncoded(data)}`;
 			}
-			let req = self.options.protocol === "https" ? Https.request(request) : Http.request(request);
+			// console.info(FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]), curl, body);
+			let req = self.options.protocol === "https" ? Https.request(curl) : Http.request(curl);
 			if (body) {
 				req.write(body);
 			}
@@ -214,9 +197,9 @@ class FaBaseCurl {
 					body += chunk;
 				});
 				res.on("end", function () {
-					let data = self._dataFromType(body, request.headers["accept"] || res.headers["content-type"]);
-					// console.error(request.headers["accept"], res.headers["content-type"], body, data);
-					resolve(self._createResponse(data, res.headers["content-type"] || request.headers["accept"], res.statusCode, res.headers));
+					let data = FaCurl._dataFromType(body, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
+					// console.log(res.headers, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
+					resolve(FaHttpResponse.create(data, res.statusCode, res.headers));
 				});
 			});
 			req.on("error", function (e) {
@@ -233,6 +216,6 @@ class FaBaseCurl {
 
 /**
  *
- * @type {FaBaseCurl}
+ * @type {FaCurl}
  */
-module.exports = FaBaseCurl;
+module.exports = FaCurl;

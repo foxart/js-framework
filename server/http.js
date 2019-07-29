@@ -9,15 +9,15 @@ const MimeTypes = require("mime-types");
 const FaError = require("fa-nodejs/base/error");
 /** @member {Class|FaTrace} */
 const FaTrace = require("fa-nodejs/base/trace");
-const FaBaseFile = require("fa-nodejs/base/file");
+const FaFile = require("fa-nodejs/base/file");
 const FaConsoleColor = require("fa-nodejs/console/console-helper");
-const FaBaseConverter = require("fa-nodejs/base/converter");
-const FaHttpRequestClass = require("fa-nodejs/server/http-request");
-/** @member {Class|FaHttpResponse}*/
-const FaHttpResponse = require("fa-nodejs/server/http-response");
+const FaConverter = require("fa-nodejs/base/converter");
 const FaHttpContentType = require("./http-content-type");
+const FaHttpHeaders = require("./http-headers");
+const FaHttpResponse = require("fa-nodejs/server/http-response");
+const FaHttpRequestClass = require("fa-nodejs/server/http-request");
 const FaHttpStatusCode = require("./http-status-code");
-const FaBaseRouter = require("fa-nodejs/base/router");
+const FaRouter = require("fa-nodejs/base/router");
 const FaHttpConfiguration = require("fa-nodejs/server/http-configuration");
 
 class FaServerHttp {
@@ -25,17 +25,13 @@ class FaServerHttp {
 		this.name = "HTTP";
 		this._FaHttpConfiguration = require("./http-configuration")(configuration);
 		this.Configuration = configuration;
-		this._FaConverter = new FaBaseConverter(this.Configuration.converter);
-		// console.info(configuration);
-		this._FaFile = new FaBaseFile(this.Configuration.path);
-		this._FaFilePrivate = new FaBaseFile(this.Configuration.private);
-		this._FaRouter = new FaBaseRouter(this);
-		this._FaAssets = new FaBaseRouter(this);
+		this._FaFile = new FaFile(this.Configuration.path);
+		this._FaFilePrivate = new FaFile(this.Configuration.private);
+		this._FaRouter = new FaRouter(this);
+		this._FaAssets = new FaRouter(this);
 		this._FaHttpRequest = new FaHttpRequestClass(this.Configuration.converter);
 		this._FaHttpResponse = FaHttpResponse;
-		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpStatusCode = new FaHttpStatusCode();
-		// this.HttpServer = this._createHttp(this.Configuration);
 		this.HttpServer = this._createHttp(this.Configuration);
 		this._trace = FaTrace.trace(1);
 	}
@@ -60,11 +56,11 @@ class FaServerHttp {
 
 	/**
 	 *
-	 * @return {FaBaseConverter}
-	 * @constructor
+	 * @return {FaConverter}
+	 * @private
 	 */
-	get _converter() {
-		return this._FaConverter;
+	static get _converter() {
+		return FaConverter;
 	}
 
 	/**
@@ -78,7 +74,7 @@ class FaServerHttp {
 
 	/**
 	 *
-	 * @return {FaBaseFile}
+	 * @return {FaFile}
 	 * @constructor
 	 */
 	get File() {
@@ -105,12 +101,10 @@ class FaServerHttp {
 		return this._FaAssets;
 	}
 
-	/**
-	 *
-	 * @return {FaHttpContentType}
-	 */
+	// noinspection JSMethodCanBeStatic
 	get type() {
-		return this._FaHttpContentType;
+		// return this._FaHttpContentType;
+		return FaHttpContentType;
 	}
 
 	/**
@@ -178,11 +172,11 @@ class FaServerHttp {
 				if (type.includes(self.type.multipart)) {
 					({files, post} = self._parser.parseMultipart(body));
 				} else if (type.includes(self.type.json)) {
-					post = self._converter.fromJson(body);
+					post = FaConverter.fromJson(body);
 				} else if (type.includes(self.type.xml)) {
-					post = self._converter.fromXml(body);
+					post = FaConverter.fromXml(body);
 				} else if (type.includes(self.type.urlencoded)) {
-					post = self._converter.fromUrlEncoded(body);
+					post = FaConverter.fromUrlEncoded(body);
 				} else {
 					post = body;
 				}
@@ -192,7 +186,7 @@ class FaServerHttp {
 				headers: req.headers,
 				method: req.method.toLowerCase(),
 				path: url.pathname,
-				get: url.query ? self._converter.fromUrlEncoded(url.query) : null,
+				get: url.query ? FaConverter.fromUrlEncoded(url.query) : null,
 				post: post,
 				files: files,
 				cookies: req.headers["cookie"] ? self._parser.parseCookie(req.headers["cookie"]) : null,
@@ -201,24 +195,21 @@ class FaServerHttp {
 			};
 			self._handleRequest(request).then(function (response) {
 				/*todo make proper content-type and|or charset extractor*/
-				let contentType = self._getResponseContentType(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
-				// console.info(req);
-				// console.info(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
-				let charset = self._getResponseCharset(response["headers"]["Content-Type"], req.headers["accept"], req.headers["content-type"]);
+				let contentType = FaHttpHeaders.getValue("Content-Type", [response["headers"], {"content-type": req.headers["accept"]}, req.headers]);
+				// let charset = FaHttpHeaders.getCharset(contentType);
 				if (response["body"] instanceof Buffer === false) {
 					if (contentType) {
 						if (contentType.includes(self.type.json)) {
-							// console.warn(response);
-							response["body"] = self._converter.toJson(response["body"]);
+							response["body"] = FaConverter.toJson(response["body"]);
 							// console.warn(response);
 						} else if (contentType.includes(self.type.html)) {
-							response["body"] = self._converter.toHtml(response["body"]);
+							response["body"] = FaConverter.toHtml(response["body"]);
 						} else if (contentType.includes(self.type.urlencoded)) {
-							response["body"] = self._converter.toUrlEncoded(response["body"]);
+							response["body"] = FaConverter.toUrlEncoded(response["body"]);
 						} else if (contentType.includes(self.type.xml)) {
-							response["body"] = self._converter.toXml(response["body"]);
+							response["body"] = FaConverter.toXml(response["body"]);
 						} else if (contentType.includes(self.type.text)) {
-							response["body"] = self._converter.toText(response["body"]);
+							response["body"] = FaConverter.toText(response["body"]);
 						} else {
 							/*default converter*/
 							response["body"] = response["body"].toString();
@@ -229,22 +220,15 @@ class FaServerHttp {
 					}
 				}
 				if (contentType) {
-					// if (!response["headers"]["Content-Type"]) {
-					// response["headers"]["Content-Type"] = contentType;
-					// console.error(contentType, charset, [contentType, charset].filter(item => item).map(item => item.trim()).join("; "));
-					// response["headers"]["Content-Type"] = [contentType, charset].filter(item => item).map(item => item.trim()).join("; ");
-					res.setHeader("Content-Type", [contentType, charset].filter(item => item).map(item => item.trim()).join("; "));
+					res.setHeader("Content-Type", contentType);
 				}
 				Object.entries(response["headers"]).map(function ([key, value]) {
-					if (key !== "Content-Type") {
+					if (["Content-Type", "content-type"].omit(key)) {
 						res.setHeader(key, value);
 					}
-					// console.warn(`${key}: ${value}`);
 				});
 				if (response["body"] instanceof Buffer) {
 					res.setHeader("Content-Length", response["body"].byteLength);
-					// } else if (response["body"]) {
-					// 	res.setHeader("Content-Length", 0);
 				} else {
 					res.setHeader("Content-Length", Buffer.from(response["body"]).byteLength);
 				}
@@ -254,31 +238,6 @@ class FaServerHttp {
 			});
 		});
 	};
-
-	_getResponseContentType(contentType, reqAcceptType, reqContentType) {
-		// contentType = "text/html  ,application/xhtml+xml,application/xml;  q=0.9;charset=windows-1251";
-		// contentType = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";
-		// contentType = "text/html ";
-		// contentType = "  text/plain,a-1; charset=utf-8";
-		// contentType = "charset=utf-8";
-		let check = contentType || reqAcceptType || reqContentType;
-		if (check) {
-			let type = check.split(";");
-			return type[0].split(",").filter(item => item.indexOf("charset=") === -1 ? item : false)[0];
-		} else {
-			return null;
-		}
-	}
-
-	_getResponseCharset(contentType, reqAcceptType, reqContentType) {
-		let check = contentType || reqAcceptType || reqContentType;
-		if (check) {
-			let type = check.split(";");
-			return type.filter(item => item.indexOf("charset=") !== -1 ? item : false)[0];
-		} else {
-			return null;
-		}
-	}
 
 	/**
 	 *

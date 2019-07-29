@@ -19,7 +19,6 @@ class FaApplicationController {
 	constructor(FaServerHttp, pathname = null) {
 		this.name = "CONTROLLER";
 		this._FaServer = FaServerHttp;
-		this._FaHttpContentType = new FaHttpContentType();
 		this._FaHttpResponse = new FaHttpResponse();
 		this._response = FaHttpResponse;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
@@ -53,12 +52,9 @@ class FaApplicationController {
 		return this._FaServer;
 	}
 
-	/**
-	 *
-	 * @return {FaHttpContentType}
-	 */
+
 	get contentType() {
-		return this._FaHttpContentType;
+		return FaHttpContentType;
 	}
 
 	/**

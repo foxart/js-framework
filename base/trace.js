@@ -1,9 +1,5 @@
 "use strict";
 
-/**
- *
- * @class FaTrace
- */
 class FaTrace {
 	/**
 	 *
@@ -134,6 +130,6 @@ class FaTrace {
 
 /**
  *
- * @type {FaTrace}
+ * @type {FaTrace|Class}
  */
 module.exports = FaTrace;
