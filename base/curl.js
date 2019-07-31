@@ -139,7 +139,7 @@ class FaCurl {
 			} else if (type.includes(FaHttpContentType.urlencoded)) {
 				result = FaConverter.fromUrlEncoded(data);
 			} else {
-				console.warn(data);
+				// console.warn(data);
 				result = data;
 			}
 		}
