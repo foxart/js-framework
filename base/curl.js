@@ -89,12 +89,24 @@ class FaCurl {
 		this._options = this._adapter.apply(options);
 	}
 
+	set hostname(hostname) {
+		this._options.hostname = hostname ? hostname : "localhost";
+	}
+
+	set port(port) {
+		this._options.port = port ? port : this["protocol"] === "https" ? 443 : 80;
+	}
+
 	set path(path) {
 		this._options.path = path ? path : "/";
 	}
 
 	set method(method) {
 		this._options.method = method ? method.toLowerCase() : "get";
+	}
+
+	set headers(headers) {
+		this._options.headers = headers ? headers : {};
 	}
 
 	static _dataToType(data, type) {
@@ -136,10 +148,11 @@ class FaCurl {
 				result = FaConverter.fromJson(data);
 			} else if (type.includes(FaHttpContentType.xml)) {
 				result = FaConverter.fromXml(data);
+			// } else if (type.includes(FaHttpContentType.textXml)) {
+			// 	result = FaConverter.fromXml(data);
 			} else if (type.includes(FaHttpContentType.urlencoded)) {
 				result = FaConverter.fromUrlEncoded(data);
 			} else {
-				// console.warn(data);
 				result = data;
 			}
 		}

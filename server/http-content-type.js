@@ -47,6 +47,10 @@ class FaHttpContentType {
 		return "text/plain";
 	}
 
+	static get textXml() {
+		return "text/xml";
+	}
+
 	static get urlencoded() {
 		return "application/x-www-form-urlencoded";
 	}

@@ -129,11 +129,21 @@ class FaConverter {
 			result = FastXmlParser.parse(data, options)
 		} catch (e) {
 			console.error(e);
+			result = data
 			// result = {}
+		}
+		return result["xml"] !== undefined ? result["xml"] : result;
+	}
+
+	static fromTextXml(data, options = {}) {
+		let result;
+		try {
+			result = FastXmlParser.parse(data, options)
+		} catch (e) {
+			console.error(e);
 			result = data
 		}
-		// let result = this.isXml(data) ? FastXmlParser.parse(data, Object.assign({}, this._fromXml, options)) : {};
-		return result["xml"] !== undefined ? result["xml"] : result;
+		return result;
 	}
 
 	/**
