@@ -149,6 +149,9 @@ class FaApplicationModule {
 		Object.entries(modules).forEach(function ([moduleKey, moduleValue]) {
 			if (self._FaFile.isDirectory(`${self._pathname}/modules/${moduleKey}`)) {
 				self._module_list[moduleKey] = moduleValue;
+				// console.warn(moduleKey, moduleValue);
+				//todo rewrite to default not set value
+				// self._loadLayout(moduleValue["layout"]);
 				if (moduleValue["layout"]) {
 					self._loadLayout(moduleValue["layout"]);
 				} else {
@@ -168,10 +171,12 @@ class FaApplicationModule {
 				route = {
 					uri: routeKey,
 					module: moduleKey,
-					layout: routeValue["layout"] ? routeValue["layout"] : moduleValue["layout"],
-					render: routeValue["render"] ? routeValue["render"] : moduleValue["render"],
-					controller: routeValue["controller"],
-					action: routeValue["action"],
+					// layout: routeValue["layout"] ? routeValue["layout"] : moduleValue["layout"],
+					layout: routeValue["layout"] || moduleValue["layout"] || "index",
+					// render: routeValue["render"] ? routeValue["render"] : moduleValue["render"],
+					render: routeValue["render"] || moduleValue["render"] || "index",
+					controller: routeValue["controller"] || "index",
+					action: routeValue["action"] || "index",
 				};
 				self._storeRoute(route);
 			});
@@ -199,10 +204,10 @@ class FaApplicationModule {
 				route = {
 					uri: `/${route_list.reverse().join("/")}`,
 					module: moduleKey,
-					layout: moduleValue["layout"],
-					render: moduleValue["render"],
-					controller: controller,
-					action: action,
+					layout: moduleValue["layout"] || "index",
+					render: moduleValue["render"] || "index",
+					controller: controller || "index",
+					action: action || "index",
 				};
 				if (Object.keys(self._route_list).omit(self._getRouteIndex(route))) {
 					self._storeRoute(route);
@@ -226,6 +231,7 @@ class FaApplicationModule {
 	}
 
 	_layoutMethodToRender(render) {
+		// console.log(render, this._regularLayoutMethod);
 		let match = render.match(this._regularLayoutMethod);
 		if (match) {
 			return `render${match[0].split("-").map(item => item.capitalize()).join("")}`;
