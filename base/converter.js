@@ -182,8 +182,8 @@ class FaConverter {
 	 * @param data {object|string}
 	 */
 	static toUrlEncoded(data) {
-		return encodeURIComponent(QueryString.stringify(data));
-		// return QueryString.stringify(data);
+		return QueryString.stringify(data);
+		// return encodeURIComponent(QueryString.stringify(data));
 	}
 
 	/**

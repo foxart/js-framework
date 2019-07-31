@@ -32,7 +32,6 @@ class FaCurl {
 	 */
 	constructor(options = {}) {
 		this._StatusCode = new FaHttpStatusCode();
-		this._FaConverter = new FaConverter();
 		this.options = options;
 	}
 
@@ -65,11 +64,7 @@ class FaCurl {
 					return this["path"] ? this["path"] : "/";
 				},
 				method: function () {
-					if (this["method"]) {
-						return this["method"].toLowerCase();
-					} else {
-						return "get";
-					}
+					return this["method"] ? this["method"].toLowerCase() : "get";
 				},
 				headers: function () {
 					return this["headers"] ? this["headers"] : {}
@@ -86,13 +81,20 @@ class FaCurl {
 	}
 
 	get options() {
-		// console.error("GET");
 		return this._options;
-	};
+	}
 
 	set options(options) {
 		// console.error("SET");
 		this._options = this._adapter.apply(options);
+	}
+
+	set path(path) {
+		this._options.path = path ? path : "/";
+	}
+
+	set method(method) {
+		this._options.method = method ? method.toLowerCase() : "get";
 	}
 
 	static _dataToType(data, type) {
@@ -177,7 +179,10 @@ class FaCurl {
 			} else {
 				curl.path = `${curl.path}?${FaConverter.toUrlEncoded(data)}`;
 			}
-			// console.info(FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]), curl, body);
+			// let enc = FaConverter.toUrlEncoded({a:"ХУЙ"});
+			// let dec = FaConverter.fromUrlEncoded(enc);
+			// console.info(enc, dec);
+			// console.info(curl, body);
 			let req = self.options.protocol === "https" ? Https.request(curl) : Http.request(curl);
 			if (body) {
 				req.write(body);

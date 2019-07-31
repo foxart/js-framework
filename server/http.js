@@ -193,47 +193,52 @@ class FaServerHttp {
 				// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
 				// input: body,
 			};
-			self._handleRequest(request).then(function (response) {
+			self._handleRequest(request).then(function (result) {
 				/*todo make proper content-type and|or charset extractor*/
-				let contentType = FaHttpHeaders.getValue("Content-Type", [response["headers"], {"content-type": req.headers["accept"]}, req.headers]);
+				let contentType = FaHttpHeaders.getValue("Content-Type", [
+					result["headers"],
+					{
+						"content-type": req.headers["accept"] ? req.headers["accept"].split(";")[0].split(",").filter(item => item.trim())[0] : null
+					},
+					req.headers
+				]);
 				// let charset = FaHttpHeaders.getCharset(contentType);
-				if (response["body"] instanceof Buffer === false) {
+				if (result["body"] instanceof Buffer === false) {
 					if (contentType) {
 						if (contentType.includes(self.type.json)) {
-							response["body"] = FaConverter.toJson(response["body"]);
-							// console.warn(response);
+							result["body"] = FaConverter.toJson(result["body"]);
 						} else if (contentType.includes(self.type.html)) {
-							response["body"] = FaConverter.toHtml(response["body"]);
+							result["body"] = FaConverter.toHtml(result["body"]);
 						} else if (contentType.includes(self.type.urlencoded)) {
-							response["body"] = FaConverter.toUrlEncoded(response["body"]);
+							result["body"] = FaConverter.toUrlEncoded(result["body"]);
 						} else if (contentType.includes(self.type.xml)) {
-							response["body"] = FaConverter.toXml(response["body"]);
+							result["body"] = FaConverter.toXml(result["body"]);
 						} else if (contentType.includes(self.type.text)) {
-							response["body"] = FaConverter.toText(response["body"]);
+							result["body"] = FaConverter.toText(result["body"]);
 						} else {
 							/*default converter*/
-							response["body"] = response["body"].toString();
+							result["body"] = result["body"].toString();
 						}
 					} else {
 						/*default converter*/
-						response["body"] = response["body"].toString();
+						result["body"] = result["body"].toString();
 					}
 				}
-				if (contentType) {
-					res.setHeader("Content-Type", contentType);
-				}
-				Object.entries(response["headers"]).map(function ([key, value]) {
+				Object.entries(result["headers"]).map(function ([key, value]) {
 					if (["Content-Type", "content-type"].omit(key)) {
 						res.setHeader(key, value);
 					}
 				});
-				if (response["body"] instanceof Buffer) {
-					res.setHeader("Content-Length", response["body"].byteLength);
-				} else {
-					res.setHeader("Content-Length", Buffer.from(response["body"]).byteLength);
+				if (contentType) {
+					res.setHeader("Content-Type", contentType);
 				}
-				res.statusCode = response["status"];
-				res.write(response["body"]);
+				if (result["body"] instanceof Buffer) {
+					res.setHeader("Content-Length", result["body"].byteLength);
+				} else {
+					res.setHeader("Content-Length", Buffer.from(result["body"]).byteLength);
+				}
+				res.statusCode = result["status"];
+				res.write(result["body"]);
 				res.end();
 			});
 		});
