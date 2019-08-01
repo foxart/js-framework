@@ -22,11 +22,11 @@ const ErrorExpression = new RegExp("^(.+): (.+)$");
 class FaFile {
 	/**
 	 *
-	 * @param path {string|null}
+	 * @param pathname {string|null}
 	 */
-	constructor(path = null) {
+	constructor(pathname = null) {
 		// console.info(path);
-		this._path = path;
+		this._pathname = pathname;
 	};
 
 	/**
@@ -44,20 +44,15 @@ class FaFile {
 		}
 	}
 
-
-	get pathname(){
-		return this._path;
-	}
-
 	/**
 	 *
 	 * @param name {string}
 	 * @returns {string}
 	 */
-	getPath(name) {
-		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
+	getPathname(name) {
+		return this._pathname ? `${this._pathname}/${name}` : name;
 		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
-		return this._path ? `${this._path}/${name}` : name;
+		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 	};
 
 	/**
@@ -66,7 +61,7 @@ class FaFile {
 	 * @return {boolean}
 	 */
 	isDirectory(directory) {
-		return !!(Fs.existsSync(this.getPath(directory)) && Fs.lstatSync(this.getPath(directory)).isDirectory());
+		return !!(Fs.existsSync(this.getPathname(directory)) && Fs.lstatSync(this.getPathname(directory)).isDirectory());
 	};
 
 	/**
@@ -75,7 +70,7 @@ class FaFile {
 	 * @returns {boolean}
 	 */
 	isFile(filename) {
-		return !!(Fs.existsSync(this.getPath(filename)) && Fs.lstatSync(this.getPath(filename)).isFile());
+		return !!(Fs.existsSync(this.getPathname(filename)) && Fs.lstatSync(this.getPathname(filename)).isFile());
 	};
 
 	createDirectoryAsync(directory, options) {
@@ -89,7 +84,7 @@ class FaFile {
 	createDirectorySync(directory, options) {
 		let trace = FaTrace.trace(1);
 		try {
-			Fs.mkdirSync(this.getPath(directory), options);
+			Fs.mkdirSync(this.getPathname(directory), options);
 		} catch (e) {
 			throw FaFile._Error(e).setTrace(trace);
 		}
@@ -122,7 +117,7 @@ class FaFile {
 	readDirectorySync(directory = "") {
 		let trace = FaTrace.trace(1);
 		try {
-			return Fs.readdirSync(this.getPath(directory), {});
+			return Fs.readdirSync(this.getPathname(directory), {});
 		} catch (e) {
 			throw FaFile._Error(e).setTrace(trace);
 		}
@@ -137,7 +132,7 @@ class FaFile {
 		let trace = FaTrace.trace(1);
 		let self = this;
 		return new Promise(function (resolve, reject) {
-			Fs.readFile(self.getPath(filename), {}, function (e, buffer) {
+			Fs.readFile(self.getPathname(filename), {}, function (e, buffer) {
 				if (e) {
 					reject(FaFile._Error(e).setTrace(trace));
 				} else {
@@ -156,8 +151,8 @@ class FaFile {
 		let trace = FaTrace.trace(1);
 		// console.info(trace);
 		try {
-			// console.error(this.getPath(filename));
-			return Fs.readFileSync(this.getPath(filename), {});
+			// console.error(this.getPathname(filename));
+			return Fs.readFileSync(this.getPathname(filename), {});
 		} catch (e) {
 			throw FaFile._Error(e).setTrace(trace);
 		}
@@ -173,7 +168,7 @@ class FaFile {
 		let trace = FaTrace.trace(1);
 		let self = this;
 		return new Promise(function (resolve, reject) {
-			Fs.writeFile(self.getPath(filename), data, {}, function (e) {
+			Fs.writeFile(self.getPathname(filename), data, {}, function (e) {
 				if (e) {
 					reject(FaFile._Error(e).setTrace(trace));
 				} else {
@@ -196,7 +191,7 @@ class FaFile {
 		// fileStream.end();
 		let trace = FaTrace.trace(1);
 		try {
-			Fs.writeFileSync(`${this.getPath(filename)}`, data, {
+			Fs.writeFileSync(`${this.getPathname(filename)}`, data, {
 				flag: 'w',
 				// mode: 0o755,
 			});
@@ -212,7 +207,7 @@ class FaFile {
 	deleteFileSync(filename) {
 		let trace = FaTrace.trace(1);
 		try {
-			Fs.unlinkSync(`${this.getPath(filename)}`);
+			Fs.unlinkSync(`${this.getPathname(filename)}`);
 		} catch (e) {
 			throw FaFile._Error(e).setTrace(trace);
 		}

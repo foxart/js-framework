@@ -1,9 +1,9 @@
 "use strict";
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-/** @member {FaTrace|Class} */
+const FaFile = require("fa-nodejs/base/file");
 const FaTrace = require("fa-nodejs/base/trace");
-const FaApplicationTemplate = require("fa-nodejs/application/template");
+const FaTemplate = require("fa-nodejs/application/template");
 
 class FaLayout {
 	/**
@@ -11,7 +11,8 @@ class FaLayout {
 	 * @param pathname {string|null}
 	 */
 	constructor(pathname = null) {
-		this._FaTemplateClass = new FaApplicationTemplate(pathname == null ? this._getTemplatePathname : pathname);
+		this._FaTemplate = new FaTemplate();
+		this._FaFile = new FaFile(pathname ? pathname : this._viewsPathname);
 	}
 
 	// noinspection JSMethodCanBeStatic
@@ -20,7 +21,7 @@ class FaLayout {
 	 * @return {string|null}
 	 * @private
 	 */
-	get _getTemplatePathname() {
+	get _viewsPathname() {
 		let regular_path = new RegExp(`^(.+)/layouts/([A-Z][^-]+)Layout.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
 		let match_path = FaTrace.trace(2)["path"].match(regular_path);
@@ -33,15 +34,16 @@ class FaLayout {
 
 	/**
 	 *
-	 * @param template {string}
-	 * @return {FaApplicationTemplate}
+	 * @param name {string}
+	 * @return {FaTemplate}
 	 */
-	template(template) {
+	template(name) {
 		try {
-			return this._FaTemplateClass.load(template);
+			this._FaTemplate.set = this._FaFile.readFileSync(`${name}.tpl`).toString();
 		} catch (e) {
-			throw new FaError(e).pickTrace(1);
+			throw new FaError(`view not found: ${this._FaFile.getPathname(`${name}.tpl`)}`);
 		}
+		return this._FaTemplate;
 	}
 
 	// noinspection JSMethodCanBeStatic

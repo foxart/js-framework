@@ -1,11 +1,12 @@
 "use strict";
 /*fa*/
+const FaError = require("fa-nodejs/base/error");
+const FaFile = require("fa-nodejs/base/file");
+const FaTrace = require("fa-nodejs/base/trace");
+const FaTemplate = require("fa-nodejs/application/template");
 const FaHttpContentType = require("fa-nodejs/server/http-content-type");
 const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
-const FaError = require("fa-nodejs/base/error");
-const FaTrace = require("fa-nodejs/base/trace");
-const FaApplicationTemplate = require("fa-nodejs/application/template");
 
 // const FaApplicationController = require("fa-nodejs/application/controller");
 class FaApplicationController {
@@ -17,17 +18,19 @@ class FaApplicationController {
 	constructor(FaServerHttp, pathname = null) {
 		this.name = "CONTROLLER";
 		this._FaServer = FaServerHttp;
+		this._FaHttpContentType = FaHttpContentType;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
-		this._FaTemplate = new FaApplicationTemplate(pathname ? pathname : FaApplicationController._getTemplatePathname);
-		// console.warn(this._getTemplatePathname, this["actionIndex"]);
+		this._FaTemplate = new FaTemplate();
+		this._FaFile = new FaFile(pathname ? pathname : this._viewsPathname);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 *
 	 * @return {string|null}
 	 * @private
 	 */
-	static get _getTemplatePathname() {
+	get _viewsPathname() {
 		let controller_path = FaTrace.trace(2)["path"];
 		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Controller.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
@@ -47,7 +50,7 @@ class FaApplicationController {
 		return this._FaServer;
 	}
 
-
+	// noinspection JSMethodCanBeStatic
 	get contentType() {
 		return FaHttpContentType;
 	}
@@ -58,6 +61,41 @@ class FaApplicationController {
 	 */
 	get statusCode() {
 		return this._FaHttpStatusCode;
+	}
+
+	/**
+	 *
+	 * @param name
+	 * @return {FaTemplate}
+	 */
+	view(name) {
+		let filename = `${name}.twig`;
+		try {
+			if (!this._FaTemplate.get) {
+				this._FaTemplate.set = this._FaFile.readFileSync(filename).toString();
+			}
+			return this._FaTemplate;
+		} catch (e) {
+			throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).setTrace(FaTrace.trace(1));
+		}
+	}
+
+	/**
+	 *
+	 * @param name
+	 * @return {FaTemplate}
+	 * @deprecated
+	 */
+	template(name) {
+		let filename = `${name}.tpl`;
+		try {
+			if (!this._FaTemplate.get) {
+				this._FaTemplate.set = this._FaFile.readFileSync(filename).toString();
+			}
+			return this._FaTemplate;
+		} catch (e) {
+			throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`);
+		}
 	}
 
 	/**
@@ -133,19 +171,6 @@ class FaApplicationController {
 	 */
 	renderXml(body, status = null) {
 		return FaHttpResponse.create(body, status, this.contentType.xml);
-	}
-
-	/**
-	 *
-	 * @param template
-	 * @return {FaTemplate}
-	 */
-	template(template) {
-		try {
-			// return this._FaTemplate.load(template);
-		} catch (e) {
-			throw new FaError(e).pickTrace(1);
-		}
 	}
 }
 
