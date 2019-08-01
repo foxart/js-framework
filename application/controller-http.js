@@ -1,11 +1,9 @@
 "use strict";
 /*fa*/
 const FaHttpContentType = require("fa-nodejs/server/http-content-type");
-/** @member {FaHttpResponse|Class} */
 const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
 const FaError = require("fa-nodejs/base/error");
-/** @member {FaTrace|Class} */
 const FaTrace = require("fa-nodejs/base/trace");
 const FaApplicationTemplate = require("fa-nodejs/application/template");
 
@@ -19,8 +17,6 @@ class FaApplicationController {
 	constructor(FaServerHttp, pathname = null) {
 		this.name = "CONTROLLER";
 		this._FaServer = FaServerHttp;
-		this._FaHttpResponse = new FaHttpResponse();
-		this._response = FaHttpResponse;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this._FaTemplate = new FaApplicationTemplate(pathname ? pathname : FaApplicationController._getTemplatePathname);
 		// console.warn(this._getTemplatePathname, this["actionIndex"]);
@@ -32,7 +28,6 @@ class FaApplicationController {
 	 * @private
 	 */
 	static get _getTemplatePathname() {
-		// console.info(FaBaseTrace.trace(3));
 		let controller_path = FaTrace.trace(2)["path"];
 		let regular_path = new RegExp(`^(.+)/controllers/([A-Z][^-]+)Controller.js$`);
 		let regular_name = new RegExp("[A-Z][^A-Z]*", "g");
@@ -71,7 +66,7 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	redirect(location = null) {
-		return this._response.create(null, this.statusCode.found, {
+		return FaHttpResponse.create(null, this.statusCode.found, {
 			"Location": location ? location : "/",
 		});
 	}
@@ -83,7 +78,7 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	redirectCustom(location = null, headers = null) {
-		return this._response.create(null, this.statusCode.found, Object.assign(headers, {
+		return FaHttpResponse.create(null, this.statusCode.found, Object.assign(headers, {
 			"Location": location ? location : "/",
 		}));
 	}
@@ -107,7 +102,7 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	renderCustom(body = null, status = null, headers = null) {
-		return this._response.create(body, status, headers);
+		return FaHttpResponse.create(body, status, headers);
 	}
 
 	/**
@@ -117,7 +112,7 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	renderJson(body, status = null) {
-		return this._response.create(body, status, this.contentType.json);
+		return FaHttpResponse.create(body, status, this.contentType.json);
 	}
 
 	/**
@@ -127,7 +122,7 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	renderHtml(body, status = null) {
-		return this._response.create(body, status, this.contentType.html);
+		return FaHttpResponse.create(body, status, this.contentType.html);
 	}
 
 	/**
@@ -137,17 +132,17 @@ class FaApplicationController {
 	 * @return {*}
 	 */
 	renderXml(body, status = null) {
-		return this._response.create(body, status, this.contentType.xml);
+		return FaHttpResponse.create(body, status, this.contentType.xml);
 	}
 
 	/**
 	 *
 	 * @param template
-	 * @return {FaApplicationTemplate}
+	 * @return {FaTemplate}
 	 */
 	template(template) {
 		try {
-			return this._FaTemplate.load(template);
+			// return this._FaTemplate.load(template);
 		} catch (e) {
 			throw new FaError(e).pickTrace(1);
 		}

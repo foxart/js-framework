@@ -127,7 +127,7 @@ class FaCurl {
 			} else if (type.includes(FaHttpContentType.urlencoded)) {
 				result = FaConverter.toUrlEncoded(data);
 			} else {
-				result = data.toString();
+				result = data;
 			}
 		}
 		return result ? result : null;

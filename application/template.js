@@ -2,7 +2,7 @@
 const FaBaseError = require("fa-nodejs/base/error");
 const FaBaseFile = require("fa-nodejs/base/file");
 
-class FaApplicationTemplate {
+class FaTemplate {
 	/**
 	 *
 	 * @param path {string|null}
@@ -31,8 +31,9 @@ class FaApplicationTemplate {
 	/**
 	 *
 	 * @param filename {string}
-	 * @return {FaApplicationTemplate}
+	 * @return {FaTemplate}
 	 */
+	 // * @private
 	load(filename) {
 		// console.error(filename, this._FaFile.path(filename));
 		try {
@@ -46,6 +47,6 @@ class FaApplicationTemplate {
 
 /**
  *
- * @type {FaApplicationTemplate}
+ * @type {FaTemplate}
  */
-module.exports = FaApplicationTemplate;
+module.exports = FaTemplate;

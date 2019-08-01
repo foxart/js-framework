@@ -183,8 +183,8 @@ class FaConverter {
 	 * @return {object|string}
 	 */
 	static fromUrlEncoded(data) {
-		return QueryString.parse(decodeURIComponent(data));
-		// return QueryString.parse(data);
+		return QueryString.parse(data);
+		// return QueryString.parse(decodeURIComponent(data));
 	}
 
 	/**
