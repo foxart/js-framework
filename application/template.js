@@ -21,42 +21,68 @@ class FaTemplate {
 		this._template = template;
 	}
 
+	_find(result, list) {
+		// console.info(list);
+		let pointer = result;
+		list.map(function (key) {
+			if (pointer[key]) {
+			} else {
+				pointer[key] = {};
+				pointer = pointer[key];
+			}
+		});
+		console.info(pointer);
+	}
+
 	parse() {
 		// let pattern = "{% block (.+) %}";
 		// let regular = new RegExp(pattern, "g");
 		// let match = this.get.match(regular);
 		// console.info(match);
-		let result = [];
-		let blocks = [];
-		let regBlockStart = /{% block (.+) %}/g;
-		let regBlockEnd = /{% endblock %}/g;
+		let self = this;
+		let result = {};
+		let blockList = ["/"];
+		let blockRegExpStart = /{% block (.+) %}/g;
+		let blockRegExpEnd = /{% endblock %}/g;
+		let line = 1;
 		this.get.split("\n").map(function (item) {
-			let blockStart = regBlockStart.exec(item);
-			let blockEnd = regBlockEnd.exec(item);
+			let blockIndex = blockList[blockList.length - 1];
+			let blockStart = blockRegExpStart.exec(item);
+			let blockEnd = blockRegExpEnd.exec(item);
+			// console.info(blockIndex);
+			// result[blockIndex] = {};
 			if (blockStart) {
 				while (blockStart !== null) {
-					blocks.push(blockStart[1]);
-					blockStart = regBlockStart.exec(item);
+					blockList.push(blockStart[1]);
+					blockStart = blockRegExpStart.exec(item);
 				}
 			} else if (blockEnd) {
 				while (blockEnd !== null) {
-					blocks.pop();
-
-					blockEnd = regBlockEnd.exec(item);
+					blockList.pop();
+					blockEnd = blockRegExpEnd.exec(item);
 				}
 			} else {
-				console.error(blocks[blocks.length - 1]);
-				let blockIndex = blocks[blocks.length - 1];
 				if (blockIndex) {
-					result.push({
-						[blockIndex]: `|${item}`
+					if (!result[blockIndex]) {
+						// result[blockIndex] = {};
+					}
+					let pointer = result;
+					blockList.map(function (key) {
+						if (!pointer[key]) {
+							pointer[key] = {};
+						}
+						pointer = pointer[key];
 					});
+					// pointer[`${line}`] = item;
+					// result[blockIndex][line] = item;
 				} else {
-					result.push(`|${item}`);
+					// result[blockIndex][line] = item;
 				}
 			}
+			line++;
 		});
-		console.log(result, blocks);
+		console.log(result);
+		console.info(blockList);
 		// while (match != null) {
 		// 	// matched text: match[0]
 		// 	// match start: match.index
