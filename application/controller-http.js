@@ -4,6 +4,7 @@ const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
 const FaTrace = require("fa-nodejs/base/trace");
 const FaTemplate = require("fa-nodejs/application/template");
+const FaTwig = require("fa-nodejs/base/twig");
 const FaHttpContentType = require("fa-nodejs/server/http-content-type");
 const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
@@ -21,6 +22,7 @@ class FaApplicationController {
 		this._FaHttpContentType = FaHttpContentType;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this._FaTemplate = new FaTemplate();
+		this._FaTwig = new FaTwig(pathname ? pathname : this._viewsPathname);
 		this._FaFile = new FaFile(pathname ? pathname : this._viewsPathname);
 	}
 
@@ -66,15 +68,15 @@ class FaApplicationController {
 	/**
 	 *
 	 * @param name
-	 * @return {FaTemplate}
+	 * @return {FaTwig}
 	 */
-	view(name) {
+	twig(name) {
 		let filename = `${name}.twig`;
 		try {
-			if (!this._FaTemplate.get) {
-				this._FaTemplate.set = this._FaFile.readFileSync(filename).toString();
+			if (!this._FaTwig._content) {
+				this._FaTwig.load(filename);
 			}
-			return this._FaTemplate;
+			return this._FaTwig;
 		} catch (e) {
 			throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).setTrace(FaTrace.trace(1));
 		}

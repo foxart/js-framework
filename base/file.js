@@ -46,11 +46,11 @@ class FaFile {
 
 	/**
 	 *
-	 * @param name {string}
+	 * @param filename {string}
 	 * @returns {string}
 	 */
-	getPathname(name) {
-		return this._pathname ? `${this._pathname}/${name}` : name;
+	getPathname(filename) {
+		return this._pathname ? `${this._pathname}/${filename}` : filename;
 		// return `${this._path}/${filename.replace(/^\/+/, "")}`;
 		// return `${this._path}/${filename.replace(/^\/+/, "").replace(/\/+$/, "")}`;
 	};

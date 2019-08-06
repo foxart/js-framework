@@ -1,26 +1,19 @@
 "use strict";
 const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
+const FaTrace = require("fa-nodejs/base/trace");
 
 class FaTemplate {
-	constructor(props) {
-		this._blockList = ["/"];
-	}
-
-	/**
-	 *
-	 * @returns {string}
-	 */
 	get get() {
-		return this._template;
+		return this._content;
 	}
 
 	/**
 	 *
-	 * @param template {string}
+	 * @param content {string}
 	 */
-	set set(template) {
-		this._template = template;
+	set set(content) {
+		this._content = content;
 	}
 
 	_find(result, list) {
@@ -36,96 +29,100 @@ class FaTemplate {
 		console.info(pointer);
 	}
 
-	parse() {
-		// let pattern = "{% block (.+) %}";
-		// let regular = new RegExp(pattern, "g");
-		// let match = this.get.match(regular);
-		// console.info(match);
-		let data = this.get.split("\n");
-		// this.get.split("\n").map(function (item) {
-		// 	let blockIndex = blockList[blockList.length - 1];
-		// 	let blockStart = blockRegExpStart.exec(item);
-		// 	let blockEnd = blockRegExpEnd.exec(item);
-		// 	if (blockStart) {
-		// 		while (blockStart !== null) {
-		// 			blockList.push(blockStart[1]);
-		// 			blockStart = blockRegExpStart.exec(item);
-		// 		}
-		// 		/**/
-		// 		content[line] = `{% ${blockList[blockList.length - 1]} %}`;
-		// 	} else if (blockEnd) {
-		// 		while (blockEnd !== null) {
-		// 			blockList.pop();
-		// 			blockEnd = blockRegExpEnd.exec(item);
-		// 		}
-		// 	} else {
-		// 		// let pointer = structure;
-		// 		// blockList.map(function (key) {
-		// 		// 	if (!pointer[key]) {
-		// 		// 		pointer[key] = {};
-		// 		// 	}
-		// 		// 	pointer = pointer[key];
-		// 		// });
-		// 		content[line] = item;
-		// 	}
-		// 	line++;
-		// });
-		let res = this._parse(data);
-		console.log(res);
+	block(block, variables = {}) {
+		let self = this;
+		// let block = this._template[block];
+		let structure = Object.assign([], this._template[block]["structure"]);
+		let variable = this._template[block]["variable"];
+		let child = this._template[block]["child"];
+		Object.entries(variables).map(function ([key, value]) {
+			let index = variable[key];
+			if (structure[index]) {
+				structure[index] = structure[index].replace(`{{ ${key} }}`, value);
+			} else {
+				console.error(`variable not found: ${key}`);
+			}
+		});
+		Object.entries(child).map(function ([key, value]) {
+			structure[value] = self._template[key]["data"].join("\n")
+		});
+		this._template[block]["data"].push(structure.join("\n"));
+	}
+
+	build(variables = {}) {
+		this.block("/", variables);
 	}
 
 	get _pattern() {
 		return {
-			template: [],
+			structure: [],
 			variable: {},
 			parent: {},
 			child: {},
-			content: [],
+			data: [],
 		}
+	}
+
+	_parseComment(item, list, result) {
+		// let regularComment = /{#(.+)#}/;
+		// let comment = item.match(regularComment);
+		// result[list[list.length - 1]]["structure"].push(`<!--${comment[1]}-->`);
+		let regularComment = new RegExp("{#(.+)#}", "g");
+		let comment = regularComment.exec(item);
+		while (comment !== null) {
+			result[list[list.length - 1]]["structure"].push(`<!--${comment[1]}-->`);
+			comment = regularComment.exec(item);
+		}
+	}
+
+	_parseVariable(item, list, result) {
+		let regularVariable = new RegExp("{{ ([^{}]+) }}", "g");
+		let variable = regularVariable.exec(item);
+		while (variable !== null) {
+			result[list[list.length - 1]]["variable"][variable[1]] = result[list[list.length - 1]]["structure"].length - 1;
+			variable = regularVariable.exec(item);
+		}
+	}
+
+	_parseBlock(item, list, result) {
+		let regularBlockStart = /{% block ([^{}]+) %}/;
+		let blockStart = item.match(regularBlockStart);
+		list.push(blockStart[1]);
+		if (!result[list[list.length - 1]]) {
+			result[list[list.length - 1]] = this._pattern;
+		}
+		result[list[list.length - 1]]["parent"][list[list.length - 2]] = result[list[list.length - 2]]["structure"].length;
+		result[list[list.length - 2]]["child"][list[list.length - 1]] = result[list[list.length - 2]]["structure"].length;
+		result[list[list.length - 2]]["structure"].push(`{% ${list[list.length - 1]} %}`);
 	}
 
 	_parse(data) {
 		let self = this;
-		// let regularBlockStart = /{% block (.+) %}/;
+		let regularBlockInline = /{% block ([^{}]+) %}(.+){% endblock %}/;
 		let regularBlockStart = /{% block ([^{}]+) %}/;
 		let regularBlockEnd = /{% endblock %}/;
 		let regularComment = /{#(.+)#}/;
-		let regularVariable = /{{ ([^{}]+) }}/g;
+		let regularVariable = /{{ ([^{}]+) }}/;
 		let list = ["/"];
 		let result = {"/": this._pattern};
-		data.forEach(function (item) {
-			let blockStart = item.match(regularBlockStart);
+		data.map(function (item) {
 			let blockEnd = item.match(regularBlockEnd);
-			let variable = regularVariable.exec(item);
-			let comment = item.match(regularComment);
-			if (comment) {
-				// result[list[list.length - 1]]["template"].push(`<!--${comment[1]}-->`);
-			} else {
-
-				if (blockStart) {
-					list.push(blockStart[1]);
-					if (!result[list[list.length - 1]]) {
-						result[list[list.length - 1]] = self._pattern;
-					}
-					result[list[list.length - 1]]["parent"][list[list.length - 2]] = result[list[list.length - 2]]["template"].length;
-					result[list[list.length - 2]]["child"][list[list.length - 1]] = result[list[list.length - 2]]["template"].length;
-					// result[list[list.length - 2]]["template"].push(`{% ${list[list.length - 1]} %}`);
-					item = item.replace(blockStart[0], "");
-					// console.error(blockStart[0]);
-				}
-				if (blockEnd) {
-					item = item.replace(blockEnd[0], "");
-					list.pop();
-				}
-				if (variable) {
-					result[list[list.length - 1]]["template"].push(item);
-					while (variable !== null) {
-						result[list[list.length - 1]]["variable"][variable[1]] = result[list[list.length - 1]]["template"].length - 1;
-						variable = regularVariable.exec(item);
-					}
+			if (regularComment.test(item)) {
+				// self._parseComment(item, list, result);
+			} else if (regularBlockStart.test(item)) {
+				if (regularBlockInline.test(item)) {
+					// self._parseBlock(item, list, result);
+					// list.pop();
 				} else {
-					result[list[list.length - 1]]["template"].push(item);
+					self._parseBlock(item, list, result);
 				}
+			} else if (blockEnd) {
+				list.pop();
+			} else if (regularVariable.test(item)) {
+				result[list[list.length - 1]]["structure"].push(item);
+				self._parseVariable(item, list, result);
+			} else {
+				result[list[list.length - 1]]["structure"].push(item);
 			}
 		});
 		return result;
