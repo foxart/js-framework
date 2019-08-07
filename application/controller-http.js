@@ -72,13 +72,13 @@ class FaApplicationController {
 	 */
 	twig(name) {
 		let filename = `${name}.twig`;
-		try {
+		if (this._FaFile.isFile(filename)) {
 			if (!this._FaTwig._content) {
 				this._FaTwig.load(filename);
 			}
 			return this._FaTwig;
-		} catch (e) {
-			throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).setTrace(FaTrace.trace(1));
+		} else {
+			throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).pickTrace(1);
 		}
 	}
 

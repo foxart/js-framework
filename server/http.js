@@ -305,7 +305,8 @@ class FaServerHttp {
 				return FaHttpResponse.create(result);
 			}
 		}).catch(function (e) {
-			let error = new FaError(e).pickTrace(0);
+			// let error = new FaError(e).pickTrace(0);
+			let error = new FaError(e);
 			console.error(error);
 			return FaHttpResponse.create(error, self.status.internalServerError);
 		});

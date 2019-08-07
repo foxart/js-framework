@@ -46,6 +46,11 @@ class FaError extends Error {
 		return this;
 	}
 
+	addTrace(trace) {
+		this.trace.push(trace);
+		return this;
+	}
+
 	/**
 	 *
 	 * @param trace
