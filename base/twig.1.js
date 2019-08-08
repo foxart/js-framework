@@ -6,16 +6,15 @@ const FaTrace = require("fa-nodejs/base/trace");
 class FaTwig {
 	constructor(props) {
 		this._FaFile = new FaFile(props);
-		this._template = {};
+		this._template = this._pattern;
 		this._block = {};
-		this._blockList = [];
 		this._for = {};
 	}
 
 	load(filename) {
 		this._filename = filename;
-		this._content = this._FaFile.readFileSync(filename).toString().split("\n");
-		this._load();
+		this._content = this._FaFile.readFileSync(filename).toString();
+		this._load(this._content.split("\n"));
 	}
 
 	get getContent() {
@@ -61,28 +60,25 @@ class FaTwig {
 		// return this._template["/"]["data"].join("/");
 	}
 
-	_cursor(name) {
+	get _pattern() {
 		return {
-			name: name,
 			structure: [],
-			block: {},
 			variable: {},
+			// parent: {},
+			block: {},
 			data: [],
 		}
 	}
 
-	_load() {
+	_load(data) {
 		let self = this;
 		let block_list = [];
-		this._template = this._cursor("/");
-		let line = 0;
-		this._content.forEach(function (item) {
-			self._parse(item);
-			line++;
+		data.forEach(function (item) {
+			self._parse(item, block_list);
 		});
 	}
 
-	_parse(item, type) {
+	_parse(item, block_list) {
 		let regularBlockInline = /{% block ([^{}]+) %}(.+){% endblock %}/;
 		let regularBlockStart = /{% block ([^{}]+) %}/;
 		let regularBlockEnd = /{% endblock %}/;
@@ -90,75 +86,28 @@ class FaTwig {
 		let regularVariable = /{{ ([^{}]+) }}/;
 		let regularForStart = /{% for ([^{}]+) in ([^{}]+) %}/;
 		let regularForEnd = /{% endfor %}/;
-		// let pointer;
-		let matchBlock = item.match(regularBlockStart);
-		let matchInline = item.match(regularBlockInline);
-		// let block_curr = list[list.length - 1];
-		// let block_prev = list[list.length - 2];
-		// this._block[block_curr] = this._cursor;
-		// let pointer = block_prev ? this._block[block_prev] : this._template;
-		// console.info(pointer);
-		// cursor = this._template;
-		if (matchInline) {
-			let block_curr = matchInline[1];
-			// let block_next = list[list.length - 1];
-			// if (!this._block[block_curr]) {
-			// 	this._block[block_curr] = this._cursor;
-			// }
-			// 	console.info(block_prev, this._block[block_prev],item)
-			// if (this._block[block_prev]) {
-			// this._block[block_prev]["structure"].push(item);
-			// this._block[block_prev]["block"][block_curr] = this._block[block_prev]["structure"].length - 1;
+		if (regularComment.test(item)) {
+			// this._parseComment(item, block_list);
+		} else if (regularBlockStart.test(item)) {
+			// if (regularBlockInline.test(item)) {
+			// 	this._parseBlockInline(item, block_list);
+			// 	block_list.pop();
 			// } else {
-			// this._template["structure"].push(item);
-			// this._template["block"][block_curr] = this._template["structure"].length - 1;
+			// 	this._parseBlock(item, block_list);
 			// }
-			this._blockList.push(block_curr);
-			this._block[block_curr] = this._cursor(block_curr);
-			this._parse(matchInline[2], "block");
-			this._blockList.pop();
-			type = "block";
-			item = item.replace(matchInline[0], `[% block ${matchBlock[1]} %]`);
-		}
-		if (type === "block") {
-			let block_prev = this._blockList[this._blockList.length - 1];
-			if (block_prev) {
-				let key = this._blockList[this._blockList.length - 1];
-				this._block[key]["structure"].push(item);
-				this._block[block_prev]["block"] = {[key]: this._blockList.length - 1};
-			} else {
-				this._template["structure"].push(item);
-			}
+			this._parseBlock(item, block_list);
+		} else if (regularBlockEnd.test(item)) {
+			block_list.pop();
+		} else if (regularForStart.test(item)) {
+			// console.info(item);
+		} else if (regularForEnd.test(item)) {
+			// console.info(item);
+		} else if (regularVariable.test(item)) {
+			this._parseVariable(item, block_list);
 		} else {
-			this._template["structure"].push(item);
+			// result[block_list[block_list.length - 1]]["structure"].push(item);
+			this._parseText(item, block_list);
 		}
-		// console.info(cursor["name"], item,this._blockList[this._blockList.length - 1]);
-		// return this._block[this._blockList[this._blockList.length - 1]];
-		// return item;
-		// this._parseBlock(item, block_list);
-		// this._parseVariable(item, block_list);
-		// if (regularComment.test(item)) {
-		// 	// this._parseComment(item, block_list);
-		// } else if (regularBlockStart.test(item)) {
-		// 	// if (regularBlockInline.test(item)) {
-		// 	// 	this._parseBlockInline(item, block_list);
-		// 	// 	block_list.pop();
-		// 	// } else {
-		// 	// 	this._parseBlock(item, block_list);
-		// 	// }
-		// 	this._parseBlock(item, block_list);
-		// } else if (regularBlockEnd.test(item)) {
-		// 	block_list.pop();
-		// } else if (regularForStart.test(item)) {
-		// 	// console.info(item);
-		// } else if (regularForEnd.test(item)) {
-		// 	// console.info(item);
-		// } else if (regularVariable.test(item)) {
-		// 	this._parseVariable(item, block_list);
-		// } else {
-		// 	// result[block_list[block_list.length - 1]]["structure"].push(item);
-		// 	this._parseText(item, block_list);
-		// }
 	}
 
 	_parseComment(item, list) {
@@ -180,21 +129,17 @@ class FaTwig {
 		let regularBlockInline = /{% block ([^{}]+) %}(.+){% endblock %}/;
 		let matchBlock = item.match(regularBlockStart);
 		let matchInline = item.match(regularBlockInline);
-		// console.info(matchBlock, matchInline);
-		if (matchBlock) {
-			list.push(matchBlock[1]);
-			let block_curr = list[list.length - 1];
-			let block_prev = list[list.length - 2];
-			this._block[block_curr] = this._cursor;
-			let pointer = block_prev ? this._block[block_prev] : this._template;
-			if (matchInline) {
-				item = item.replace(matchInline[0], `[% block ${matchBlock[1]} %]`);
-				// pointer["structure"].push(item);
-				pointer["block"][block_curr] = pointer["structure"].length - 1;
-				console.error(item, matchInline[2]);
-				this._parse(matchInline[2], list);
-				list.pop();
-			}
+		list.push(matchBlock[1]);
+		let block_curr = list[list.length - 1];
+		let block_prev = list[list.length - 2];
+		this._block[block_curr] = this._pattern;
+		let pointer = block_prev ? this._block[block_prev] : this._template;
+		pointer["structure"].push(`<!--block [${matchBlock[1]}]-->`);
+		pointer["block"][block_curr] = pointer["structure"].length - 1;
+		if (matchInline) {
+			console.error(matchInline);
+			this._parse(matchInline[2], list);
+			list.pop();
 		}
 	}
 
@@ -204,7 +149,7 @@ class FaTwig {
 		list.push(match[1]);
 		let block_curr = list[list.length - 1];
 		let block_prev = list[list.length - 2];
-		this._block[block_curr] = this._cursor;
+		this._block[block_curr] = this._pattern;
 		let pointer = block_prev ? this._block[block_prev] : this._template;
 		pointer["structure"].push(`<!--block [${match[1]}]-->`);
 		pointer["block"][block_curr] = pointer["structure"].length - 1;
@@ -218,11 +163,9 @@ class FaTwig {
 		let exec = regularVariable.exec(item);
 		let block_curr = list[list.length - 1];
 		let pointer = block_curr ? this._block[block_curr] : this._template;
-		// pointer["structure"].push(item);
-		console.info(item)
+		pointer["structure"].push(item);
 		while (exec !== null) {
 			if (pointer["variable"][exec[1]] === undefined) {
-				// console.info(block_curr,exec[1]);
 				pointer["variable"][exec[1]] = pointer["structure"].length - 1;
 			} else {
 				if (!Array.isArray(pointer["variable"][exec[1]])) {
