@@ -22,7 +22,8 @@ class FaApplicationController {
 		this._FaHttpContentType = FaHttpContentType;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this._FaTemplate = new FaTemplate();
-		this._FaTwig = new FaTwig(pathname ? pathname : this._viewsPathname);
+		// this._FaTwig = new FaTwig(pathname ? pathname : this._viewsPathname);
+		this._pathname = pathname ? pathname : this._viewsPathname;
 		this._FaFile = new FaFile(pathname ? pathname : this._viewsPathname);
 	}
 
@@ -70,16 +71,16 @@ class FaApplicationController {
 	 * @param name
 	 * @return {FaTwig}
 	 */
-	twig(name) {
-		let filename = `${name}.twig`;
-		if (this._FaFile.isFile(filename)) {
-			if (!this._FaTwig._content) {
-				this._FaTwig.load(filename);
+	get twig() {
+		// let filename = `${name}.twig`;
+		// if (this._FaFile.isFile(filename)) {
+			if (!this._FaTwig) {
+				this._FaTwig = new FaTwig(this._pathname);
 			}
 			return this._FaTwig;
-		} else {
-			throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).pickTrace(1);
-		}
+		// } else {
+		// 	throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).pickTrace(1);
+		// }
 	}
 
 	/**
