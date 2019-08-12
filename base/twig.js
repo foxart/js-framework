@@ -2,21 +2,19 @@
 const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
 
-// const FaTrace = require("fa-nodejs/base/trace");
 class FaTwig {
 	constructor(pathname) {
 		this._FaFile = new FaFile(pathname);
 	}
 
+	/**
+	 *
+	 * @param filename
+	 * @return {FaTwig}
+	 */
 	load(filename) {
 		this._filename = `${filename}.twig`;
 		if (this._FaFile.isFile(this._filename)) {
-			// this._main = this._template;
-			this._block = {"/": this._template};
-			// this._block = this._template;
-			this._for = {};
-			this._result = [];
-			this._block_list = ["/"];
 			this._content = this._FaFile.readFileSync(this._filename).toString().split("\n");
 			this._parse();
 			return this;
@@ -25,62 +23,108 @@ class FaTwig {
 		}
 	}
 
-	reset() {
-		// this._main["result"] = [];
-		// noinspection JSUnusedLocalSymbols
-		Object.entries(this._block).forEach(function ([key, value]) {
-			value["result"] = [];
-			console.info(key)
-		});
+	// noinspection JSMethodCanBeStatic
+	get _getResult() {
+		return {
+			main: [],
+			block: {},
+			for: {},
+		}
 	}
 
-	get get() {
-		return this._result;
-	}
-
-	fillBlock(block, variables = {}) {
-		// this._block[block]["result"]=[];
-		this._fill(this._block[block], variables, block);
-		return this;
-	}
-
-	build(variables = {}) {
-		this._fill(this._block["/"], variables, "/");
-		this._result = this._block["/"]["result"];
-		this.reset();
-	}
-
-	_fill(pointer, variables, block) {
-		if (pointer["source"]) {
-			let self = this;
-			let source = Object.assign([], pointer["source"]);
-			Object.entries(variables).forEach(function ([key, value]) {
-				let list = pointer["variable"][key];
-				if (list) {
-					list.forEach(function (index) {
-						source[index] = source[index].replace(`{{ ${key} }}`, value);
-					});
-				} else {
-					if (block) {
-					}
-					console.error(`${self._FaFile.getPathname(self._filename)}: variable {{ ${key} }} not found in block {% ${block} %}`);
-				}
-			});
-			Object.entries(pointer["block"]).forEach(function ([key, value]) {
-				source[value] = source[value].replace(`{% block ${key} %}`, self._block[key]["result"].join("\n"));
-			});
-			pointer["result"].push(source.join("\n"));
+	get _getTemplate() {
+		return {
+			main: this._getStructure,
+			block: {},
+			for: {},
 		}
 	}
 
 	// noinspection JSMethodCanBeStatic
-	get _template() {
+	get _getStructure() {
 		return {
 			source: [],
-			result: [],
 			block: {},
+			for: {},
 			variable: {},
 			comment: [],
+		}
+	}
+
+	get result() {
+		if (this._result["main"][0]) {
+			return this._result["main"][0];
+		} else {
+			return this._content;
+		}
+	}
+
+	reset() {
+		this._result = this._getResult;
+	}
+
+	block(name, variables = {}) {
+		this._fill("block", name, variables);
+		return this;
+	}
+
+	for(name, prefix, variables) {
+		let self = this;
+		variables = Array.isArray(variables) ? variables : [variables];
+		variables.map(function (item) {
+			self._fill("for", name, item, `${prefix}.`);
+		});
+		return this;
+	}
+
+	build(variables = {}) {
+		this._fill("main", "/", variables);
+		return this;
+	}
+
+	_fill(type, name, variables, prefix = "") {
+		let self = this;
+		let pointer;
+		let result;
+		if (type === "main") {
+			pointer = this._template[type];
+			result = this._result[type];
+		} else {
+			pointer = this._template[type][name];
+			if (!this._result[type][name]) {
+				this._result[type][name] = [];
+			}
+			result = this._result[type][name];
+		}
+		if (pointer) {
+			let source = Object.assign([], pointer["source"]);
+			Object.entries(variables).forEach(function ([key, value]) {
+				let variable = `${prefix}${key}`;
+				let list = pointer["variable"][variable];
+				if (list) {
+					list.forEach(function (index) {
+						source[index] = source[index].replace(`{{ ${variable} }}`, value);
+					});
+				} else {
+					console.error(`${self._FaFile.getPathname(self._filename)}: variable {{ ${variable} }} not found in {% ${type} ${name} %}`);
+				}
+			});
+			Object.entries(pointer["block"]).forEach(function ([key, value]) {
+				if (self._result["block"][key]) {
+					source[value] = self._result["block"][key].join("\n");
+					self._result["block"][key] = pointer["source"][key];
+				}
+			});
+			Object.entries(pointer["for"]).forEach(function ([key, value]) {
+				if (self._result["for"][key]) {
+					source[value] = self._result["for"][key].join("\n");
+					self._result["for"][key] = pointer["source"][key];
+				}
+
+			});
+			result.push(source.join("\n"));
+		} else {
+			console.error(`${this._FaFile.getPathname(this._filename)}: ${type.toUpperCase()} {% ${name} %} not found`);
 		}
 	}
 
@@ -93,67 +137,97 @@ class FaTwig {
 		let regularVariable = /{{ ([^{}]+) }}/;
 		let regularForStart = /{% for ([^{}]+) in ([^{}]+) %}/;
 		let regularForEnd = /{% endfor %}/;
+		let type = ["main"];
+		this._result = this._getResult;
+		this._template = this._getTemplate;
+		this._block_list = ["main"];
+		this._for_list = ["main"];
 		this._content.forEach(function (item) {
 			if (regularComment.test(item)) {
-				self._parseComment(item);
+				self._parseComment(item, type[type.length - 1]);
 			} else if (regularBlockStart.test(item)) {
-				self._parseBlockStart(item);
+				self._parseBlockStart(item, type[type.length - 1]);
+				type.push("block");
 			} else if (regularBlockEnd.test(item)) {
-				self._parseBlockEnd(item);
+				type.pop();
+				self._parseBlockEnd();
 			} else if (regularForStart.test(item)) {
-				// console.info(item);
+				self._parseForStart(item, type[type.length - 1]);
+				type.push("for");
 			} else if (regularForEnd.test(item)) {
-				// console.info(item);
+				type.pop();
+				self._parseForEnd();
 			} else if (regularVariable.test(item)) {
-				self._parseVariable(item);
+				self._parseVariable(item, type[type.length - 1]);
 			} else {
-				self._parseText(item);
+				self._parseText(item, type[type.length - 1]);
 			}
 		});
 	}
 
-	_parseComment(item) {
-		let list = this._block_list;
-		let regularComment = /{#(.+)#}/;
-		let match = item.match(regularComment);
-		let block_curr = list[list.length - 1];
-		let pointer = block_curr ? this._block[block_curr] : this._block["/"];
-		pointer["source"].push(`<!-- ${match[1]} -->`);
-		pointer["comment"].push(pointer["source"].length - 1);
-		// let regularComment = new RegExp("{#(.+)#}", "g");
-		// let exec = regularComment.exec(item);
-		// let block_curr = list[list.length - 1];
-		// let pointer = block_curr ? this._block[block_curr] : this._main;
-		// while (exec !== null) {
-		// 	pointer["source"].push(`<!--${exec[1]}-->`);
-		// 	exec = regularComment.exec(item);
-		// }
-	}
-
-	_parseBlockStart(item) {
-		let list = this._block_list;
+	_parseBlockStart(item, type) {
+		let pointer;
 		let regularBlockStart = /{% block ([^{}]+) %}/;
 		let matchBlock = item.match(regularBlockStart);
-		let block_prev = list[list.length - 1];
-		list.push(matchBlock[1]);
-		let block_curr = list[list.length - 1];
-		this._block[block_curr] = this._template;
-		let pointer = block_prev ? this._block[block_prev] : this._block["/"];
-		pointer["source"].push(item);
+		let block_prev = this._block_list[this._block_list.length - 1];
+		let for_prev = this._for_list[this._for_list.length - 1];
+		let block_curr = this._block_list[this._block_list.push(matchBlock[1]) - 1];
+		this._template["block"][block_curr] = this._getStructure;
+		// let pointer = block_prev && block_prev !== "main" ? this._template["block"][block_prev] : this._template["main"];
+		// let pointer = block_prev === "main" ? this._template["main"] : this._template["block"][block_prev];
+		if (type === "block") {
+			pointer = this._template["block"][block_prev];
+		} else if (type === "for") {
+			pointer = this._template["for"][for_prev];
+		} else {
+			pointer = this._template["main"];
+		}
+		// pointer["source"].push(item);
+		pointer["source"].push("");
 		pointer["block"][block_curr] = pointer["source"].length - 1;
 	}
 
 	_parseBlockEnd() {
-		let list = this._block_list;
-		list.pop();
+		this._block_list.pop();
 	}
 
-	_parseVariable(item) {
-		let list = this._block_list;
+	_parseForStart(item, type) {
+		let pointer;
+		let regularForStart = /{% for ([^{}]+) in ([^{}]+) %}/;
+		let matchFor = item.match(regularForStart);
+		let block_prev = this._block_list[this._block_list.length - 1];
+		let for_prev = this._for_list[this._for_list.length - 1];
+		let for_curr = this._for_list[this._for_list.push(matchFor[2]) - 1];
+		this._template["for"][for_curr] = this._getStructure;
+		if (type === "block") {
+			pointer = this._template["block"][block_prev];
+		} else if (type === "for") {
+			pointer = this._template["for"][for_prev];
+		} else {
+			pointer = this._template["main"];
+		}
+		// pointer["source"].push(item);
+		pointer["source"].push("");
+		pointer["for"][for_curr] = pointer["source"].length - 1
+	}
+
+	_parseForEnd() {
+		this._for_list.pop();
+	}
+
+	_parseVariable(item, type) {
+		let pointer;
 		let regularVariable = new RegExp("{{ ([^{}]+) }}", "g");
 		let exec = regularVariable.exec(item);
-		let block_curr = list[list.length - 1];
-		let pointer = block_curr ? this._block[block_curr] : this._block["/"];
+		let block_curr = this._block_list[this._block_list.length - 1];
+		let for_curr = this._for_list[this._for_list.length - 1];
+		if (type === "block") {
+			pointer = this._template["block"][block_curr];
+		} else if (type === "for") {
+			pointer = this._template["for"][for_curr];
+		} else {
+			pointer = this._template["main"];
+		}
 		pointer["source"].push(item);
 		while (exec !== null) {
 			if (pointer["variable"][exec[1]] === undefined) {
@@ -165,11 +239,38 @@ class FaTwig {
 		}
 	}
 
-	_parseText(item) {
-		let list = this._block_list;
-		let block_curr = list[list.length - 1];
-		let pointer = block_curr ? this._block[block_curr] : this._block["/"];
+
+	_parseText(item, type) {
+		let pointer;
+		let block_curr = this._block_list[this._block_list.length - 1];
+		let for_curr = this._for_list[this._for_list.length - 1];
+		if (type === "block") {
+			pointer = this._template["block"][block_curr];
+		} else if (type === "for") {
+			pointer = this._template["for"][for_curr];
+		} else {
+			pointer = this._template["main"];
+		}
 		pointer["source"].push(item);
+	}
+
+	_parseComment(item, type) {
+		let pointer;
+		let regularComment = /{#(.+)#}/;
+		if (type === "block") {
+			let list = this._block_list;
+			let block_curr = list[list.length - 1];
+			pointer = block_curr === "main" ? this._template["main"] : this._template["block"][block_curr];
+		} else if (type === "for") {
+			let list = this._for_list;
+			let for_curr = list[list.length - 1];
+			pointer = for_curr === "main" ? this._template["main"] : this._template["for"][for_curr];
+		} else {
+			pointer = this._template["main"];
+		}
+		let match = item.match(regularComment);
+		pointer["source"].push(`<!--${match[1]}-->`);
+		pointer["comment"].push(pointer["source"].length - 1);
 	}
 }
 
