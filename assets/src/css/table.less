@@ -1,37 +1,87 @@
-#fa {
-	.table {
+#fa() {
+	.table() {
 		display: flex;
 		flex-direction: column;
 		border: solid 1px #808b96;
 		flex-grow: 1;
 		align-self: flex-start;
-
-		&-row {
+		.row() {
 			display: flex;
 			flex-direction: row;
 			flex-grow: 1;
 			//align-items: center;
+			//justify-content: center;
 			border-bottom: solid 1px #808b96;
+			.last-child() {
+				border-bottom: none;
+			}
 		}
-
-		&-row:last-child {
-			border-bottom: none;
-		}
-
-		&-cell {
+		.cell() {
 			display: flex;
 			flex-direction: column;
 			//flex-grow: 1;
 			flex: 1;
-			align-items: center;
+			align-items: flex-start;
 			justify-content: center;
 			padding: 6px;
 			border-right: solid 1px #808b96;
 			word-break: break-all;
+			.last-child() {
+				border-right: none;
+			}
+		}
+	}
+}
+
+#fa {
+	.table {
+		#fa.table();
+
+		&-row {
+			#fa.table.row();
+		}
+
+		&-row:last-child {
+			#fa.table.row.last-child();
+		}
+
+		&-cell {
+			#fa.table.cell();
 		}
 
 		&-cell:last-child {
-			border-right: none;
+			#fa.table.cell.last-child();
+		}
+	}
+}
+
+#fa {
+	table.table {
+		#fa.table();
+
+		tr {
+			#fa.table.row();
+		}
+
+		tr:last-child {
+			#fa.table.row.last-child();
+		}
+
+		th {
+			font-weight: bold;
+			#fa.table.cell();
+		}
+
+		th:last-child {
+			#fa.table.cell.last-child();
+		}
+
+		td {
+			#fa.table.cell();
+		}
+
+		td:last-child {
+			#fa.table.cell.last-child();
 		}
 	}
 }

@@ -4,6 +4,7 @@ npm install --save-dev gulp
 npm install --save-dev gulp-babel
 npm install --save-dev gulp-browserify
 npm install --save-dev gulp-changed
+npm install --save-dev gulp-concat
 npm install --save-dev gulp-debug
 npm install --save-dev gulp-exec
 npm install --save-dev gulp-less

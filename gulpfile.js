@@ -20,9 +20,9 @@ const GulpSourcemaps = require("gulp-sourcemaps");
  * @type {{fa_dist: string, fa_src: string, fa_build: string}}
  */
 let paths = {
-	fa_src: "../../node_modules/fa-nodejs/assets/src",
-	fa_dist: "../../node_modules/fa-nodejs/assets/dist",
-	fa_build: "../../node_modules/fa-nodejs/assets/build",
+	fa_src: "./assets/src",
+	fa_dist: "./assets/dist",
+	fa_build: "./assets/build",
 };
 // const reporterOptions = {
 // 	err: true, // default = true, false means don"t write err
