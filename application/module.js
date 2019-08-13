@@ -111,10 +111,16 @@ class FaApplicationModule {
 				/** @member {FaAsset} */
 				let Asset = new AssetClass();
 				// console.info(Asset.css);
-				Asset.css.map(function (css) {
-					self._FaHttp.asset.attach(Asset.getCssUrl(css), async function () {
-						// console.warn([Asset.getCssUrl(css), Asset.getCssPath(css)]);
-						return Asset.read(css);
+				Asset.css.map(function (item) {
+					self._FaHttp.asset.attach(Asset.getCssUrl(item), async function () {
+						// console.warn([Asset.getCssUrl(item), Asset.getCssPath(item)]);
+						return Asset.readCss(item);
+					});
+				});
+				Asset.js.map(function (item) {
+					self._FaHttp.asset.attach(Asset.getJsUrl(item), async function () {
+						// console.warn([Asset.getJsUrl(item), Asset.getJsPath(item)]);
+						return Asset.readJs(item);
 					});
 				});
 				// console.info(Asset.path, Asset.url, Asset.css);
