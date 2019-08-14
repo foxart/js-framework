@@ -29,7 +29,8 @@ let paths = {
 // 	stderr: true, // default = true, false means don"t write stderr
 // 	stdout: true // default = true, false means don"t write stdout
 // };
-/**/
+
+// noinspection JSUnresolvedFunction
 Gulp.task("default", function () {
 	Gulp.watch(`${paths.fa_src}/**/*.less`, Gulp["series"]([
 		"_fa_css_less",
@@ -37,12 +38,13 @@ Gulp.task("default", function () {
 	Gulp.watch(`${paths.fa_dist}/**/*.css`, Gulp["series"]([
 		"_fa_css_build",
 	]));
-	// Gulp.watch(`${paths.fa_src}/**/*.js`, Gulp["series"]([
-	// 	"_fa_js_compile",
-	// ]));
+	Gulp.watch(`${paths.fa_src}/**/*.js`, Gulp["series"]([
+		"_fa_js_compile",
+	]));
 });
-/**/
+// noinspection JSUnresolvedFunction
 Gulp.task("_fa_css_less", function () {
+	// noinspection JSValidateTypes,JSUnresolvedFunction
 	return Gulp.src(`${paths.fa_src}/**/*.less`)
 		.pipe(GulpChanged(paths.fa_dist, {extension: ".css"}))
 		.pipe(GulpPlumber())
@@ -56,11 +58,11 @@ Gulp.task("_fa_css_less", function () {
 		.pipe(Gulp.dest(paths.fa_dist))
 	// .pipe(browserSync.stream())
 });
-
-/**/
+// noinspection JSUnresolvedFunction
 Gulp.task("_fa_css_build", function () {
+	// noinspection JSValidateTypes,JSUnresolvedFunction
 	return Gulp.src(`${paths.fa_dist}/**/*.css`)
-		// .pipe(GulpChanged(paths.fa_dist, {extension: ".css"}))
+	// .pipe(GulpChanged(paths.fa_dist, {extension: ".css"}))
 		.pipe(GulpPlumber())
 		.pipe(GulpDebug())
 		.pipe(GulpSourcemaps.init())
@@ -69,13 +71,17 @@ Gulp.task("_fa_css_build", function () {
 		.pipe(Gulp.dest(`${paths.fa_build}/css`))
 	// .pipe(browserSync.stream())
 });
-/**/
+// noinspection JSUnresolvedFunction
 Gulp.task("_fa_js_compile", function () {
+	// noinspection JSValidateTypes,JSUnresolvedFunction
 	return Gulp.src(`${paths.fa_src}/**/*.js`)
 		.pipe(GulpChanged(paths.fa_dist, {extension: ".js"}))
 		.pipe(GulpPlumber())
 		.pipe(GulpDebug())
-		.pipe(GulpBrowserify({debug: true}))
+		.pipe(GulpBrowserify({
+			paths: ["./node_modules", "./node_modules/fa-nodejs", paths.fa_src],
+			debug: true,
+		}))
 		.pipe(Gulp.dest(paths.fa_dist))
 	// .pipe(GulpExec.reporter(reporterOptions))
 });

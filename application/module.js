@@ -317,7 +317,8 @@ class FaApplicationModule {
 		} else if (this._FaFile.isFile(path)) {
 			// console.info(index, `${this._path}/modules/${module}/views/${controller}`);
 			let ControllerClass = require(path);
-			this._controller_list[index] = new ControllerClass(this._FaHttp);
+			// this._controller_list[index] = new ControllerClass(this._FaHttp);
+			this._controller_list[index] = new ControllerClass();
 			return this._controller_list[index];
 		} else {
 			throw new FaError(`controller not found: ${path}`);

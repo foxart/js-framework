@@ -1,11 +1,25 @@
-'use strict';
-/*modules*/
+// attributeNamePrefix: "@_",
+// attrNodeName: "attr", //default is 'false'
+// textNodeName: "#text", //default is '#text'
+// ignoreAttributes: false, //default is 'true'
+// ignoreNameSpace: false, //default is 'false'
+// allowBooleanAttributes: true, //default is 'false'
+// parseNodeValue: true, //default is 'true'
+// parseAttributeValue: false, //default is 'false'
+// trimValues: true, //default is 'true'
+// cdataTagName: "__cdata", //default is 'false'
+// cdataPositionChar: "\\c", //default is '\\c'
+// localeRange: "", //To support non english character in tag/attribute values.
+// parseTrueNumberOnly: false,
+// // attrValueProcessor: a => he.decode(a, {isAttributeValue: true}),//default is a=>a
+// // tagValueProcessor : a => he.decode(a) //default is a=>a
+"use strict";
+/*node*/
 /** @type {*} */
 const FastXmlParser = require("fast-xml-parser");
 /** @type {*} */
 const QueryString = require("qs");
 /*fa*/
-// const FaError = require("fa-nodejs/base/error");
 const FaBeautify = require("fa-nodejs/beautify");
 
 class FaConverter {
@@ -84,9 +98,6 @@ class FaConverter {
 	 * @return {object|string}
 	 */
 	static toJson(data) {
-		// if (data instanceof Error) {
-		// 	data = new FaError(data);
-		// }
 		return FaConverter.isString(data) ? data : JSON.stringify(data, null, 128);
 	}
 
@@ -135,6 +146,7 @@ class FaConverter {
 		return result["xml"] !== undefined ? result["xml"] : result;
 	}
 
+
 	static fromTextXml(data, options = {}) {
 		let result;
 		try {
@@ -142,9 +154,11 @@ class FaConverter {
 		} catch (e) {
 			console.error(e);
 			result = data
+			// result = {}
 		}
-		return result;
+		return result["xml"] !== undefined ? result["xml"] : result;
 	}
+
 
 	/**
 	 *
@@ -153,28 +167,46 @@ class FaConverter {
 	 * @return {string}
 	 */
 	static toXml(data, options = {}) {
-		// data = undefined;
-		// data = 0;
-		// data = 1;
-		// data = false;
-		// data = true;
-		// data = {a: undefined};
-		// data = {a: null};
-		// data = {a: true};
-		// data = {xml: false};
-		// data = {xml: undefined};
-		// data = null;
+		// options = {
+		// 	attributeNamePrefix: "@_",
+		// 	ignoreAttributes: false,
+		// };
+		// data = {xml: {"@_xml1": "1", a: {"@_a2": "2"}, b: 3}};
+		let result;
 		let xml = {};
 		data = data === null ? {} : data;
-		if (typeof data === "object" && data.hasOwnProperty("xml") === false) {
-			xml["xml"] = FaConverter._filterXml(data);
-		} else if (typeof data !== "object") {
-			xml["xml"] = FaConverter._filterXml(data);
+		if (typeof data === "object") {
+			if (data.hasOwnProperty("xml")) {
+				xml = FaConverter._filterXml(data);
+			} else {
+				xml = FaConverter._filterXml({xml: data});
+			}
 		} else {
-			xml = FaConverter._filterXml(data);
+			xml = {xml: data};
 		}
-		// console.info(xml, new FastXmlParser.j2xParser(Object.assign({}, this._toXml, options)).parse(xml));
-		return new FastXmlParser.j2xParser(options).parse(xml);
+		result = new FastXmlParser.j2xParser(options).parse(xml);
+		// console.log(data, xml, result);
+		// log(result);
+		return result;
+	}
+
+	static toTextXml(data, options = {}) {
+		let result;
+		let xml = {};
+		data = data === null ? {} : data;
+		if (typeof data === "object") {
+			if (data.hasOwnProperty("xml")) {
+				xml = FaConverter._filterXml(data["xml"]);
+			} else {
+				xml = FaConverter._filterXml(data);
+			}
+		} else {
+			xml = data;
+		}
+		result = new FastXmlParser.j2xParser(options).parse(xml);
+		// console.log(data, xml, result);
+		// log(result);
+		return result;
 	}
 
 	/**

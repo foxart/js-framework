@@ -3,6 +3,7 @@
 const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
 const FaTrace = require("fa-nodejs/base/trace");
+const FaTwig = require("fa-nodejs/base/twig");
 const FaTemplate = require("fa-nodejs/application/template");
 
 class FaLayout {
@@ -11,8 +12,9 @@ class FaLayout {
 	 * @param pathname {string|null}
 	 */
 	constructor(pathname = null) {
+		this._pathname = pathname ? pathname : this._viewsPathname;
 		this._FaTemplate = new FaTemplate();
-		this._FaFile = new FaFile(pathname ? pathname : this._viewsPathname);
+		this._FaFile = new FaFile(this._pathname);
 	}
 
 	// noinspection JSMethodCanBeStatic
@@ -30,6 +32,17 @@ class FaLayout {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 *
+	 * @return {FaTwig}
+	 */
+	get twig() {
+		if (!this._FaTwig) {
+			this._FaTwig = new FaTwig(this._pathname);
+		}
+		return this._FaTwig;
 	}
 
 	/**

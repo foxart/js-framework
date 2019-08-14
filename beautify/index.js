@@ -221,6 +221,7 @@ function beautify(data, wrapper, level = 0) {
 	}
 }
 
+
 const FaBeautifyPlain = require("./plain");
 const FaBeautifyConsole = require("./console");
 const FaBeautifyConsoleType = require("./console-type");

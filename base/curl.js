@@ -124,10 +124,12 @@ class FaCurl {
 				result = FaConverter.toJson(data);
 			} else if (type.includes(FaHttpContentType.xml)) {
 				result = FaConverter.toXml(data);
+			} else if (type.includes(FaHttpContentType.textXml)) {
+				result = FaConverter.toTextXml(data);
 			} else if (type.includes(FaHttpContentType.urlencoded)) {
 				result = FaConverter.toUrlEncoded(data);
 			} else {
-				result = data;
+				result = data.toString();
 			}
 		}
 		return result ? result : null;
@@ -148,8 +150,8 @@ class FaCurl {
 				result = FaConverter.fromJson(data);
 			} else if (type.includes(FaHttpContentType.xml)) {
 				result = FaConverter.fromXml(data);
-			// } else if (type.includes(FaHttpContentType.textXml)) {
-			// 	result = FaConverter.fromXml(data);
+			} else if (type.includes(FaHttpContentType.textXml)) {
+				result = FaConverter.fromXml(data);
 			} else if (type.includes(FaHttpContentType.urlencoded)) {
 				result = FaConverter.fromUrlEncoded(data);
 			} else {
@@ -189,13 +191,14 @@ class FaCurl {
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
 				body = FaCurl._dataToType(data, FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]));
+				// console.log(1, FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]));
 			} else {
 				curl.path = `${curl.path}?${FaConverter.toUrlEncoded(data)}`;
 			}
-			// let enc = FaConverter.toUrlEncoded({a:"ХУЙ"});
+			// console.log(2, body);
+			// let enc = FaConverter.toUrlEncoded({a: "раз", b: [1, "два"]});
 			// let dec = FaConverter.fromUrlEncoded(enc);
 			// console.info(enc, dec);
-			// console.info(curl, body);
 			let req = self.options.protocol === "https" ? Https.request(curl) : Http.request(curl);
 			if (body) {
 				req.write(body);
@@ -216,7 +219,7 @@ class FaCurl {
 				});
 				res.on("end", function () {
 					let data = FaCurl._dataFromType(body, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
-					// console.log(res.headers, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
+					// console.log(3, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
 					resolve(FaHttpResponse.create(data, res.statusCode, res.headers));
 				});
 			});

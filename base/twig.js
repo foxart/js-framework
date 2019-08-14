@@ -63,11 +63,24 @@ class FaTwig {
 		this._result = this._getResult;
 	}
 
+	/**
+	 *
+	 * @param name
+	 * @param variables
+	 * @return {FaTwig}
+	 */
 	block(name, variables = {}) {
 		this._fill("block", name, variables);
 		return this;
 	}
 
+	/**
+	 *
+	 * @param name
+	 * @param prefix
+	 * @param variables
+	 * @return {FaTwig}
+	 */
 	for(name, prefix, variables) {
 		let self = this;
 		variables = Array.isArray(variables) ? variables : [variables];
@@ -77,6 +90,11 @@ class FaTwig {
 		return this;
 	}
 
+	/**
+	 *
+	 * @param variables
+	 * @return {FaTwig}
+	 */
 	build(variables = {}) {
 		this._fill("main", "/", variables);
 		return this;

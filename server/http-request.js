@@ -3,8 +3,8 @@
 const Cookie = require("cookie");
 const Url = require("url");
 /*fa*/
-const FaBaseConverter = require("fa-nodejs/base/converter");
-/*variables*/
+const FaConverter = require("fa-nodejs/base/converter");
+/*vars*/
 const BODY_SEPARATOR = "\r\n"; // RFC2046
 const SECTION_SEPARATOR = "\r\n\r\n"; // RFC2046
 const HEADER_SEPARATOR = ":"; // RFC2046
@@ -21,17 +21,17 @@ class FaHttpRequest {
 	 */
 	constructor(conf, method, headers, url, body) {
 		this._Cookie = Cookie;
-		this._FaBaseConverter = new FaBaseConverter(conf);
+		// this._FaBaseConverter = new FaBaseConverter(conf);
 	}
 
 	/**
 	 *
-	 * @return {FaBaseConverter}
+	 * @return {FaConverter}
 	 * @private
 	 */
-	get _converter() {
-		return this._FaBaseConverter;
-	}
+	// get _converter() {
+	// 	return this._FaBaseConverter;
+	// }
 
 	parseCookie(cookies) {
 		let result = this._Cookie.parse(cookies);
@@ -86,7 +86,7 @@ class FaHttpRequest {
 		});
 		return {
 			files: files.length === 0 ? null : files,
-			post: post.length === 0 ? null : this._converter.fromUrlEncoded(post.join("&")),
+			post: post.length === 0 ? null : FaConverter.fromUrlEncoded(post.join("&")),
 		};
 	}
 

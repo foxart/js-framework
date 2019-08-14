@@ -47,6 +47,10 @@ class FaHttpContentType {
 		return "text/plain";
 	}
 
+	static get textHtml() {
+		return "text/html";
+	}
+
 	static get textXml() {
 		return "text/xml";
 	}

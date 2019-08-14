@@ -11,14 +11,15 @@ const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
 
 // const FaApplicationController = require("fa-nodejs/application/controller");
 class FaApplicationController {
+	// * @param FaServerHttp {FaServerHttp}
+	// constructor(FaServerHttp, pathname = null) {
 	/**
 	 *
-	 * @param FaServerHttp {FaServerHttp}
 	 * @param pathname {string|null}
 	 */
-	constructor(FaServerHttp, pathname = null) {
+	constructor(pathname = null) {
 		this.name = "CONTROLLER";
-		this._FaServer = FaServerHttp;
+		// this._FaServer = FaServerHttp;
 		this._FaHttpContentType = FaHttpContentType;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
 		this._FaTemplate = new FaTemplate();
@@ -49,10 +50,9 @@ class FaApplicationController {
 	 * @deprecated
 	 * @return {FaServerHttp}
 	 */
-	get http() {
-		return this._FaServer;
-	}
-
+	// get http() {
+	// 	return this._FaServer;
+	// }
 	// noinspection JSMethodCanBeStatic
 	get contentType() {
 		return FaHttpContentType;
@@ -68,19 +68,13 @@ class FaApplicationController {
 
 	/**
 	 *
-	 * @param name
 	 * @return {FaTwig}
 	 */
 	get twig() {
-		// let filename = `${name}.twig`;
-		// if (this._FaFile.isFile(filename)) {
-			if (!this._FaTwig) {
-				this._FaTwig = new FaTwig(this._pathname);
-			}
-			return this._FaTwig;
-		// } else {
-		// 	throw new FaError(`view not found: ${this._FaFile.getPathname(filename)}`).pickTrace(1);
-		// }
+		if (!this._FaTwig) {
+			this._FaTwig = new FaTwig(this._pathname);
+		}
+		return this._FaTwig;
 	}
 
 	/**
@@ -135,6 +129,7 @@ class FaApplicationController {
 		return FaHttpResponse.create(body, status, this.contentType.html, "layout");
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 *
 	 * @param body {*}
