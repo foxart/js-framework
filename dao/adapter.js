@@ -145,7 +145,7 @@ class FaDaoAdapter {
 }
 
 /**
- *
  * @type {FaDaoAdapter}
+ * @deprecated
  */
 module.exports = FaDaoAdapter;
