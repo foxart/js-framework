@@ -4,7 +4,7 @@
 @background-color: lightgray;
 @border-color: darkgray;
 /**/
-#fa {
+#fa() {
 	.form() {
 		.input() {
 			padding: @input-padding;
@@ -24,6 +24,12 @@
 			border: none;
 			color: black;
 		}
+		.select() {
+			padding: 6px 3px;
+			box-sizing: border-box;
+			border: none;
+			color: black;
+		}
 	}
 }
 
@@ -35,6 +41,8 @@
 
 		&-group {
 			display: flex;
+			//flex-grow: 1;
+			//width: 100%;
 			align-items: center;
 			padding: @form-group-padding;
 
@@ -46,7 +54,8 @@
 
 			label {
 				display: flex;
-				flex-grow: 1;
+				//flex-grow: 1;
+				flex-shrink: 0;
 				align-items: center;
 
 				input {
@@ -54,13 +63,27 @@
 					display: flex;
 					flex-grow: 1;
 				}
+
+				select {
+					display: flex;
+					flex-grow: 1;
+				}
+			}
+
+			input:disabled {
+				opacity: 0.5;
 			}
 
 			input[type=file] {
 				#fa.form.input-file();
 			}
 
+			select {
+				#fa.form.select();
+			}
+
 			input[type=submit] {
+				flex-grow: 0;
 				#fa.form.input-submit();
 			}
 		}

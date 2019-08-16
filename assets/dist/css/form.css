@@ -17,7 +17,7 @@
 }
 #fa .form-group label {
   display: flex;
-  flex-grow: 1;
+  flex-shrink: 0;
   align-items: center;
 }
 #fa .form-group label input {
@@ -28,13 +28,27 @@
   display: flex;
   flex-grow: 1;
 }
+#fa .form-group label select {
+  display: flex;
+  flex-grow: 1;
+}
+#fa .form-group input:disabled {
+  opacity: 0.5;
+}
 #fa .form-group input[type=file] {
   padding: 3px 0;
   box-sizing: border-box;
   border: none;
   color: black;
 }
+#fa .form-group select {
+  padding: 6px 3px;
+  box-sizing: border-box;
+  border: none;
+  color: black;
+}
 #fa .form-group input[type=submit] {
+  flex-grow: 0;
   padding: 6px 9px;
   background-color: lightgray;
   border: none;

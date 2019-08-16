@@ -1,6 +1,6 @@
 "use strict";
 /*fa*/
-const FaError = require("fa-nodejs/base/error");
+// const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
 const FaTrace = require("fa-nodejs/base/trace");
 const FaTwig = require("fa-nodejs/base/twig");
@@ -43,20 +43,6 @@ class FaLayout {
 			this._FaTwig = new FaTwig(this._pathname);
 		}
 		return this._FaTwig;
-	}
-
-	/**
-	 *
-	 * @param name {string}
-	 * @return {FaTemplate}
-	 */
-	template(name) {
-		try {
-			this._FaTemplate.set = this._FaFile.readFileSync(`${name}.tpl`).toString();
-		} catch (e) {
-			throw new FaError(`view not found: ${this._FaFile.getPathname(`${name}.tpl`)}`);
-		}
-		return this._FaTemplate;
 	}
 
 	// noinspection JSMethodCanBeStatic

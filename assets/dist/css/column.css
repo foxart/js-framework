@@ -53,31 +53,31 @@
 }
 #fa .indent-1 {
   display: flex;
-  height: 2px;
+  height: 3px;
   width: 100%;
 }
 #fa .indent-2 {
   display: flex;
-  height: 4px;
+  height: 6px;
   width: 100%;
 }
 #fa .indent-3 {
   display: flex;
-  height: 6px;
+  height: 9px;
   width: 100%;
 }
 #fa .indent-4 {
   display: flex;
-  height: 8px;
+  height: 12px;
   width: 100%;
 }
 #fa .indent-5 {
   display: flex;
-  height: 10px;
+  height: 15px;
   width: 100%;
 }
 #fa .indent-6 {
   display: flex;
-  height: 12px;
+  height: 18px;
   width: 100%;
 }
