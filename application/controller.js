@@ -90,6 +90,7 @@ class FaController {
 		}
 	}
 
+
 	/**
 	 *
 	 * @param location {string|null}
