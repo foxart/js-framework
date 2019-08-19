@@ -23,6 +23,7 @@ elif [[ -z "$PUBLISHED" ]]; then
     git commit -a -m "update to tag <$NEXT> $COMMIT: $MESSAGE"
     git push
     npm version ${NEXT} #npm version patch
+    npm publish
 #    git tag ${NEXT}
     git push --tags
 else
