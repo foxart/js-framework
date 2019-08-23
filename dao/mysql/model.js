@@ -6,7 +6,7 @@ const FaDaoQuery = require("fa-nodejs/dao/query");
 const FaTrace = require("fa-nodejs/base/trace");
 const FaError = require("fa-nodejs/base/error");
 
-class FaDaoOracleModel extends FaDaoModel {
+class FaDaoMysqlModel extends FaDaoModel {
 	/**
 	 * @constructor
 	 */
@@ -15,6 +15,9 @@ class FaDaoOracleModel extends FaDaoModel {
 		this._trace = FaTrace.trace(1);
 	};
 
+	/**
+	 * @return {string}
+	 */
 	get connection() {
 		throw new FaError("connection not specified").setTrace(this._trace);
 	}
@@ -79,6 +82,7 @@ class FaDaoOracleModel extends FaDaoModel {
 		// console.info(query);
 		let trace = FaTrace.trace(1);
 		let connection = await this.client.open();
+		// console.error(connection);
 		try {
 			let result = await this.client.execute(connection, query);
 			await this.client.close(connection);
@@ -90,7 +94,6 @@ class FaDaoOracleModel extends FaDaoModel {
 			}
 		} catch (e) {
 			await this.client.close(connection);
-			console.error(query);
 			throw new FaError(e).setTrace(trace);
 		}
 	}
@@ -98,6 +101,6 @@ class FaDaoOracleModel extends FaDaoModel {
 
 /**
  *
- * @type {FaDaoOracleModel}
+ * @type {FaDaoMysqlModel|Class}
  */
-module.exports = FaDaoOracleModel;
+module.exports = FaDaoMysqlModel;

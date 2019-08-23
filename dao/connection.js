@@ -56,6 +56,6 @@ class FaDaoConnection extends FaDaoConnectionInterface {
 
 /**
  *
- * @type {FaDaoConnection}
+ * @type {FaDaoConnection|Class}
  */
 module.exports = FaDaoConnection;

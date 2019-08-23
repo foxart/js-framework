@@ -1,30 +1,35 @@
 "use strict";
 /*nodejs*/
 /** @type {Object} */
-const OracleDb = require("mysql");
+const Mysql = require("mysql");
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
 const FaDaoClient = require("fa-nodejs/dao/client");
 const FaDaoConnection = require("fa-nodejs/dao/connection");
+/**
+ *
+ * @member {FaDaoMysqlConnection|Class}
+ */
+const FaDaoMysqlConnection = require("fa-nodejs/dao/mysql/connection");
 
 /*variables*/
-class FaDaoOracleClient extends FaDaoClient {
+class FaDaoMysqlClient extends FaDaoClient {
 	/**
 	 * @constructor
-	 * @param FaDaoOracleModel {FaDaoOracleModel}
+	 * @param FaDaoMysqlModel {FaDaoMysqlModel}
 	 */
-	constructor(FaDaoOracleModel) {
+	constructor(FaDaoMysqlModel) {
 		super();
-		this._FaDaoOracleModel = FaDaoOracleModel;
+		this._FaDaoMysqlModel = FaDaoMysqlModel;
 	}
 
 	/**
 	 *
-	 * @return {FaDaoOracleConnection}
+	 * @return {FaDaoConnection}
 	 * @private
 	 */
 	get _connection() {
-		return FaDaoConnection.findConnection(this._FaDaoOracleModel.connection);
+		return FaDaoConnection.findConnection(this._FaDaoMysqlModel.connection);
 	}
 
 	/**
@@ -33,19 +38,28 @@ class FaDaoOracleClient extends FaDaoClient {
 	 * @private
 	 */
 	async _connect() {
-
-
-		let options = this._connection.options;
-		Object.entries(options).forEach(function ([key, value]) {
-			OracleDb[key] = value;
-		});
-		OracleDb.queueTimeout = this._connection.timeout;
+		// let options = this._connection.options;
+		// Object.entries(options).forEach(function ([key, value]) {
+		// 	Mysql[key] = value;
+		// });
+		// Mysql.queueTimeout = this._connection.timeout;
 		// console.log(this._connection.timeout);
-		return await OracleDb.getConnection({
-			connectString: this._connection.url,
+		let con = await Mysql.createConnection({
+			// connectString: this._connection.url,
+			host: this._connection.host,
 			user: this._connection.user,
 			password: this._connection.password,
+			database: this._connection.database,
 		});
+		con.connect();
+		// console.warn(con);
+		// return await Mysql.createConnection({
+		// 	// connectString: this._connection.url,
+		// 	host: this._connection.host,
+		// 	user: this._connection.user,
+		// 	password: this._connection.password,
+		// 	database: this._connection.database,
+		// });
 	}
 
 	/**
@@ -73,11 +87,11 @@ class FaDaoOracleClient extends FaDaoClient {
 		try {
 			let result;
 			if (this._connection.persistent) {
-				if (FaDaoClient.existClient(this._FaDaoOracleModel.connection)) {
-					result = FaDaoClient.findClient(this._FaDaoOracleModel.connection);
+				if (FaDaoClient.existClient(this._FaDaoMysqlModel.connection)) {
+					result = FaDaoClient.findClient(this._FaDaoMysqlModel.connection);
 				} else {
 					result = await this._connect();
-					FaDaoClient.attachClient(this._FaDaoOracleModel.connection, result);
+					FaDaoClient.attachClient(this._FaDaoMysqlModel.connection, result);
 				}
 			} else {
 				// console.info("OPEN", this._connection.timeout);
@@ -114,8 +128,8 @@ class FaDaoOracleClient extends FaDaoClient {
 				// 	await connection.release();
 				await connection.close();
 				// console.warn("CLOSE", this._connection.timeout);
-				FaDaoConnection.detachConnection(this._FaDaoOracleModel.connection);
-				FaDaoClient.detachClient(this._FaDaoOracleModel.connection);
+				FaDaoConnection.detachConnection(this._FaDaoMysqlModel.connection);
+				FaDaoClient.detachClient(this._FaDaoMysqlModel.connection);
 				return true;
 			} else {
 				return false;
@@ -128,7 +142,7 @@ class FaDaoOracleClient extends FaDaoClient {
 
 /**
  *
- * @type {FaDaoOracleClient}
+ * @type {FaDaoMysqlClient}
  */
-module.exports = FaDaoOracleClient;
+module.exports = FaDaoMysqlClient;
 

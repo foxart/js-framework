@@ -1,11 +1,11 @@
 "use strict";
 /*nodejs*/
-/** @type {Object} */
-const OracleDb = require("oracledb");
+// /** @type {Object} */
+// const OracleDb = require("mysql");
 /*fa*/
 const FaDaoConnection = require("fa-nodejs/dao/connection");
 
-class FaDaoOracleConnection extends FaDaoConnection {
+class FaDaoMysqlConnection extends FaDaoConnection {
 	/**
 	 *
 	 * @return {{database: string, password: string, port: number, host: string, options: {fetchAsBuffer: Array<number>, outFormat: number}, persistent: boolean, user: string, sid: string}}
@@ -47,13 +47,6 @@ class FaDaoOracleConnection extends FaDaoConnection {
 	};
 
 	/**
-	 * @return {string}
-	 */
-	get sid() {
-		return "xe";
-	};
-
-	/**
 	 *
 	 * @return {string}
 	 */
@@ -73,11 +66,11 @@ class FaDaoOracleConnection extends FaDaoConnection {
 	 * @return {{fetchAsBuffer: Array<number>, outFormat: number}}
 	 */
 	get options() {
-		return {
-			fetchAsBuffer: [OracleDb["BLOB"]], //2007
-			// fetchAsString: [OracleClient["DATE"]], //2003
-			outFormat: OracleDb["OBJECT"], //4002
-		};
+		// return {
+		// 	fetchAsBuffer: [OracleDb["BLOB"]], //2007
+		// 	// fetchAsString: [OracleClient["DATE"]], //2003
+		// 	outFormat: OracleDb["OBJECT"], //4002
+		// };
 	}
 
 	/**
@@ -85,7 +78,7 @@ class FaDaoOracleConnection extends FaDaoConnection {
 	 * @return {string}
 	 */
 	get user() {
-		return "oracle";
+		return "root";
 	}
 
 	/**
@@ -93,9 +86,10 @@ class FaDaoOracleConnection extends FaDaoConnection {
 	 * @return {string}
 	 */
 	get password() {
-		return "system";
+		return "";
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 *
 	 * @return {number}
@@ -103,11 +97,10 @@ class FaDaoOracleConnection extends FaDaoConnection {
 	get timeout() {
 		return 5000;
 	}
-
 }
 
 /**
  *
- * @type {FaDaoOracleConnection}
+ * @type {FaDaoMysqlConnection}
  */
-module.exports = FaDaoOracleConnection;
+module.exports = FaDaoMysqlConnection;

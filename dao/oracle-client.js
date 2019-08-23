@@ -15,7 +15,7 @@ class FaDaoOracleClient extends FaDaoClient {
 	 */
 	constructor(FaDaoOracleModel) {
 		super();
-		this._FaDaoOracleModel = FaDaoOracleModel;
+		this._FaDaoMysqlModel = FaDaoOracleModel;
 	}
 
 	/**
@@ -24,7 +24,7 @@ class FaDaoOracleClient extends FaDaoClient {
 	 * @private
 	 */
 	get _connection() {
-		return FaDaoConnection.findConnection(this._FaDaoOracleModel.connection);
+		return FaDaoConnection.findConnection(this._FaDaoMysqlModel.connection);
 	}
 
 	/**
@@ -73,11 +73,11 @@ class FaDaoOracleClient extends FaDaoClient {
 		try {
 			let result;
 			if (this._connection.persistent) {
-				if (FaDaoClient.existClient(this._FaDaoOracleModel.connection)) {
-					result = FaDaoClient.findClient(this._FaDaoOracleModel.connection);
+				if (FaDaoClient.existClient(this._FaDaoMysqlModel.connection)) {
+					result = FaDaoClient.findClient(this._FaDaoMysqlModel.connection);
 				} else {
 					result = await this._connect();
-					FaDaoClient.attachClient(this._FaDaoOracleModel.connection, result);
+					FaDaoClient.attachClient(this._FaDaoMysqlModel.connection, result);
 				}
 			} else {
 				// console.info("OPEN", this._connection.timeout);
@@ -114,8 +114,8 @@ class FaDaoOracleClient extends FaDaoClient {
 				// 	await connection.release();
 				await connection.close();
 				// console.warn("CLOSE", this._connection.timeout);
-				FaDaoConnection.detachConnection(this._FaDaoOracleModel.connection);
-				FaDaoClient.detachClient(this._FaDaoOracleModel.connection);
+				FaDaoConnection.detachConnection(this._FaDaoMysqlModel.connection);
+				FaDaoClient.detachClient(this._FaDaoMysqlModel.connection);
 				return true;
 			} else {
 				return false;
