@@ -5,10 +5,6 @@ const FaDaoConnectionInterface = require("fa-nodejs/dao/connection-interface");
 let _connection_list = {};
 
 class FaDaoConnection extends FaDaoConnectionInterface {
-	/**
-	 *
-	 * @return {Array<string>}
-	 */
 	static get listConnection() {
 		return Object.keys(_connection_list);
 	}
@@ -56,6 +52,6 @@ class FaDaoConnection extends FaDaoConnectionInterface {
 
 /**
  *
- * @type {FaDaoConnection|Class}
+ * @class FaDaoConnection
  */
 module.exports = FaDaoConnection;

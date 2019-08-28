@@ -34,24 +34,20 @@ class FaDaoMysqlClient extends FaDaoClient {
 
 	/**
 	 *
-	 * @return {Promise<Object>}
+	 * @return {Promise<void>}
 	 * @private
 	 */
 	async _connect() {
-		// let options = this._connection.options;
-		// Object.entries(options).forEach(function ([key, value]) {
-		// 	Mysql[key] = value;
-		// });
-		// Mysql.queueTimeout = this._connection.timeout;
-		// console.log(this._connection.timeout);
 		let con = await Mysql.createConnection({
 			// connectString: this._connection.url,
 			host: this._connection.host,
 			user: this._connection.user,
+			port: this._connection.port,
 			password: this._connection.password,
 			database: this._connection.database,
 		});
-		con.connect();
+		// con.connect();
+		return con;
 		// console.warn(con);
 		// return await Mysql.createConnection({
 		// 	// connectString: this._connection.url,
@@ -62,21 +58,9 @@ class FaDaoMysqlClient extends FaDaoClient {
 		// });
 	}
 
-	/**
-	 *
-	 * @param error {Error}
-	 * @return {FaError}
-	 * @private
-	 */
-	_error(error) {
-		let MatchPattern = "^(.+): (.+)$";
-		let MatchExpression = new RegExp(MatchPattern);
-		let result = error.message.match(MatchExpression);
-		if (result) {
-			return new FaError({name: result[1], message: result[2]});
-		} else {
-			return new FaError(error);
-		}
+	_extractMysqlError(error) {
+		// let e = ["code", "errno", "sqlMessage", "sqlState", "fatal"];
+		return new FaError({name: error["code"], message: error["sqlMessage"]}).setTrace(this._FaDaoMysqlModel.trace);
 	}
 
 	/**
@@ -99,22 +83,27 @@ class FaDaoMysqlClient extends FaDaoClient {
 			}
 			return result;
 		} catch (e) {
-			throw this._error(e);
+			throw this._extractMysqlError(e);
 		}
 	}
 
 	/**
 	 * @param connection {Object}
 	 * @param query {string}
+	 * @param trace
 	 * @return {Promise<*>}
 	 */
-	async execute(connection, query) {
-		try {
-			return await connection.execute(query);
-		} catch (e) {
-			await this.close(connection);
-			throw this._error(e);
-		}
+	async execute(connection, query, trace) {
+		let self = this;
+		return await new Promise(function (resolve, reject) {
+			connection.query(query, function (error, results, fields) {
+				if (error) {
+					reject(self._extractMysqlError(error).setTrace(trace));
+				} else {
+					resolve(results);
+				}
+			});
+		});
 	}
 
 	/**
@@ -123,11 +112,11 @@ class FaDaoMysqlClient extends FaDaoClient {
 	 */
 	async close(connection) {
 		try {
+				console.log(this._connection.get);
+				console.log(FaDaoConnection.listConnection);
+
 			if (!this._connection.persistent && connection) {
-				// if (!this._connection.persistent) {
-				// 	await connection.release();
-				await connection.close();
-				// console.warn("CLOSE", this._connection.timeout);
+				connection.end();
 				FaDaoConnection.detachConnection(this._FaDaoMysqlModel.connection);
 				FaDaoClient.detachClient(this._FaDaoMysqlModel.connection);
 				return true;
@@ -135,7 +124,7 @@ class FaDaoMysqlClient extends FaDaoClient {
 				return false;
 			}
 		} catch (e) {
-			throw this._error(e);
+			throw this._extractMysqlError(e);
 		}
 	}
 }

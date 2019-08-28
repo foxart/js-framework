@@ -10,6 +10,7 @@ class FaRouterClass {
 	constructor(executor) {
 		this._handler_list = {};
 		this._constructor = function (callback) {
+			// console.log(callback);
 			return function () {
 				return callback.apply(executor, arguments);
 			};

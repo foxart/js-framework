@@ -51,6 +51,6 @@ class FaDaoClient extends FaDaoClientInterface {
 
 /**
  *
- * @type {FaDaoClient}
+ * @type {FaDaoClient|Class}
  */
 module.exports = FaDaoClient;

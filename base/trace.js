@@ -46,7 +46,6 @@ class FaTrace {
 	}
 
 	/**
-	 *
 	 * @param level {number|null}
 	 * @return {Array|Object}
 	 */
@@ -130,6 +129,6 @@ class FaTrace {
 
 /**
  *
- * @type {FaTrace|Class}
+ * @class FaTrace
  */
 module.exports = FaTrace;

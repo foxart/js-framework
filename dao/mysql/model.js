@@ -12,18 +12,18 @@ class FaDaoMysqlModel extends FaDaoModel {
 	 */
 	constructor() {
 		super();
-		this._trace = FaTrace.trace(1);
+		this.trace = FaTrace.trace(1);
 	};
 
 	/**
 	 * @return {string}
 	 */
 	get connection() {
-		throw new FaError("connection not specified").setTrace(this._trace);
+		throw new FaError("connection not specified").setTrace(this.trace);
 	}
 
 	get table() {
-		throw new FaError("table not specified").setTrace(this._trace);
+		throw new FaError("table not specified").setTrace(this.trace);
 	}
 
 	/**
@@ -68,8 +68,8 @@ class FaDaoMysqlModel extends FaDaoModel {
 			}
 		} catch (e) {
 			await this.client.close(connection);
-			console.error(query);
-			throw new FaError(e).setTrace(trace);
+			// console.error(query);
+			// throw new FaError(e).setTrace(trace);
 		}
 	}
 
@@ -81,17 +81,19 @@ class FaDaoMysqlModel extends FaDaoModel {
 	async findMany(query) {
 		// console.info(query);
 		let trace = FaTrace.trace(1);
+		FaTrace.trace();
 		let connection = await this.client.open();
-		// console.error(connection);
 		try {
-			let result = await this.client.execute(connection, query);
+			let result = await this.client.execute(connection, query, trace);
 			await this.client.close(connection);
 			// let result = await connection.execute(query);
-			if (result && result["rows"]) {
-				return result["rows"]
-			} else {
-				return [];
-			}
+
+			return result;
+			// if (result && result["rows"]) {
+			// 	return result["rows"]
+			// } else {
+			// 	return [];
+			// }
 		} catch (e) {
 			await this.client.close(connection);
 			throw new FaError(e).setTrace(trace);

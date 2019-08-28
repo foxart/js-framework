@@ -40,6 +40,7 @@ class FaServerHttp {
 	 *
 	 * @return {{protocol: string, host: string, port: number, path: string, converter: {}}}
 	 * @constructor
+	 * @deprecated
 	 */
 	get Configuration() {
 		return this._FaHttpConfiguration;
@@ -49,6 +50,7 @@ class FaServerHttp {
 	 *
 	 * @param configuration
 	 * @constructor
+	 * @deprecated
 	 */
 	set Configuration(configuration) {
 		this._FaHttpConfiguration = new FaHttpConfiguration(configuration);

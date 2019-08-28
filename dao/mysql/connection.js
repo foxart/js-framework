@@ -8,13 +8,12 @@ const FaDaoConnection = require("fa-nodejs/dao/connection");
 class FaDaoMysqlConnection extends FaDaoConnection {
 	/**
 	 *
-	 * @return {{database: string, password: string, port: number, host: string, options: {fetchAsBuffer: Array<number>, outFormat: number}, persistent: boolean, user: string, sid: string}}
+	 * @return {{database: string, password: string, port: number, host: string, options: {fetchAsBuffer: Array<number>, outFormat: number}, persistent: boolean, user: string, sid: *}}
 	 */
 	get get() {
 		return {
 			host: this.host,
 			port: this.port,
-			sid: this.sid,
 			database: this.database,
 			persistent: this.persistent,
 			options: this.options,
@@ -43,7 +42,7 @@ class FaDaoMysqlConnection extends FaDaoConnection {
 	 * @return {number}
 	 */
 	get port() {
-		return 1521;
+		return 3306;
 	};
 
 	/**
@@ -89,6 +88,7 @@ class FaDaoMysqlConnection extends FaDaoConnection {
 		return "";
 	}
 
+
 	// noinspection JSMethodCanBeStatic
 	/**
 	 *
@@ -101,6 +101,6 @@ class FaDaoMysqlConnection extends FaDaoConnection {
 
 /**
  *
- * @type {FaDaoMysqlConnection}
+ * @class FaDaoMysqlConnection
  */
 module.exports = FaDaoMysqlConnection;
