@@ -16,21 +16,15 @@ const FaDaoMysqlConnection = require("fa-nodejs/dao/mysql/connection");
 class FaDaoMysqlClient extends FaDaoClient {
 	/**
 	 * @constructor
-	 * @param FaDaoMysqlModel {FaDaoMysqlModel}
+	 * @param connection {string}
 	 */
-	constructor(FaDaoMysqlModel) {
-		super();
-		this._FaDaoMysqlModel = FaDaoMysqlModel;
-	}
+	// constructor(connection) {
+	// 	super();
+	// 	this._connection = connection;
+	// }
 
-	/**
-	 *
-	 * @return {FaDaoConnection}
-	 * @private
-	 */
-	get _connection() {
-		return FaDaoConnection.findConnection(this._FaDaoMysqlModel.connection);
-	}
+
+
 
 	/**
 	 *
@@ -39,28 +33,37 @@ class FaDaoMysqlClient extends FaDaoClient {
 	 */
 	async _connect() {
 		let con = await Mysql.createConnection({
-			// connectString: this._connection.url,
-			host: this._connection.host,
-			user: this._connection.user,
-			port: this._connection.port,
-			password: this._connection.password,
-			database: this._connection.database,
+			host: this.connection.host,
+			user: this.connection.user,
+			port: this.connection.port,
+			password: this.connection.password,
+			database: this.connection.database,
 		});
 		// con.connect();
+		console.log(con);
 		return con;
 		// console.warn(con);
 		// return await Mysql.createConnection({
-		// 	// connectString: this._connection.url,
-		// 	host: this._connection.host,
-		// 	user: this._connection.user,
-		// 	password: this._connection.password,
-		// 	database: this._connection.database,
+		// 	// connectString: this.connection.url,
+		// 	host: this.connection.host,
+		// 	user: this.connection.user,
+		// 	password: this.connection.password,
+		// 	database: this.connection.database,
 		// });
 	}
 
 	_extractMysqlError(error) {
-		// let e = ["code", "errno", "sqlMessage", "sqlState", "fatal"];
-		return new FaError({name: error["code"], message: error["sqlMessage"]}).setTrace(this._FaDaoMysqlModel.trace);
+		// let e = new Error("test");
+		// console.log(e instanceof Error, e instanceof FaError);
+		if (error instanceof Error) {
+			return new FaError(error).setTrace(this._trace);
+		} else {
+			// let e = ["code", "errno", "sqlMessage", "sqlState", "fatal"];
+			return new FaError({
+				name: error["code"],
+				message: error["sqlMessage"]
+			}).setTrace(this._trace);
+		}
 	}
 
 	/**
@@ -70,17 +73,18 @@ class FaDaoMysqlClient extends FaDaoClient {
 	async open() {
 		try {
 			let result;
-			if (this._connection.persistent) {
-				if (FaDaoClient.existClient(this._FaDaoMysqlModel.connection)) {
-					result = FaDaoClient.findClient(this._FaDaoMysqlModel.connection);
-				} else {
-					result = await this._connect();
-					FaDaoClient.attachClient(this._FaDaoMysqlModel.connection, result);
-				}
-			} else {
-				// console.info("OPEN", this._connection.timeout);
-				result = await this._connect();
-			}
+			// if (this.connection.persistent) {
+			// 	if (FaDaoClient.existClient(this._FaDaoMysqlModel.connection)) {
+			// 		result = FaDaoClient.findClient(this._FaDaoMysqlModel.connection);
+			// 	} else {
+			// 		result = await this._connect();
+			// 		FaDaoClient.attachClient(this._FaDaoMysqlModel.connection, result);
+			// 	}
+			// } else {
+			// 	console.info("OPEN", this.connection.timeout);
+			// 	result = await this._connect();
+			// }
+			result = await this._connect();
 			return result;
 		} catch (e) {
 			throw this._extractMysqlError(e);
@@ -112,10 +116,9 @@ class FaDaoMysqlClient extends FaDaoClient {
 	 */
 	async close(connection) {
 		try {
-				console.log(this._connection.get);
-				console.log(FaDaoConnection.listConnection);
-
-			if (!this._connection.persistent && connection) {
+			console.log(FaDaoConnection.listConnection);
+			console.log(FaDaoClient.listClient);
+			if (!this.connection.persistent && connection) {
 				connection.end();
 				FaDaoConnection.detachConnection(this._FaDaoMysqlModel.connection);
 				FaDaoClient.detachClient(this._FaDaoMysqlModel.connection);

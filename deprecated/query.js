@@ -54,6 +54,7 @@ class FaDaoQuery {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 *
 	 * @param field
@@ -95,14 +96,12 @@ class FaDaoQuery {
 		let result = [];
 		(Array.isArray(where) ? where : [where]).map(function (where) {
 			Object.entries(where).map(function ([key, value]) {
-				switch (typeof value) {
-					case "object":
-						Object.entries(value).map(function ([condition, comparsion]) {
-							result.push(self._extraceWhereCondition(key, condition, comparsion));
-						});
-						break;
-					default:
-						result.push(self._extraceWhereCondition(key, "=", value));
+				if (typeof value === "object") {
+					Object.entries(value).map(function ([condition, comparsion]) {
+						result.push(self._extraceWhereCondition(key, condition, comparsion));
+					});
+				} else {
+					result.push(self._extraceWhereCondition(key, "=", value));
 				}
 			});
 		});

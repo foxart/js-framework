@@ -1,51 +1,30 @@
 "use strict";
-// const FaDaoConnection = require("fa-nodejs/dao/connection");
+/*fa*/
+// const FaTrace = require("fa-nodejs/base/trace");
 const FaDaoClientInterface = require("fa-nodejs/dao/client-interface");
-/*variables*/
+/*vars*/
 let _client_list = {};
+let _connection_list = {};
 
 class FaDaoClient extends FaDaoClientInterface {
 	/**
-	 *
-	 * @return {Array<string>}
+	 * @constructor
+	 * @param connection {string}
+	 * @param trace
 	 */
-	static get listClient() {
-		return Object.keys(_client_list);
+	constructor(connection, trace) {
+		super();
+		this._connection = connection;
+		this._trace = trace;
 	}
 
-	/**
-	 *
-	 * @param client {string}
-	 * @return {Object}
-	 */
-	static findClient(client) {
-		return _client_list[client];
-	}
-
-	/**
-	 *
-	 * @param index {string}
-	 * @return {boolean}
-	 */
-	static existClient(index) {
-		return !!_client_list[index];
-	}
-
-	/**
-	 *
-	 * @param index {string}
-	 * @param client {Object}
-	 */
-	static attachClient(index, client) {
-		_client_list[index] = client;
-	}
-
-	/**
-	 *
-	 * @param index {string}
-	 */
-	static detachClient(index) {
-		delete _client_list[index];
+	get connection() {
+		// console.log(Object.keys(_connection_list));
+		if (Object.keys(_connection_list).omit(this._connection)) {
+			let ConnectionClass = require(this._connection);
+			_connection_list[this._connection] = new ConnectionClass();
+		}
+		return _connection_list[this._connection];
 	}
 }
 

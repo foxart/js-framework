@@ -6,10 +6,10 @@ let MatchPattern = "[^\\[\\]\\\"]+";
 class FaDaoAttribute {
 	/**
 	 * @constructor
-	 * @param attribute {Object}
+	 * @param attributes
 	 */
-	constructor(attribute) {
-		this._attributes = {};
+	constructor(attributes) {
+		this._attributes = attributes;
 		this._TestExpression = new RegExp(TestPattern);
 		this._MatchExpression = new RegExp(MatchPattern, "g");
 	};
@@ -58,8 +58,12 @@ class FaDaoAttribute {
 	 *
 	 * @param attributes {Object}
 	 */
-	setAttributes(attributes) {
+	set set(attributes) {
 		this._attributes = attributes;
+	}
+
+	get get() {
+		return this._attributes;
 	}
 
 	/**
@@ -80,6 +84,6 @@ class FaDaoAttribute {
 
 /**
  *
- * @type {FaDaoAttribute}
+ * @class {FaDaoAttribute}
  */
 module.exports = FaDaoAttribute;

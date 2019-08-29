@@ -1,18 +1,12 @@
 "use strict";
 
 class FaDaoConnectionInterface {
-
+	// noinspection JSMethodCanBeStatic
 	get get() {
 		throw new Error("get not implemented");
 	};
 
-	/**
-	 * @return {string}
-	 */
-	get url() {
-		throw new Error("dcs not implemented");
-	}
-
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {string}
 	 */
@@ -20,6 +14,7 @@ class FaDaoConnectionInterface {
 		throw new Error("host not specified");
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {number}
 	 */
@@ -27,6 +22,7 @@ class FaDaoConnectionInterface {
 		throw new Error("port not specified");
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {string}
 	 */
@@ -34,6 +30,7 @@ class FaDaoConnectionInterface {
 		throw new Error("database not specified");
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {string}
 	 */
@@ -41,6 +38,7 @@ class FaDaoConnectionInterface {
 		throw new Error("user not specified");
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {string}
 	 */
@@ -48,6 +46,7 @@ class FaDaoConnectionInterface {
 		throw new Error("password not specified");
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {boolean}
 	 */
@@ -55,7 +54,7 @@ class FaDaoConnectionInterface {
 		throw new Error("persistent not specified");
 	}
 
-
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {Object}
 	 */

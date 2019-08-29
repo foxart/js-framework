@@ -25,10 +25,9 @@ class FaDaoMysqlConnection extends FaDaoConnection {
 	/**
 	 * @return {string}
 	 */
-	get url() {
-		return `${this.host}:${this.port}/${this.sid}`;
-	};
-
+	// get url() {
+	// 	return `${this.host}:${this.port}/${this.sid}`;
+	// };
 	/**
 	 *
 	 * @return {string}
@@ -87,7 +86,6 @@ class FaDaoMysqlConnection extends FaDaoConnection {
 	get password() {
 		return "";
 	}
-
 
 	// noinspection JSMethodCanBeStatic
 	/**

@@ -20,6 +20,7 @@ class FaDaoConnection extends FaDaoConnectionInterface {
 			let Connection = new ConnectionClass();
 			FaDaoConnection.attachConnection(index, Connection);
 		}
+		// console.log(1,index,_connection_list);
 		return _connection_list[index];
 	}
 
@@ -52,6 +53,6 @@ class FaDaoConnection extends FaDaoConnectionInterface {
 
 /**
  *
- * @class FaDaoConnection
+ * @class {FaDaoConnection}
  */
 module.exports = FaDaoConnection;
