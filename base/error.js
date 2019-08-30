@@ -4,7 +4,10 @@ const FaTrace = require("fa-nodejs/base/trace");
 
 class FaError extends Error {
 	/**
-	 * @param error {Error|string}
+	 * error {Error|{name: string, message: string|null, trace: []|null, stack: string|null}|string}
+	 *
+	 * @param error {Error|{name, message, trace, stack}|string}
+	 * @return {FaError}
 	 */
 	constructor(error = "error") {
 		super();

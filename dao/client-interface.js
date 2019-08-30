@@ -2,23 +2,67 @@
 
 class FaDaoClientInterface {
 	// noinspection JSMethodCanBeStatic
-	get connect() {
-		throw new Error("connect not implemented");
+	/**
+	 * @return {string}
+	 */
+	get hostname() {
+		throw new Error("hostname not specified");
 	}
 
 	// noinspection JSMethodCanBeStatic
-	get open() {
-		throw new Error("open not implemented");
+	/**
+	 * @return {number}
+	 */
+	get port() {
+		throw new Error("port not specified");
 	}
 
 	// noinspection JSMethodCanBeStatic
-	get execute() {
-		throw new Error("execute not implemented");
+	/**
+	 * @return {string}
+	 */
+	get database() {
+		throw new Error("database not specified");
 	}
+
 	// noinspection JSMethodCanBeStatic
-	get close() {
-		throw new Error("close not implemented");
+	/**
+	 * @return {string}
+	 */
+	get user() {
+		throw new Error("user not specified");
 	}
+
+	// noinspection JSMethodCanBeStatic
+	/**
+	 * @return {string}
+	 */
+	get password() {
+		throw new Error("password not specified");
+	}
+
+	// noinspection JSMethodCanBeStatic
+	/**
+	 * @return {boolean}
+	 */
+	get persistent() {
+		throw new Error("persistent not specified");
+	}
+
+	// noinspection JSMethodCanBeStatic
+	/**
+	 * @return {number}
+	 */
+	get timeout() {
+		throw new Error("timeout not specified");
+	}
+
+	// noinspection JSMethodCanBeStatic
+	get error() {
+		throw new Error("error not implemented");
+	}
+
+
 }
 
 /**

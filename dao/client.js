@@ -3,33 +3,65 @@
 // const FaTrace = require("fa-nodejs/base/trace");
 const FaDaoClientInterface = require("fa-nodejs/dao/client-interface");
 /*vars*/
-let _client_list = {};
 let _connection_list = {};
 
 class FaDaoClient extends FaDaoClientInterface {
+// class FaDaoClient {
 	/**
 	 * @constructor
 	 * @param connection {string}
-	 * @param trace
 	 */
-	constructor(connection, trace) {
+	constructor(connection) {
 		super();
-		this._connection = connection;
-		this._trace = trace;
+		this._connector = connection;
 	}
 
-	get connection() {
-		// console.log(Object.keys(_connection_list));
-		if (Object.keys(_connection_list).omit(this._connection)) {
-			let ConnectionClass = require(this._connection);
-			_connection_list[this._connection] = new ConnectionClass();
-		}
-		return _connection_list[this._connection];
+	// noinspection JSMethodCanBeStatic
+	open() {
+		throw new Error("open not implemented");
+	}
+
+	// noinspection JSMethodCanBeStatic
+	execute() {
+		throw new Error("execute not implemented");
+	}
+
+	// noinspection JSMethodCanBeStatic
+	close() {
+		throw new Error("close not implemented");
+	}
+
+	/**
+	 *
+	 * @return {boolean}
+	 */
+	checkConnection() {
+		return !!_connection_list[this._connector];
+	}
+
+	/**
+	 *
+	 * @return {*}
+	 */
+	getConnection() {
+		return _connection_list[this._connector];
+	}
+
+	/**
+	 *
+	 * @param connection {Object}
+	 */
+	attachConnection(connection) {
+		_connection_list[this._connector] = connection;
+	}
+
+	detachConnection() {
+		delete _connection_list[this._connector];
 	}
 }
 
 /**
  *
- * @type {FaDaoClient|Class}
+ * @class {FaDaoClient}
  */
 module.exports = FaDaoClient;

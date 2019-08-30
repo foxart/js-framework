@@ -38,7 +38,13 @@ class FaTrace {
 					column: null,
 				});
 			} else {
-				console.error(`can't parse stack string: ${stack}`);
+				// console.error(`can't parse stack string: ${stack}`);
+				result.push({
+					method: item,
+					path: null,
+					line: null,
+					column: null,
+				});
 				// throw new Error(`can't parse stack string: ${item}`);
 			}
 		});

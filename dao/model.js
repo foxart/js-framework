@@ -1,7 +1,7 @@
 "use strict";
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-const FaTrace = require("fa-nodejs/base/trace");
+// const FaTrace = require("fa-nodejs/base/trace");
 // const FaDaoAdapterClass = require("fa-nodejs/dao/adapter");
 const FaDaoAttribute = require("fa-nodejs/dao/attribute");
 
@@ -10,11 +10,12 @@ class FaDaoModel {
 	 * @constructor
 	 */
 	constructor() {
-		this.trace = FaTrace.trace(1);
+		// this.trace = FaTrace.trace(1);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	get attributes() {
-		throw new FaError("attributes not specified").setTrace(this.trace);
+		throw new FaError("attributes not specified");
 	};
 
 	/**
