@@ -22,7 +22,7 @@ class FaController {
 		this._FaTemplate = new FaTemplate();
 		// this._FaTwig = new FaTwig(pathname ? pathname : this._viewsPathname);
 		this._pathname = pathname ? pathname : this._viewsPathname;
-		console.info(this._pathname);
+		// console.info(this._pathname);
 		this._FaFile = new FaFile(pathname ? pathname : this._viewsPathname);
 	}
 

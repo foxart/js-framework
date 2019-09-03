@@ -9,11 +9,11 @@ class FaDaoClient extends FaDaoClientInterface {
 // class FaDaoClient {
 	/**
 	 * @constructor
-	 * @param connection {string}
+	 * @param client_path {string}
 	 */
-	constructor(connection) {
+	constructor(client_path) {
 		super();
-		this._connector = connection;
+		this._client_path = client_path;
 	}
 
 	// noinspection JSMethodCanBeStatic
@@ -36,7 +36,7 @@ class FaDaoClient extends FaDaoClientInterface {
 	 * @return {boolean}
 	 */
 	checkConnection() {
-		return !!_connection_list[this._connector];
+		return !!_connection_list[this._client_path];
 	}
 
 	/**
@@ -44,7 +44,7 @@ class FaDaoClient extends FaDaoClientInterface {
 	 * @return {*}
 	 */
 	getConnection() {
-		return _connection_list[this._connector];
+		return _connection_list[this._client_path];
 	}
 
 	/**
@@ -52,11 +52,11 @@ class FaDaoClient extends FaDaoClientInterface {
 	 * @param connection {Object}
 	 */
 	attachConnection(connection) {
-		_connection_list[this._connector] = connection;
+		_connection_list[this._client_path] = connection;
 	}
 
 	detachConnection() {
-		delete _connection_list[this._connector];
+		delete _connection_list[this._client_path];
 	}
 }
 

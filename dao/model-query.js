@@ -2,94 +2,193 @@
 /*fa*/
 const FaDaoModel = require("fa-nodejs/dao/model");
 // const FaDaoConnection = require("fa-nodejs/dao/connection");
-const FaError = require("fa-nodejs/base/error");
-
 // const FaTrace = require("fa-nodejs/base/trace");
+const FaError = require("fa-nodejs/base/error");
+/*vars*/
+let _client_list = {};
+
 class FaDaoModelQuery extends FaDaoModel {
+	/** @constructor */
+	constructor() {
+		super();
+		this._query = {
+			"select": [],
+			"from": [],
+			"where": [],
+			// "andWhere": [],
+		};
+	}
+
+	// noinspection JSMethodCanBeStatic
+	/** @return {string} */
+	get client() {
+		throw new FaError("client not specified");
+	}
+
+	/** @return {FaDaoClient} */
+	get daoClient() {
+		if (!_client_list[this.client]) {
+			let Client = require(this.client);
+			_client_list[this.client] = new Client(this.client);
+		}
+		return _client_list[this.client];
+	}
+
+	// noinspection JSMethodCanBeStatic
 	get table() {
-		throw new FaError("table not specified").setTrace(this.trace);
+		throw new FaError("table not specified");
 	}
 
 	/**
-	 *
 	 * @return {string}
 	 * @private
 	 */
 	get _getSelect() {
-		if (this._select) {
-			return `SELECT ${this._select.map(item => `${item}`).join(", ")} `;
-		} else {
-			return `SELECT * `;
-		}
+		return `SELECT ${this._query["select"].filter(item => item).map(item => `${item}`).join(", ")} `;
 	}
 
+	/** @return {FaDaoModelQuery} */
+	select() {
+		let self = this;
+		this._query["select"] = [];
+		if (arguments.length) {
+			Object.entries(arguments).forEach(function ([key, value]) {
+				self._query["select"][key] = value;
+			});
+		} else {
+			this._query["select"] = this.attributes;
+		}
+		return this;
+	};
+
 	/**
-	 *
 	 * @return {string}
 	 * @private
 	 */
 	get _getFrom() {
-		if (this._from) {
-			return `FROM ${this._from.map(item => {
-				// return `${database}${item}`;
-				return `${item}`;
-			}).join(", ")} `;
+		if (this._query["from"].length) {
+			return `FROM ${this._query["from"].map(item => item).join(", ")} `;
 		} else {
 			return `FROM ${this.table} `;
 		}
 	}
 
-	/**
-	 * @param where
-	 * @return {Array}
-	 * @private
-	 */
-	_extractWhere(where = []) {
-		function _extraceWhereCondition(field, condition, comparsion) {
-			let result = "";
-			if (Array.isArray(comparsion)) {
-				result = `(${comparsion.map(function (item) {
-					if (typeof item === "string") {
-						return `'${item}'`;
-					} else if (typeof item === "function") {
-						return item();
-					} else {
-						return item;
-					}
-				}).join(", ")})`;
-			} else if (typeof comparsion === "function") {
-				result = comparsion();
-			} else if (typeof comparsion === "string") {
-				result = `'${comparsion}'`;
-			} else {
-				result = comparsion;
-			}
-			return `${field} ${condition} ${result}`;
-		}
-
-		let result = [];
-		where.map(function (item) {
-			Object.entries(item).map(function ([key, value]) {
-				Object.entries(value).map(function ([condition, comparsion]) {
-					result.push(_extraceWhereCondition(key, condition, comparsion));
-				});
-			});
+	/** @return {FaDaoModelQuery} */
+	from() {
+		let self = this;
+		this._query["from"] = [];
+		Object.entries(arguments).forEach(function ([key, value]) {
+			self._query["from"][key] = value;
 		});
+		return this;
+	}
+
+	// noinspection JSMethodCanBeStatic
+	in() {
+		return {"IN": Object.values(arguments)};
+	}
+
+	// noinspection JSMethodCanBeStatic
+	between(value1, value2) {
+		return {"BETWEEN": Object.values(arguments)};
+	}
+
+	// noinspection JSMethodCanBeStatic
+	andGroup() {
+		// return arguments;
+		console.warn(arguments);
+		// let res = {key: key, condition: "=", comparsion: self._parseValue(value), glue: glue};
+		// console.error(res);
+		return {};
+	}
+
+	// noinspection JSMethodCanBeStatic
+	_parseValue(value) {
+		let self = this;
+		let result = {};
+		if (typeof value === "string") {
+			result = `'${value}'`;
+		} else if (typeof value === "function") {
+			result = value();
+		} else if (Array.isArray(value)) {
+			result = value.map(function (item) {
+				return self._parseValue(item);
+			});
+		} else {
+			result = value;
+		}
 		return result;
 	}
 
 	/**
-	 *
 	 * @return {string|null}
 	 * @private
 	 */
 	get _getWhere() {
-		let result = this._extractWhere(this._where);
+		let result = [];
+		this._query["where"].forEach(function (item) {
+			let {key, condition, comparsion, glue} = item;
+			if (result.length) {
+				glue = ` ${glue} `
+			} else {
+				glue = "";
+			}
+			if (condition === "IN") {
+				result.push(`${glue}${key} IN (${comparsion.join(", ")})`);
+			} else if (condition === "BETWEEN") {
+				result.push(`${glue}${key} BETWEEN ${comparsion[0]} AND ${comparsion[1]}`);
+			} else {
+				result.push(`${glue}${key} ${condition} ${comparsion}`);
+			}
+		});
 		if (result.length) {
-			return result.length === 1 ? `WHERE ${result} ` : `WHERE (${result.join(" AND ")}) `;
+			// return result.length === 1 ? `WHERE ${result} ` : `WHERE (${result.join("")}) `;
+			return `WHERE ${result.join("")} `;
 		} else {
 			return null;
 		}
+	}
+
+	_where(where, glue) {
+		let self = this;
+		Object.values(where).forEach(function (object) {
+			if (Array.isArray(object)) {
+				object.forEach(function (item) {
+					Object.entries(item).forEach(function ([key, value]) {
+						if (typeof value === "object") {
+							let res = [];
+							res = Object.entries(value).map(function ([condition, comparsion]) {
+								// self._query["where"].push({key: key, condition: condition, comparsion: self._parseValue(comparsion), glue: "AND"});
+								return {key: key, condition: condition, comparsion: self._parseValue(comparsion), glue: "AND"};
+							});
+							console.error(res);
+						} else {
+							self._query["where"].push({key: key, condition: "=", comparsion: self._parseValue(value), glue: "AND"});
+						}
+					});
+				});
+			} else {
+				Object.entries(object).forEach(function ([key, value]) {
+					if (typeof value === "object") {
+						Object.entries(value).forEach(function ([condition, comparsion]) {
+							self._query["where"].push({key: key, condition: condition, comparsion: self._parseValue(comparsion), glue: "OR"});
+						});
+					} else {
+						self._query["where"].push({key: key, condition: "=", comparsion: self._parseValue(value), glue: "OR"});
+					}
+				});
+			}
+		});
+	}
+
+	/**
+	 * a=1 `{a: 1}}`; b>2, c=3 `{b: {">": 2}}, {c: 3}}`
+	 * @return {FaDaoModelQuery}
+	 */
+	where() {
+		this._query["where"] = [];
+		this._where(arguments, "AND");
+		return this;
 	}
 
 	/**
@@ -106,6 +205,13 @@ class FaDaoModelQuery extends FaDaoModel {
 		}
 	}
 
+	/** @return {FaDaoModelQuery} */
+	andWhere() {
+		// this._query["andWhere"] = [];
+		this._where(arguments, "AND");
+		return this;
+	}
+
 	/**
 	 *
 	 * @return {string|null}
@@ -120,107 +226,19 @@ class FaDaoModelQuery extends FaDaoModel {
 		}
 	}
 
+	/** @return {FaDaoModelQuery} */
+	orWhere() {
+		this._where(arguments, "OR");
+		return this;
+	}
+
+	// noinspection JSMethodCanBeStatic
 	/**
 	 *
 	 * @return {string|null}
 	 */
 	get _getLimit() {
-		throw new FaError("limit not implemented").setTrace(this.trace);
-	}
-
-	/**
-	 *
-	 * @return {string|null}
-	 * @private
-	 */
-	get _getOffset() {
-		throw new FaError("offset not implemented").setTrace(this.trace);
-	}
-
-	/**
-	 *
-	 * @private
-	 */
-	_reset() {
-		this._select = null;
-		this._from = null;
-		this._where = null;
-		this._andWhere = null;
-		this._orWhere = null;
-		this._limit = null;
-		this._offset = null;
-	}
-
-	/**
-	 *
-	 * @param select {string|Array<string>}
-	 * @return {FaDaoModelQuery}
-	 */
-	select(select = null) {
-		if (select) {
-			this._select = Array.isArray(select) ? select : [select];
-		} else {
-			// this._select = null;
-			this._select = this.attributes;
-		}
-		return this;
-	};
-
-	/**
-	 *
-	 * @param from {string|Array<string>}
-	 * @return {FaDaoModelQuery}
-	 */
-	from(from) {
-		if (from) {
-			this._from = Array.isArray(from) ? from : [from];
-		} else {
-			this._from = null;
-		}
-		return this;
-	}
-
-	/**
-	 * a=1 `{a: {"=": 1}}`; b>2, c=3 `[{b: {">": 2}}, {c: {"=": 3}}]`
-	 *
-	 * @param where {Object|Array<Object>}
-	 * @return {FaDaoModelQuery}
-	 */
-	where(where) {
-		if (where) {
-			this._where = Array.isArray(where) ? where : [where];
-		} else {
-			this._where = [];
-		}
-		return this;
-	}
-
-	/**
-	 *
-	 * @param where {Object|Array<Object>}
-	 * @return {FaDaoModelQuery}
-	 */
-	andWhere(where) {
-		if (where) {
-			this._andWhere = Array.isArray(where) ? where : [where];
-		} else {
-			this._andWhere = [];
-		}
-		return this;
-	}
-
-	/**
-	 *
-	 * @param where {Object|Array<Object>}
-	 * @return {FaDaoModelQuery}
-	 */
-	orWhere(where) {
-		if (where) {
-			this._orWhere = Array.isArray(where) ? where : [where];
-		} else {
-			this._orWhere = [];
-		}
-		return this;
+		throw new FaError("limit not implemented");
 	}
 
 	/**
@@ -231,6 +249,16 @@ class FaDaoModelQuery extends FaDaoModel {
 	limit(limit) {
 		this._limit = limit;
 		return this;
+	}
+
+	// noinspection JSMethodCanBeStatic
+	/**
+	 *
+	 * @return {string|null}
+	 * @private
+	 */
+	get _getOffset() {
+		throw new FaError("offset not implemented");
 	}
 
 	/**
@@ -248,10 +276,12 @@ class FaDaoModelQuery extends FaDaoModel {
 		let result = [];
 		if (this._order) {
 			Object.entries(self._order).map(function ([key, value]) {
-				if (value > 0) {
+				if (value === 1) {
 					result.push(`${key} ASC`);
-				} else {
+				} else if (value === -1) {
 					result.push(`${key} DESC`);
+				} else {
+					result.push(`${key} ${value}`);
 				}
 			});
 			return `ORDER BY ${result.join(", ")} `;
@@ -268,60 +298,23 @@ class FaDaoModelQuery extends FaDaoModel {
 		return this;
 	}
 
-	toDatetimeOracle(datetime, format) {
-		return function () {
-			return `TO_DATE('${datetime.toISOString().slice(0, 19).replace('T', ' ')}', '${format}')`;
-		}
-	}
-
+	/**
+	 *
+	 * @return {string}
+	 */
 	get query() {
+		// console.error(this._getWhere);
+		// throw new Error();
 		return [
 			this._getSelect,
 			this._getFrom,
 			this._getWhere,
-			this._getAndWhere,
-			this._getOrWhere,
-			this._getOrder,
-			this._getLimit,
-			this._getOffset,
+			// 	this._getAndWhere,
+			// 	this._getOrWhere,
+			// 	this._getOrder,
+			// 	this._getLimit,
+			// 	this._getOffset,
 		].filter(item => item).join("").trim();
-	}
-
-	/**
-	 * @return {Object}
-	 */
-	async one() {
-		// this.limit(1);
-		let query = [
-			this._getSelect,
-			this._getFrom,
-			this._getWhere,
-			this._getAndWhere,
-			this._getOrWhere,
-			this._getOrder,
-			this._getOffset,
-			this._getLimit,
-		].filter(item => item).join("").trim();
-		// console.log([query]);
-		return await this._FaDaoModel.findOne(query);
-	}
-
-	/**
-	 * @return {Array<Object>}
-	 */
-	async many() {
-		let query = [
-			this._getSelect,
-			this._getFrom,
-			this._getWhere,
-			this._getAndWhere,
-			this._getOrWhere,
-			this._getOrder,
-			this._getOffset,
-			this._getLimit,
-		].filter(item => item).join("").trim();
-		// console.info([query]);
-		return await this._FaDaoModel.findMany(query);
 	}
 }
 

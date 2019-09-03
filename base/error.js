@@ -49,8 +49,13 @@ class FaError extends Error {
 		return this;
 	}
 
-	addTrace(trace) {
+	appendTrace(trace) {
 		this.trace.push(trace);
+		return this;
+	}
+
+	prependTrace(trace) {
+		this.trace.unshift(trace);
 		return this;
 	}
 

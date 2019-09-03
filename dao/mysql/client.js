@@ -3,14 +3,13 @@
 /** @type {Object} */
 const Mysql = require("mysql");
 /*fa*/
-const FaTrace = require("fa-nodejs/base/trace");
+// const FaTrace = require("fa-nodejs/base/trace");
 const FaError = require("fa-nodejs/base/error");
 const FaDaoClient = require("fa-nodejs/dao/client");
 
 class FaDaoMysqlClient extends FaDaoClient {
 	constructor(connection) {
 		super(connection);
-		console.error(FaTrace.trace(1));
 	}
 
 	// noinspection JSMethodCanBeStatic
