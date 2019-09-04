@@ -40,6 +40,27 @@ class FaDaoModelQuery extends FaDaoModel {
 	}
 
 	/**
+	 * @param value
+	 * @private
+	 */
+	_processValue(value) {
+		let self = this;
+		let result = {};
+		if (typeof value === "string") {
+			result = `'${value}'`;
+		} else if (typeof value === "function") {
+			result = value();
+		} else if (Array.isArray(value)) {
+			result = value.map(function (item) {
+				return self._processValue(item);
+			});
+		} else {
+			result = value;
+		}
+		return result;
+	}
+
+	/**
 	 * @return {string}
 	 * @private
 	 */
@@ -93,52 +114,27 @@ class FaDaoModelQuery extends FaDaoModel {
 		return {"BETWEEN": Object.values(arguments)};
 	}
 
-	// noinspection JSMethodCanBeStatic
-	andGroup() {
-		// return arguments;
-		console.warn(arguments);
-		// let res = {key: key, condition: "=", comparsion: self._parseValue(value), glue: glue};
-		// console.error(res);
-		return {};
-	}
-
-	// noinspection JSMethodCanBeStatic
-	_parseValue(value) {
-		let self = this;
-		let result = {};
-		if (typeof value === "string") {
-			result = `'${value}'`;
-		} else if (typeof value === "function") {
-			result = value();
-		} else if (Array.isArray(value)) {
-			result = value.map(function (item) {
-				return self._parseValue(item);
-			});
-		} else {
-			result = value;
-		}
-		return result;
-	}
-
 	/**
 	 * @return {string|null}
 	 * @private
 	 */
 	get _getWhere() {
+		let self = this;
 		let result = [];
 		this._query["where"].forEach(function (item) {
-			let {key, condition, comparsion, glue} = item;
+			let {compare, condition, value, glue} = item;
+			value = self._processValue(value);
 			if (result.length) {
 				glue = ` ${glue} `
 			} else {
 				glue = "";
 			}
 			if (condition === "IN") {
-				result.push(`${glue}${key} IN (${comparsion.join(", ")})`);
+				result.push(`${glue}${compare} IN (${value.join(", ")})`);
 			} else if (condition === "BETWEEN") {
-				result.push(`${glue}${key} BETWEEN ${comparsion[0]} AND ${comparsion[1]}`);
+				result.push(`${glue}${compare} BETWEEN ${value[0]} AND ${value[1]}`);
 			} else {
-				result.push(`${glue}${key} ${condition} ${comparsion}`);
+				result.push(`${glue}${compare} ${condition} ${value}`);
 			}
 		});
 		if (result.length) {
@@ -149,86 +145,77 @@ class FaDaoModelQuery extends FaDaoModel {
 		}
 	}
 
-	_where(where, glue) {
+	// noinspection JSMethodCanBeStatic
+	_storeWhere(compare, condition, value, glue, group) {
+		let last = this._query["where"][this._query["where"].length - 1];
+		let data = {
+			glue: glue,
+			compare: compare,
+			condition: condition,
+			value: value,
+		};
+		if (group === false) {
+			console.error(value);
+			this._query["where"].push(data);
+		} else if (group === true || Array.isArray(last)) {
+			// if (Array.isArray(last)) {
+			// } else {
+			// 	// console.warn(a, Array.isArray(a));
+			// 	this._query["where"].push([data]);
+			// }
+			this._query["where"][this._query["where"].length - 1].push(data);
+		} else {
+			this._query["where"].push(data);
+		}
+	}
+
+	_where(expression, glue, group) {
 		let self = this;
-		Object.values(where).forEach(function (object) {
-			if (Array.isArray(object)) {
-				object.forEach(function (item) {
-					Object.entries(item).forEach(function ([key, value]) {
-						if (typeof value === "object") {
-							let res = [];
-							res = Object.entries(value).map(function ([condition, comparsion]) {
-								// self._query["where"].push({key: key, condition: condition, comparsion: self._parseValue(comparsion), glue: "AND"});
-								return {key: key, condition: condition, comparsion: self._parseValue(comparsion), glue: "AND"};
-							});
-							console.error(res);
-						} else {
-							self._query["where"].push({key: key, condition: "=", comparsion: self._parseValue(value), glue: "AND"});
-						}
-					});
+		Object.entries(expression).forEach(function ([compare, object]) {
+			// console.warn(key, value);
+			if (typeof object === "object") {
+				Object.entries(object).forEach(function ([condition, value]) {
+					self._storeWhere(compare, condition, value, glue, group);
 				});
 			} else {
-				Object.entries(object).forEach(function ([key, value]) {
-					if (typeof value === "object") {
-						Object.entries(value).forEach(function ([condition, comparsion]) {
-							self._query["where"].push({key: key, condition: condition, comparsion: self._parseValue(comparsion), glue: "OR"});
-						});
-					} else {
-						self._query["where"].push({key: key, condition: "=", comparsion: self._parseValue(value), glue: "OR"});
-					}
-				});
+				self._storeWhere(compare, "=", object, glue, group);
 			}
 		});
 	}
 
 	/**
-	 * a=1 `{a: 1}}`; b>2, c=3 `{b: {">": 2}}, {c: 3}}`
+	 *
+	 * a=1 `{a: 1}}`; b>2 `{b: {">": 2}}}`
+	 * @param expression {Object}
 	 * @return {FaDaoModelQuery}
 	 */
-	where() {
+	where(expression) {
 		this._query["where"] = [];
-		this._where(arguments, "AND");
+		this._where(expression, "AND");
 		return this;
-	}
-
-	/**
-	 *
-	 * @return {string|null}
-	 * @private
-	 */
-	get _getAndWhere() {
-		let result = this._extractWhere(this._andWhere);
-		if (result.length) {
-			return result.length === 1 ? `AND ${result} ` : `AND (${result.join(" AND ")}) `;
-		} else {
-			return null;
-		}
 	}
 
 	/** @return {FaDaoModelQuery} */
 	andWhere() {
-		// this._query["andWhere"] = [];
 		this._where(arguments, "AND");
 		return this;
 	}
 
-	/**
-	 *
-	 * @return {string|null}
-	 * @private
-	 */
-	get _getOrWhere() {
-		let result = this._extractWhere(this._orWhere);
-		if (result.length) {
-			return result.length === 1 ? `OR ${result} ` : `OR (${result.join(" AND ")}) `;
-		} else {
-			return null;
-		}
+	/** @return {FaDaoModelQuery} */
+	orWhere(expression) {
+		this._where(expression, "OR");
+		return this;
 	}
 
-	/** @return {FaDaoModelQuery} */
-	orWhere() {
-		this._where(arguments, "OR");
+	andWhereBegin(expression) {
+		// let pointer = this._query["where"][this._query["where"].length - 1];
+		this._query["where"][this._query["where"].length - 1] = [];
+		this._where(expression, "AND", true);
+		return this;
+	}
+
+	andWhereEnd(expression) {
+		this._where(expression, "AND", false);
 		return this;
 	}
 
@@ -290,9 +277,6 @@ class FaDaoModelQuery extends FaDaoModel {
 		}
 	}
 
-	/**
-	 *
-	 */
 	order(order) {
 		this._order = order;
 		return this;
