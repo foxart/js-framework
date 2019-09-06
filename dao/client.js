@@ -1,12 +1,10 @@
 "use strict";
 /*fa*/
-// const FaTrace = require("fa-nodejs/base/trace");
 const FaDaoClientInterface = require("fa-nodejs/dao/client-interface");
 /*vars*/
 let _connection_list = {};
 
 class FaDaoClient extends FaDaoClientInterface {
-// class FaDaoClient {
 	/**
 	 * @constructor
 	 * @param client_path {string}
@@ -31,26 +29,17 @@ class FaDaoClient extends FaDaoClientInterface {
 		throw new Error("close not implemented");
 	}
 
-	/**
-	 *
-	 * @return {boolean}
-	 */
+	/** @return {boolean} */
 	checkConnection() {
 		return !!_connection_list[this._client_path];
 	}
 
-	/**
-	 *
-	 * @return {*}
-	 */
+	/** @return {*} */
 	getConnection() {
 		return _connection_list[this._client_path];
 	}
 
-	/**
-	 *
-	 * @param connection {Object}
-	 */
+	/** @param connection {Object} */
 	attachConnection(connection) {
 		_connection_list[this._client_path] = connection;
 	}
@@ -60,8 +49,5 @@ class FaDaoClient extends FaDaoClientInterface {
 	}
 }
 
-/**
- *
- * @class {FaDaoClient}
- */
+/** @class {FaDaoClient} */
 module.exports = FaDaoClient;

@@ -6,22 +6,16 @@ const FaError = require("fa-nodejs/base/error");
 const FaDaoAttribute = require("fa-nodejs/dao/attribute");
 
 class FaDaoModel {
-	// /**
-	//  * @constructor
-	//  */
-	// constructor() {
-	// this.trace = FaTrace.trace(1);
-	// }
 	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {Array}
+	 * @protected
 	 */
 	get attributes() {
 		throw new FaError("attributes not specified");
 	};
 
 	/**
-	 *
 	 * @return {FaDaoAttribute}
 	 */
 	get attribute() {
@@ -36,8 +30,5 @@ class FaDaoModel {
 	}
 }
 
-/**
- *
- * @class {FaDaoModel}
- */
+/** @class {FaDaoModel} */
 module.exports = FaDaoModel;

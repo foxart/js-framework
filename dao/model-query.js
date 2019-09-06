@@ -11,13 +11,17 @@ class FaDaoModelQuery extends FaDaoModel {
 	/** @constructor */
 	constructor() {
 		super();
-		this._query = {
-			"select": [],
-			"from": [],
-			"where": [],
-			// "whereGroup": [],
-			// "andWhere": [],
-		};
+		this._reset();
+	}
+
+	/** @private */
+	_reset() {
+		this._query = [];
+		// this._query = [];
+		// this._query = [];
+		// this._query = [];
+		// this._query = null;
+		// this._query = null;
 	}
 
 	// noinspection JSMethodCanBeStatic
@@ -33,6 +37,37 @@ class FaDaoModelQuery extends FaDaoModel {
 			_client_list[this.client] = new Client(this.client);
 		}
 		return _client_list[this.client];
+	}
+
+	/**
+	 * @param list
+	 * @return {Array}
+	 * @private
+	 */
+	_lastList(list) {
+		let self = this;
+		let last = list[list.length - 1];
+		if (Array.isArray(last)) {
+			return self._lastList(last);
+		} else {
+			return list;
+		}
+	}
+
+	/**
+	 * @param list {Array}
+	 * @param prev {Array}
+	 * @return {*}
+	 * @private
+	 */
+	_penultimateList(list, prev) {
+		let self = this;
+		let last = list[list.length - 1];
+		if (Array.isArray(last)) {
+			return self._penultimateList(last, list);
+		} else {
+			return prev;
+		}
 	}
 
 	/**
@@ -65,14 +100,13 @@ class FaDaoModelQuery extends FaDaoModel {
 	 * @return {string}
 	 * @private
 	 */
-	get _getSelect() {
-		return `SELECT ${this._query["select"].filter(item => item).map(item => `${item}`).join(", ")} `;
+	get _select() {
+		return `SELECT ${this._query.filter(item => item).map(item => `${item}`).join(", ")} `;
 	}
 
 	/** @return {FaDaoModelQuery} */
 	select() {
-		let self = this;
-		this._query["select"] = [];
+		let select = [];
 		if (arguments.length) {
 			Object.entries(arguments).forEach(function ([key, value]) {
 				let result;
@@ -83,12 +117,12 @@ class FaDaoModelQuery extends FaDaoModel {
 				} else {
 					result = value;
 				}
-				self._query["select"][key] = result;
-				// self._query["select"][key] = value;
+				select[key] = result;
 			});
 		} else {
-			this._query["select"] = this.attributes;
+			select = this.attributes;
 		}
+		this._query.push(`SELECT ${select.filter(item => item).map(item => `${item}`).join(", ")} `);
 		return this;
 	};
 
@@ -96,9 +130,9 @@ class FaDaoModelQuery extends FaDaoModel {
 	 * @return {string}
 	 * @private
 	 */
-	get _getFrom() {
-		if (this._query["from"].length) {
-			return `FROM ${this._query["from"].map(item => item).join(", ")} `;
+	get _from() {
+		if (this._query.length) {
+			return `FROM ${this._query.map(item => item).join(", ")} `;
 		} else {
 			return `FROM ${this.table} `;
 		}
@@ -106,135 +140,116 @@ class FaDaoModelQuery extends FaDaoModel {
 
 	/** @return {FaDaoModelQuery} */
 	from() {
-		let self = this;
-		this._query["from"] = [];
-		Object.entries(arguments).forEach(function ([key, value]) {
-			self._query["from"][key] = value;
-		});
+		let from = [];
+		if (this._query.length) {
+			Object.entries(arguments).forEach(function ([key, value]) {
+				from[key] = value;
+			});
+		} else {
+			from = [this.table];
+		}
+		this._query.push(`FROM ${from.map(item => item).join(", ")} `);
 		return this;
-	}
-
-	_lastList(list) {
-		let self = this;
-		let last = list[list.length - 1];
-		if (Array.isArray(last)) {
-			return self._lastList(last);
-		} else {
-			return list;
-		}
-	}
-
-	_penultimateList(list, prev) {
-		let self = this;
-		let last = list[list.length - 1];
-		if (Array.isArray(last)) {
-			return self._penultimateList(last, list);
-		} else {
-			return prev;
-		}
-	}
-
-	// noinspection JSMethodCanBeStatic
-	_setWhere(data) {
-		this._query["where"].push(data);
 	}
 
 	/**
 	 * @return {string|null}
 	 * @private
 	 */
-	get _getWhere() {
-		// let self = this;
+	get _where() {
 		let result = [];
-		this._query["where"].forEach(function (item) {
+		this._query.forEach(function (item) {
 			result.push(item);
-			// if (condition === "IN") {
-			// 	result.push(`${compare} IN (${value.join(", ")})`);
-			// } else if (condition === "BETWEEN") {
-			// 	result.push(`${compare} BETWEEN ${value[0]} AND ${value[1]}`);
-			// } else {
-			// 	result.push(`${compare} ${condition} ${value}`);
-			// }
 		});
 		if (result.length) {
-			// return result.length === 1 ? `WHERE ${result} ` : `WHERE (${result.join("")}) `;
 			return `WHERE ${result.join("")} `;
 		} else {
 			return null;
 		}
 	}
 
-	_where(expression) {
-		let self = this;
-		Object.entries(expression).forEach(function ([compare, object]) {
-			if (typeof object === "object") {
-				Object.entries(object).forEach(function ([condition, value]) {
-					self._setWhere(`${compare} ${condition} ${self._processValue(value)}`);
-				});
-			} else {
-				self._setWhere(`${compare} = ${self._processValue(object)}`);
-			}
-		});
-	}
-
 	/**
-	 *
-	 * a=1 `{a: 1}}`; b>2 `{b: {">": 2}}}`
+	 * a=1 `{a: 1}`; b>2 `{b: {">": 2}}`
 	 * @param expression {Object}
 	 * @return {FaDaoModelQuery}
 	 */
 	where(expression) {
-		this._where(expression);
+		// this._query(expression);
+		let self = this;
+		Object.entries(expression).forEach(function ([compare, object]) {
+			if (typeof object === "object") {
+				Object.entries(object).forEach(function ([condition, value]) {
+					self._query.push(`${compare} ${condition} ${self._processValue(value)}`);
+				});
+			} else {
+				self._query.push(`${compare} = ${self._processValue(object)}`);
+			}
+		});
 		return this;
 	}
 
-	/** @return {FaDaoModelQuery} */
+	/**
+	 * a=1 `{a: 1}`; b>2 `{b: {">": 2}}`
+	 * @param expression {Object}
+	 * @return {FaDaoModelQuery}
+	 */
 	andWhere(expression) {
-		this._setWhere(" AND ");
-		this._where(expression);
+		this._query.push(" AND ");
+		this.where(expression);
+		return this;
+	}
+
+	/**
+	 * a=1 `{a: 1}`; b>2 `{b: {">": 2}}`
+	 * @param expression {Object}
+	 * @return {FaDaoModelQuery}
+	 */
+	orWhere(expression) {
+		this._query.push(" OR ");
+		this.where(expression);
 		return this;
 	}
 
 	/** @return {FaDaoModelQuery} */
-	orWhere(expression) {
-		this._setWhere(" OR ");
-		this._where(expression);
+	whereBegin() {
+		this._query.push("(");
+		return this;
+	}
+
+	/** @return {FaDaoModelQuery} */
+	whereEnd() {
 		return this;
 	}
 
 	/** @return {FaDaoModelQuery} */
 	andWhereBegin() {
-		if (this._query["where"].length) {
-			this._setWhere(" AND ");
-		}
-		this._setWhere("(");
+		this._query.push(" AND ");
+		this._query.push("(");
 		return this;
 	}
 
 	/** @return {FaDaoModelQuery} */
 	andWhereEnd() {
-		this._query["where"].push(")");
+		this._query.push(")");
 		return this;
 	}
 
 	/** @return {FaDaoModelQuery} */
 	orWhereBegin() {
-		if (this._query["where"].length) {
-			this._setWhere(" OR ");
-		}
-		this._setWhere("(");
+		this._query.push(" OR ");
+		this._query.push("(");
 		return this;
 	}
 
 	/** @return {FaDaoModelQuery} */
 	orWhereEnd() {
-		this._query["where"].push(")");
+		this._query.push(")");
 		return this;
 	}
 
 	/**
-	 *
-	 * @param expression
+	 * a BETWEEN 1 AND 2 `{a: [1, 2]}``
+	 * @param expression {Object}
 	 * @return {FaDaoModelQuery}
 	 */
 	between(expression) {
@@ -243,14 +258,36 @@ class FaDaoModelQuery extends FaDaoModel {
 			let result = value.map(function (item) {
 				return self._processValue(item);
 			});
-			self._query["where"].push(`${key} BETWEEN ${result[0]} AND ${result[1]}`);
+			self._query.push(`${key} BETWEEN ${result[0]} AND ${result[1]}`);
 		});
 		return this;
 	}
 
 	/**
-	 *
-	 * @param expression
+	 * a BETWEEN 1 AND 2 `{a: [1, 2]}``
+	 * @param expression {Object}
+	 * @return {FaDaoModelQuery}
+	 */
+	andBetween(expression) {
+		this._query.push(" AND ");
+		this.between(expression);
+		return this;
+	}
+
+	/**
+	 * a BETWEEN 1 AND 2 `{a: [1, 2]}``
+	 * @param expression {Object}
+	 * @return {FaDaoModelQuery}
+	 */
+	orBetween(expression) {
+		this._query.push(" OR ");
+		this.between(expression);
+		return this;
+	}
+
+	/**
+	 * a IN (1, 2) `{a: [1, 2]}`
+	 * @param expression {Object}
 	 * @return {FaDaoModelQuery}
 	 */
 	in(expression) {
@@ -259,55 +296,78 @@ class FaDaoModelQuery extends FaDaoModel {
 			let result = value.map(function (item) {
 				return self._processValue(item);
 			}).join(", ");
-			self._query["where"].push(`${key} IN (${result})`);
+			self._query.push(`${key} IN (${result})`);
 		});
 		return this;
 	}
 
+	/**
+	 * a IN (1, 2) `{a: [1, 2]}`
+	 * @param expression {Object}
+	 * @return {FaDaoModelQuery}
+	 */
+	andIn(expression) {
+		this._query.push(" AND ");
+		this.in(expression);
+		return this;
+	}
+
+	/**
+	 * a IN (1, 2) `{a: [1, 2]}`
+	 * @param expression {Object}
+	 * @return {FaDaoModelQuery}
+	 */
+	orIn(expression) {
+		this._query.push(" OR ");
+		this.in(expression);
+		return this;
+	}
+
 	// noinspection JSMethodCanBeStatic
 	/**
-	 *
 	 * @return {string|null}
+	 * @protected
 	 */
-	get _getLimit() {
+	get _limit() {
 		throw new FaError("limit not implemented");
 	}
 
 	/**
-	 *
 	 * @param limit {number}
 	 * @return {FaDaoModelQuery}
 	 */
 	limit(limit) {
-		this._limit = limit;
+		this._query = limit;
 		return this;
 	}
 
 	// noinspection JSMethodCanBeStatic
 	/**
-	 *
 	 * @return {string|null}
-	 * @private
+	 * @protected
 	 */
-	get _getOffset() {
+	get _offset() {
 		throw new FaError("offset not implemented");
 	}
 
 	/**
-	 *
-	 * @param offset {number}
+	 * @param offset {Number}
 	 * @return {FaDaoModelQuery}
 	 */
 	offset(offset) {
-		this._offset = offset;
+		this._query.push(offset);
 		return this;
 	}
 
-	get _getOrder() {
+	/**
+	 * @return {string|null}
+	 * @private
+	 */
+	get _order() {
 		let self = this;
 		let result = [];
-		if (this._order) {
-			Object.entries(self._order).map(function ([key, value]) {
+		if (this._prop_order) {
+			Object.entries(self._prop_order).map(function ([key, value]) {
 				if (value === 1) {
 					result.push(`${key} ASC`);
 				} else if (value === -1) {
@@ -322,33 +382,30 @@ class FaDaoModelQuery extends FaDaoModel {
 		}
 	}
 
+	/**
+	 * @param order {Number}
+	 * @return {FaDaoModelQuery}
+	 */
 	order(order) {
-		this._order = order;
+		this._prop_order = order;
 		return this;
 	}
 
 	/**
-	 *
 	 * @return {string}
+	 * @protected
 	 */
-	get query() {
-		// console.error(this._getWhere);
-		// throw new Error();
-		return [
-			this._getSelect,
-			this._getFrom,
-			this._getWhere,
-			// 	this._getAndWhere,
-			// 	this._getOrWhere,
-			// 	this._getOrder,
-			// 	this._getLimit,
-			// 	this._getOffset,
-		].filter(item => item).join("").trim();
+	get _sql() {
+		let sql = this.sql;
+		this._reset();
+		return sql;
+	}
+
+	/** @return {string} */
+	get sql() {
+		return this._query.filter(item => item).join("").trim();
 	}
 }
 
-/**
- *
- * @class {FaDaoModelQuery}
- */
+/** @class {FaDaoModelQuery} */
 module.exports = FaDaoModelQuery;

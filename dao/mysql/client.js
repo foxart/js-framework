@@ -3,7 +3,6 @@
 /** @type {Object} */
 const Mysql = require("mysql");
 /*fa*/
-// const FaTrace = require("fa-nodejs/base/trace");
 const FaError = require("fa-nodejs/base/error");
 const FaDaoClient = require("fa-nodejs/dao/client");
 
@@ -14,12 +13,11 @@ class FaDaoMysqlClient extends FaDaoClient {
 
 	// noinspection JSMethodCanBeStatic
 	/**
-	 *
 	 * @param error {Error}
 	 * @return {FaError}
 	 */
 	error(error) {
-		// noinspection JSUnusedLocalSymbols
+		 // noinspection JSUnusedLocalSymbols
 		let {code, errno, sqlMessage, sqlState, index, sql, fatal} = error;
 		if (code && sqlMessage) {
 			return new FaError({
@@ -32,7 +30,6 @@ class FaDaoMysqlClient extends FaDaoClient {
 	}
 
 	/**
-	 *
 	 * @return {Promise<any>}
 	 */
 	async open() {

@@ -6,43 +6,30 @@ const FaDaoModelQuery = require("fa-nodejs/dao/model-query");
 
 class FaDaoMysqlModel extends FaDaoModelQuery {
 	/**
-	 * @constructor
-	 */
-	constructor() {
-		super();
-		// this._trace = FaTrace.trace(1);
-	}
-
-	/**
-	 *
 	 * @return {string|null}
 	 * @private
 	 */
-	get _getLimit() {
-		if (this._limit) {
-			return `LIMIT ${this._limit} `;
+	get _limit() {
+		if (this._prop_limit) {
+			return `LIMIT ${this._prop_limit} `;
 		} else {
 			return null;
 		}
 	}
 
 	/**
-	 *
 	 * @return {string|null}
 	 * @private
 	 */
-	get _getOffset() {
-		if (this._offset) {
-			return `OFFSET ${this._offset} `;
+	get _offset() {
+		if (this._prop_offset) {
+			return `OFFSET ${this._prop_offset} `;
 		} else {
 			return null;
 		}
 	}
 
-	/**
-	 *
-	 * @return {Object}
-	 */
+	/** @return {Object} */
 	async findOne() {
 		let trace = FaTrace.trace(1);
 		try {
@@ -50,7 +37,7 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 			if (!this._getLimit) {
 				this.limit(1);
 			}
-			let result = await this.daoClient.execute(this.query);
+			let result = await this.daoClient.execute(this._sql);
 			await this.daoClient.close();
 			if (result && result[0]) {
 				return result[0];
@@ -62,15 +49,12 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 		}
 	}
 
-	/**
-	 *
-	 * @return {Array}
-	 */
+	/** @return {Array} */
 	async findMany() {
 		let trace = FaTrace.trace(1);
 		try {
 			await this.daoClient.open();
-			let result = await this.daoClient.execute(this.query);
+			let result = await this.daoClient.execute(this._sql);
 			await this.daoClient.close();
 			if (result && result.length) {
 				return result;
