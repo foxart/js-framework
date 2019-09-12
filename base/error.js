@@ -26,6 +26,13 @@ class FaError extends Error {
 	}
 
 	/**
+	 * @return {string}
+	 */
+	getName() {
+		return this.name;
+	}
+
+	/**
 	 *
 	 * @param name {string}
 	 * @return {FaError}

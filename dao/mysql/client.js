@@ -17,7 +17,7 @@ class FaDaoMysqlClient extends FaDaoClient {
 	 * @return {FaError}
 	 */
 	error(error) {
-		 // noinspection JSUnusedLocalSymbols
+		// noinspection JSUnusedLocalSymbols
 		let {code, errno, sqlMessage, sqlState, index, sql, fatal} = error;
 		if (code && sqlMessage) {
 			return new FaError({

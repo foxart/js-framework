@@ -6,27 +6,25 @@ const FaDaoModelQuery = require("fa-nodejs/dao/model-query");
 
 class FaDaoMysqlModel extends FaDaoModelQuery {
 	/**
-	 * @return {string|null}
-	 * @private
+	 * @param limit {Number}
+	 * @return {FaDaoMysqlModel}
 	 */
-	get _limit() {
-		if (this._prop_limit) {
-			return `LIMIT ${this._prop_limit} `;
-		} else {
-			return null;
+	limit(limit) {
+		if (limit) {
+			this._query.push(`LIMIT ${limit}`);
 		}
+		return this;
 	}
 
 	/**
-	 * @return {string|null}
-	 * @private
+	 * @param offset {Number}
+	 * @return {FaDaoMysqlModel}
 	 */
-	get _offset() {
-		if (this._prop_offset) {
-			return `OFFSET ${this._prop_offset} `;
-		} else {
-			return null;
+	offset(offset) {
+		if (offset) {
+			this._query.push(`OFFSET ${offset}`);
 		}
+		return this;
 	}
 
 	/** @return {Object} */
@@ -34,9 +32,6 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 		let trace = FaTrace.trace(1);
 		try {
 			await this.daoClient.open();
-			if (!this._getLimit) {
-				this.limit(1);
-			}
 			let result = await this.daoClient.execute(this._sql);
 			await this.daoClient.close();
 			if (result && result[0]) {
@@ -45,6 +40,7 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 				return null;
 			}
 		} catch (e) {
+			await this.daoClient.close();
 			throw new FaError(e).prependTrace(trace);
 		}
 	}
@@ -62,6 +58,7 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 				return [];
 			}
 		} catch (e) {
+			await this.daoClient.close();
 			throw new FaError(e).prependTrace(trace);
 		}
 	}

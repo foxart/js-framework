@@ -3,6 +3,10 @@ const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
 
 class FaTwig {
+	/**
+	 * @constructor
+	 * @param pathname
+	 */
 	constructor(pathname) {
 		this._FaFile = new FaFile(pathname);
 	}
@@ -51,16 +55,17 @@ class FaTwig {
 		}
 	}
 
-	get result() {
-		if (this._result["main"][0]) {
-			return this._result["main"][0];
-		} else {
-			return this._content;
-		}
-	}
-
 	reset() {
 		this._result = this._getResult;
+	}
+
+	/**
+	 *
+	 * @return {FaTwig}
+	 */
+	set(variables = {}) {
+		this._fill("main", "/", variables);
+		return this;
 	}
 
 	/**
@@ -92,12 +97,15 @@ class FaTwig {
 
 	/**
 	 *
-	 * @param variables
-	 * @return {FaTwig}
+	 * @return {String}
 	 */
-	build(variables = {}) {
-		this._fill("main", "/", variables);
-		return this;
+	get build() {
+		this._fill("main", "/",{});
+		if (this._result["main"][0]) {
+			return this._result["main"][0];
+		} else {
+			return this._content;
+		}
 	}
 
 	_fill(type, name, variables, prefix = "") {
@@ -138,7 +146,6 @@ class FaTwig {
 					source[value] = self._result["for"][key].join("\n");
 					self._result["for"][key] = pointer["source"][key];
 				}
-
 			});
 			result.push(source.join("\n"));
 		} else {
@@ -256,7 +263,6 @@ class FaTwig {
 			exec = regularVariable.exec(item);
 		}
 	}
-
 
 	_parseText(item, type) {
 		let pointer;

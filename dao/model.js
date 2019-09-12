@@ -6,6 +6,47 @@ const FaError = require("fa-nodejs/base/error");
 const FaDaoAttribute = require("fa-nodejs/dao/attribute");
 
 class FaDaoModel {
+	/** @constructor */
+	constructor() {
+		this._error = null;
+		this._result = null;
+	}
+
+	/**
+	 * @return {boolean}
+	 */
+	hasError() {
+		return !!this._error;
+	}
+
+	/**
+	 * @param error {string|FaError}
+	 */
+	setError(error) {
+		this._error = new FaError(error);
+	}
+
+	/**
+	 * @return {FaError}
+	 */
+	getError() {
+		return this._error;
+	}
+
+	/**
+	 * @param result {Array<Object>|Object|null}
+	 */
+	setResult(result) {
+		this._result = result;
+	}
+
+	/**
+	 * @return {Array<Object>|Object|null}
+	 */
+	getResult() {
+		return this._result;
+	}
+
 	// noinspection JSMethodCanBeStatic
 	/**
 	 * @return {Array}
@@ -25,6 +66,10 @@ class FaDaoModel {
 		return this._FaDaoAttribute;
 	}
 
+	/**
+	 * @param data
+	 * @return {Object|Array<Object>}
+	 */
 	load(data) {
 		return this._FaDaoAttribute.fill(data);
 	}

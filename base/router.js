@@ -9,8 +9,8 @@ class FaRouterClass {
 	 */
 	constructor(executor) {
 		this._handler_list = {};
+
 		this._constructor = function (callback) {
-			// console.log(callback);
 			return function () {
 				return callback.apply(executor, arguments);
 			};
@@ -50,7 +50,8 @@ class FaRouterClass {
 	 */
 	attach(route, callback) {
 		if (this.exist(route) === false) {
-			this._handler_list[route] = new this._constructor(callback);
+			// this._handler_list[route] = new this._constructor(callback);
+			this._handler_list[route] = this._constructor(callback);
 		} else {
 			throw new FaError(`duplicate handler for route: ${route}`);
 		}
