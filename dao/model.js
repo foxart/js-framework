@@ -16,7 +16,7 @@ class FaDaoModel {
 	 * @return {boolean}
 	 */
 	hasError() {
-		return !!this._error;
+		return this._error !== null;
 	}
 
 	/**
