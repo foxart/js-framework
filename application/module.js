@@ -112,7 +112,7 @@ class FaApplicationModule {
 				// console.info(Asset.css);
 				Asset.css.map(function (item) {
 					self._FaHttp.asset.attach(Asset.getCssUrl(item), async function () {
-						console.warn([Asset.getCssUrl(item), Asset.getCssPath(item)]);
+						// console.warn([Asset.getCssUrl(item), Asset.getCssPath(item)]);
 						return Asset.readCss(item);
 					});
 				});

@@ -188,6 +188,7 @@ class FaCurl {
 			headers: this.options.headers,
 			encoding: this.options.encoding,
 		};
+		console.info("curl", curl);
 		return new Promise(function (resolve, reject) {
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
@@ -196,7 +197,6 @@ class FaCurl {
 			} else {
 				curl.path = `${curl.path}?${FaConverter.toUrlEncoded(data)}`;
 			}
-			// console.log(2, body);
 			// let enc = FaConverter.toUrlEncoded({a: "раз", b: [1, "два"]});
 			// let dec = FaConverter.fromUrlEncoded(enc);
 			// console.info(enc, dec);
@@ -222,6 +222,7 @@ class FaCurl {
 					body += chunk;
 				});
 				res.on("end", function () {
+					console.error("body", body);
 					let data = FaCurl._dataFromType(body, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
 					// console.log(3, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
 					resolve(FaHttpResponse.create(data, res.statusCode, res.headers));
