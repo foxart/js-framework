@@ -1,7 +1,9 @@
 /*https://nodejs.org/api/http.html#http_class_http_clientrequest*/
 "use strict";
 /*node*/
+/** @type {module:http} */
 const Http = require('http');
+/** @type {module:https} */
 const Https = require('https');
 /*fa*/
 const FaBaseAdapter = require("fa-nodejs/base/adapter");
@@ -186,8 +188,6 @@ class FaCurl {
 			headers: this.options.headers,
 			encoding: this.options.encoding,
 		};
-		console.info(curl);
-		// checkHost(model).then(function () {
 		return new Promise(function (resolve, reject) {
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
@@ -200,6 +200,9 @@ class FaCurl {
 			// let enc = FaConverter.toUrlEncoded({a: "раз", b: [1, "два"]});
 			// let dec = FaConverter.fromUrlEncoded(enc);
 			// console.info(enc, dec);
+			/**
+			 *
+			 */
 			let req = self.options.protocol === "https" ? Https.request(curl) : Http.request(curl);
 			if (body) {
 				req.write(body);

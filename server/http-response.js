@@ -4,7 +4,7 @@ class FaHttpResponse {
 	/**
 	 *
 	 * @param body {Buffer|Object|String|null}
-	 * @param status {FaHttpStatusCode}
+	 * @param status {FaHttpStatusCode|number|null}
 	 * @param headers {Object|String|null}
 	 * @param type {String|null}
 	 */
