@@ -186,6 +186,7 @@ class FaCurl {
 			headers: this.options.headers,
 			encoding: this.options.encoding,
 		};
+		console.info(curl);
 		// checkHost(model).then(function () {
 		return new Promise(function (resolve, reject) {
 			let body;
