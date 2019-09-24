@@ -223,7 +223,7 @@ class FaCurl {
 					body += chunk;
 				});
 				res.on("end", function () {
-					console.error("body", body);
+					// console.error("body", body);
 					let data = FaCurl._dataFromType(body, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
 					// console.log(3, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
 					resolve(FaHttpResponse.create(data, res.statusCode, res.headers));
