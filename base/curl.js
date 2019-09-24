@@ -188,7 +188,7 @@ class FaCurl {
 			headers: this.options.headers,
 			encoding: this.options.encoding,
 		};
-		console.info("curl", curl);
+		// console.info("curl", curl);
 		return new Promise(function (resolve, reject) {
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
@@ -206,6 +206,7 @@ class FaCurl {
 			let req = self.options.protocol === "https" ? Https.request(curl) : Http.request(curl);
 			if (body) {
 				req.write(body);
+
 			}
 			req.on("socket", function (Socket) {
 				// self.options.timeout = 1;
