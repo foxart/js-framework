@@ -100,7 +100,7 @@ class FaTwig {
 	 * @return {String}
 	 */
 	get build() {
-		this._fill("main", "/",{});
+		this._fill("main", "/", {});
 		if (this._result["main"][0]) {
 			return this._result["main"][0];
 		} else {
@@ -298,10 +298,5 @@ class FaTwig {
 	}
 }
 
-/**
- *
- * @type {FaTwig}
- */
+/** @class {FaTwig} */
 module.exports = FaTwig;
-
-

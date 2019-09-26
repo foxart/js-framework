@@ -4,9 +4,9 @@
 const FaTrace = require("fa-nodejs/base/trace");
 const FaError = require("fa-nodejs/base/error");
 const FaFile = require("fa-nodejs/base/file");
-/** @member {Class|FaHttpResponse} */
-const FaHttpResponse = require("fa-nodejs/server/http-response");
 
+/** @member {Class|FaHttpResponse} */
+// const FaHttpResponse = require("fa-nodejs/server/http-response");
 // const FaBaseTrace = require("fa-nodejs/base/trace");
 class FaApplicationModule {
 	/**
@@ -33,6 +33,10 @@ class FaApplicationModule {
 		this._controller_list = {};
 		this._loadModules(require(`${pathname}/configuration/application.js`));
 		this._loadAssets();
+	}
+
+	get name() {
+		return this.constructor.name;
 	}
 
 	test() {
@@ -342,14 +346,23 @@ class FaApplicationModule {
 		let controllerAction = this._controllerMethodToAction(action);
 		if (Controller[controllerAction]) {
 			this._FaHttp.router.attach(uri, async function (req) {
-				// console.info(this);
-				let data = await Controller[controllerAction].apply(Controller, arguments);
+				let data;
+				let mixins = Controller["mixins"]();
+				let rbac = self._handleRbac(req, action, mixins["rbac"]);
+				console.error([rbac]);
+				if (rbac === true) {
+					data = await Controller[controllerAction].apply(Controller, arguments);
+				} else {
+					data = rbac;
+				}
+				// console.warn(data);
 				// let data = await Controller[controllerAction].call(Controller, req);
 				if (data && data["type"] === "layout") {
 					let Layout = self._loadLayout(layout);
 					let layoutRender = self._layoutMethodToRender(render);
 					if (Layout[layoutRender]) {
-						return Layout[layoutRender].call(Layout, data);
+						// return Layout[layoutRender].call(Layout, data);
+						return Layout[layoutRender](data);
 					} else {
 						throw new FaError(`${layoutRender} not implemented in ${self._layoutFilename(module)}`);
 					}
@@ -358,9 +371,55 @@ class FaApplicationModule {
 				}
 			});
 		} else {
-			throw new FaError(`${controllerAction} not implemented in ${this._controllerFilename(module, controller)}`);
+			throw new FaError(`${controllerAction} not implemented in ${this._controllerFilename(module, controller)}`).setName(this.name);
 		}
 		// }
+	}
+
+	// noinspection JSMethodCanBeStatic
+	_handleRbac(req, action, rbac) {
+		// access["class"] = access["class"].name;
+		// let result = {
+		// 	authentication: null,
+		// 	authorization: null,
+		// };
+		let authentication = rbac["class"].check(req);
+		// console.info(authentication, action);
+		let result = false;
+		for (let i = 0, count = rbac['rules'].length; i < count; i++) {
+			// let rule = rbac['rules'][i];
+			let {allow, actions, roles} = rbac['rules'][i];
+			if (roles.has('?')) {
+				result = !!actions.has(action);
+			} else if (roles.has('@')) {
+				console.warn(roles, authentication)
+			}
+			// if (rule["actions"].has(action)) {
+			// 	// console.info(rule, action);
+			// 	if (rule["roles"].has('?')) {
+			// 		return null;
+			// 	} else if (rule["roles"].has('@')) {
+			// 		if (authentication) {
+			// 			return null;
+			// 		} else {
+			// 			return "XXX";
+			// 		}
+			// 	}
+			// } else {
+			// 	if (authentication) {
+			// 		return rbac["class"].forbidden(action);
+			// 	} else {
+			// 		return rbac["class"].unauthorized();
+			// 	}
+			// }
+			// console.warn(result);
+			if (allow && result) {
+				break;
+			}
+		}
+		console.info(result);
+		// result = rbac["class"].unauthorized();
+		return result
 	}
 }
 

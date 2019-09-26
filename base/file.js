@@ -14,14 +14,13 @@
 const Fs = require("fs");
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
-/** @member {FaTrace|Class} */
 const FaTrace = require("fa-nodejs/base/trace");
 /*variables*/
 const ErrorExpression = new RegExp("^(.+): (.+)$");
 
 class FaFile {
 	/**
-	 *
+	 * @constructor
 	 * @param pathname {string|null}
 	 */
 	constructor(pathname = null) {
@@ -214,8 +213,5 @@ class FaFile {
 	}
 }
 
-/**
- *
- * @type {FaFile}
- */
+/** @class {FaFile} */
 module.exports = FaFile;

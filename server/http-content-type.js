@@ -64,8 +64,5 @@ class FaHttpContentType {
 	}
 }
 
-/**
- *
- * @type {FaHttpContentType|Class}
- */
+/** @class {FaHttpContentType} */
 module.exports = FaHttpContentType;

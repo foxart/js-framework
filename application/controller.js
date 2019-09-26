@@ -10,12 +10,16 @@ const FaHttpResponse = require("fa-nodejs/server/http-response");
 const FaHttpStatusCode = require("fa-nodejs/server/http-status-code");
 
 class FaController {
+	get name() {
+		return this.constructor.name;
+	}
+
 	/**
-	 *
+	 * @constructor
 	 * @param pathname {string|null}
 	 */
 	constructor(pathname = null) {
-		this.name = "CONTROLLER";
+		// this.name = "CONTROLLER";
 		// this._FaServer = FaServerHttp;
 		this._FaHttpContentType = FaHttpContentType;
 		this._FaHttpStatusCode = new FaHttpStatusCode();
@@ -28,7 +32,6 @@ class FaController {
 
 	// noinspection JSMethodCanBeStatic
 	/**
-	 *
 	 * @return {string|null}
 	 * @private
 	 */
@@ -44,17 +47,30 @@ class FaController {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
+	/**
+	 * @return {{}}
+	 */
+	mixins() {
+		return {
+			'rbac': {
+				'class': `Authentication`,
+				'authentication': {
+					'rules': [],
+				},
+				'authorization': {
+					'rules': [],
+				},
+			},
+		};
+	}
 
-	// get http() {
-	// 	return this._FaServer;
-	// }
 	// noinspection JSMethodCanBeStatic
 	get contentType() {
 		return FaHttpContentType;
 	}
 
 	/**
-	 *
 	 * @return {FaHttpStatusCode}
 	 */
 	get statusCode() {
@@ -62,7 +78,6 @@ class FaController {
 	}
 
 	/**
-	 *
 	 * @return {FaTwig}
 	 */
 	get twig() {
@@ -73,7 +88,6 @@ class FaController {
 	}
 
 	/**
-	 *
 	 * @param name
 	 * @return {FaTemplate}
 	 * @deprecated
@@ -90,44 +104,41 @@ class FaController {
 		}
 	}
 
-
 	/**
-	 *
 	 * @param location {string|null}
 	 * @return {*}
 	 */
 	redirect(location = null) {
+		// console.info(location);
 		return FaHttpResponse.create(null, this.statusCode.found, {
-			"Location": location ? location : "/",
+			"Location": location ? location : "/"
 		});
 	}
 
 	/**
-	 *
-	 * @param location {String|null}
+	 * @param location {string|null}
+	 * @param status {FaHttpStatusCode}
 	 * @param headers {Object}
 	 * @return {*}
 	 */
-	redirectCustom(location = null, headers = null) {
-		return FaHttpResponse.create(null, this.statusCode.found, Object.assign(headers, {
-			"Location": location ? location : "/",
+	redirectCustom(location = null, status = null, headers = {}) {
+		console.warn(location);
+		return FaHttpResponse.create(null, status ? status : this.statusCode.found, Object.assign(headers, {
+			"Location": location ? location : "/"
 		}));
 	}
 
 	/**
-	 *
 	 * @param body {*}
 	 * @param status {FaHttpStatusCode}
 	 * @return {*}
 	 */
 	render(body = null, status = null) {
-		// return this._response.create(body, status, this.contentType.html, "layout");
 		return FaHttpResponse.create(body, status, this.contentType.html, "layout");
 	}
 
 	// noinspection JSMethodCanBeStatic
 	/**
-	 *
 	 * @param body {*}
 	 * @param status {FaHttpStatusCode}
 	 * @param headers {object}
@@ -138,7 +149,6 @@ class FaController {
 	}
 
 	/**
-	 *
 	 * @param body {Object}
 	 * @param status {FaHttpStatusCode}
 	 * @return {*}
@@ -148,7 +158,6 @@ class FaController {
 	}
 
 	/**
-	 * @deprecated
 	 * @param body {Object}
 	 * @param status {FaHttpStatusCode}
 	 * @return {*}
@@ -158,7 +167,6 @@ class FaController {
 	}
 
 	/**
-	 *
 	 * @param body {Object}
 	 * @param status {FaHttpStatusCode}
 	 * @return {*}

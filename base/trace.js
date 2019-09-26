@@ -133,8 +133,5 @@ class FaTrace {
 	// }
 }
 
-/**
- *
- * @class {FaTrace}
- */
+/** @class {FaTrace} */
 module.exports = FaTrace;

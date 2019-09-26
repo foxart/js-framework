@@ -1,9 +1,13 @@
 "use strict";
-const FaError = require("fa-nodejs/base/error");
-const FaFile = require("fa-nodejs/base/file");
-const FaTrace = require("fa-nodejs/base/trace");
-
+// const FaError = require("fa-nodejs/base/error");
+// const FaFile = require("fa-nodejs/base/file");
+// const FaTrace = require("fa-nodejs/base/trace");
 class FaTemplate {
+	/** @constructor */
+	constructor() {
+		this._template = [];
+	}
+
 	get get() {
 		return this._content;
 	}
@@ -53,6 +57,7 @@ class FaTemplate {
 		this.block("/", variables);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	get _pattern() {
 		return {
 			structure: [],
@@ -63,6 +68,7 @@ class FaTemplate {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	_parseComment(item, list, result) {
 		// let regularComment = /{#(.+)#}/;
 		// let comment = item.match(regularComment);
@@ -75,6 +81,7 @@ class FaTemplate {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	_parseVariable(item, list, result) {
 		let regularVariable = new RegExp("{{ ([^{}]+) }}", "g");
 		let variable = regularVariable.exec(item);
@@ -131,6 +138,6 @@ class FaTemplate {
 
 /**
  *
- * @type {FaTemplate}
+ * @class {FaTemplate}
  */
 module.exports = FaTemplate;

@@ -21,8 +21,5 @@ class FaHttpStatusCode {
 	}
 }
 
-/**
- *
- * @type {FaHttpStatusCode}
- */
+/** @class {FaHttpStatusCode} */
 module.exports = FaHttpStatusCode;
