@@ -349,7 +349,7 @@ class FaApplicationModule {
 				let data;
 				let mixins = Controller["mixins"]();
 				let rbac = self._handleRbac(req, action, mixins["rbac"]);
-				console.error([rbac]);
+				console.log([rbac]);
 				if (rbac === true) {
 					data = await Controller[controllerAction].apply(Controller, arguments);
 				} else {
@@ -379,47 +379,70 @@ class FaApplicationModule {
 	// noinspection JSMethodCanBeStatic
 	_handleRbac(req, action, rbac) {
 		// access["class"] = access["class"].name;
-		// let result = {
-		// 	authentication: null,
-		// 	authorization: null,
-		// };
-		let authentication = rbac["class"].check(req);
+		let Authentication = rbac["class"];
+		let authenticated = rbac["class"].check(req);
 		// console.info(authentication, action);
-		let result = false;
+		let result = true;
+		let interrupt = false;
 		for (let i = 0, count = rbac['rules'].length; i < count; i++) {
-			// let rule = rbac['rules'][i];
-			let {allow, actions, roles} = rbac['rules'][i];
-			if (roles.has('?')) {
-				result = !!actions.has(action);
-			} else if (roles.has('@')) {
-				console.warn(roles, authentication)
+			let {access, actions, roles} = rbac['rules'][i];
+			console.info(actions);
+			if (!actions) {
+				if (roles.has('?')) {
+				} else if (roles.has('@')) {
+				}
+			} else {
+				if (actions.has(action)) {
+					if (roles.has('?')) {
+						if (access === true) {
+							// if (authentication === true) {
+							// 	result = rbac["class"].forbidden(action);
+							// } else {
+							// 	result = true;
+							// }
+							result = this._handleRbacForbidden(Authentication, authenticated, action);
+						} else {
+							if (authenticated === true) {
+								result = true;
+							} else {
+								result = rbac["class"].unauthorized();
+							}
+						}
+						interrupt = true;
+					} else if (roles.has('@')) {
+						if (access === true) {
+							if (authenticated === true) {
+								result = true;
+							} else {
+								result = rbac["class"].unauthorized();
+							}
+						} else {
+							// if (authenticated === true) {
+							// 	result = rbac["class"].forbidden(action);
+							// } else {
+							// 	result = true;
+							// }
+							result = this._handleRbacForbidden(Authentication, authenticated, action);
+						}
+						interrupt = true;
+					}
+					if (interrupt) {
+						break;
+					}
+				}
 			}
-			// if (rule["actions"].has(action)) {
-			// 	// console.info(rule, action);
-			// 	if (rule["roles"].has('?')) {
-			// 		return null;
-			// 	} else if (rule["roles"].has('@')) {
-			// 		if (authentication) {
-			// 			return null;
-			// 		} else {
-			// 			return "XXX";
-			// 		}
-			// 	}
-			// } else {
-			// 	if (authentication) {
-			// 		return rbac["class"].forbidden(action);
-			// 	} else {
-			// 		return rbac["class"].unauthorized();
-			// 	}
-			// }
-			// console.warn(result);
-			if (allow && result) {
-				break;
-			}
+			console.error(roles, actions, action, interrupt, result);
 		}
-		console.info(result);
-		// result = rbac["class"].unauthorized();
 		return result
+	}
+
+	// noinspection JSMethodCanBeStatic
+	_handleRbacForbidden(Rbac, authenticated, action) {
+		if (authenticated === true) {
+			return Rbac.forbidden(action);
+		} else {
+			return true;
+		}
 	}
 }
 
