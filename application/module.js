@@ -349,7 +349,7 @@ class FaApplicationModule {
 				let data;
 				let mixins = Controller["mixins"]();
 				let rbac = self._handleRbac(req, action, mixins["rbac"]);
-				console.log([rbac]);
+				// console.log([rbac]);
 				if (rbac === true) {
 					data = await Controller[controllerAction].apply(Controller, arguments);
 				} else {
@@ -380,13 +380,13 @@ class FaApplicationModule {
 	_handleRbac(req, action, rbac) {
 		// access["class"] = access["class"].name;
 		let Authentication = rbac["class"];
-		let authenticated = rbac["class"].check(req);
+		let authenticated = rbac["class"].sessioCheck(req);
 		// console.info(authentication, action);
 		let result = true;
 		let interrupt = false;
 		for (let i = 0, count = rbac['rules'].length; i < count; i++) {
 			let {access, actions, roles} = rbac['rules'][i];
-			console.info(actions);
+			// console.info(actions);
 			if (!actions) {
 				if (roles.has('?')) {
 				} else if (roles.has('@')) {
@@ -395,11 +395,6 @@ class FaApplicationModule {
 				if (actions.has(action)) {
 					if (roles.has('?')) {
 						if (access === true) {
-							// if (authentication === true) {
-							// 	result = rbac["class"].forbidden(action);
-							// } else {
-							// 	result = true;
-							// }
 							result = this._handleRbacForbidden(Authentication, authenticated, action);
 						} else {
 							if (authenticated === true) {
@@ -417,11 +412,6 @@ class FaApplicationModule {
 								result = rbac["class"].unauthorized();
 							}
 						} else {
-							// if (authenticated === true) {
-							// 	result = rbac["class"].forbidden(action);
-							// } else {
-							// 	result = true;
-							// }
 							result = this._handleRbacForbidden(Authentication, authenticated, action);
 						}
 						interrupt = true;
@@ -431,7 +421,7 @@ class FaApplicationModule {
 					}
 				}
 			}
-			console.error(roles, actions, action, interrupt, result);
+			// console.error(roles, actions, action, interrupt, result);
 		}
 		return result
 	}

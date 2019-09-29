@@ -116,10 +116,11 @@ class FaController {
 	}
 
 	/**
+	 *
 	 * @param location {string|null}
 	 * @param status {FaHttpStatusCode}
 	 * @param headers {Object}
-	 * @return {*}
+	 * @returns {{headers: {}, body: (string|*), type: *, status: number}}
 	 */
 	redirectCustom(location = null, status = null, headers = {}) {
 		console.warn(location);

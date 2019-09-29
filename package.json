@@ -11,6 +11,7 @@
 		"url": "git+https://github.com/foxart/fa-nodejs.git"
 	},
 	"dependencies": {
+		"browser-detect": "^0.2.28",
 		"date-and-time": "^0.6.3",
 		"fast-xml-parser": "3.2.0",
 		"file-type": "^10.11.0",

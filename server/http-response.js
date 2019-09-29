@@ -7,6 +7,7 @@ class FaHttpResponse {
 	 * @param status {FaHttpStatusCode|number|null}
 	 * @param headers {Object|String|null}
 	 * @param type {String|null} layout
+	 * @returns {{headers: {}, body: (string|*), type: *, status: number}}
 	 */
 	static create(body = null, status = null, headers = null, type = null) {
 		let result = {
