@@ -462,8 +462,8 @@ class FaApplicationModule {
 		if (authenticated === true) {
 			return true;
 		} else {
-			// return Rbac.unauthorized(action);
-			return true;
+			return Rbac.unauthorized(action);
+			// return true;
 		}
 	}
 }
