@@ -379,51 +379,73 @@ class FaApplicationModule {
 	// noinspection JSMethodCanBeStatic
 	_handleRbac(req, action, rbac) {
 		// access["class"] = access["class"].name;
+		let self = this;
 		let Authentication = rbac["class"];
-		let authenticated = rbac["class"].sessioCheck(req);
+		let authenticated = rbac["class"].sessionCheck(req);
 		// console.info(authentication, action);
 		let result = true;
-		let interrupt = false;
-		for (let i = 0, count = rbac['rules'].length; i < count; i++) {
-			let {access, actions, roles} = rbac['rules'][i];
-			// console.info(actions);
-			if (!actions) {
+		// for (let i = 0, count = rbac['rules'].length; i < count; i++) {
+		// let {access, actions, roles} = rbac['rules'][i];
+		let res = rbac["rules"].every(function (rule) {
+			// console.info(rule)
+			let {access, actions, roles} = rule;
+			// console.info(actions, roles, action, result);
+			if (actions === "*") {
 				if (roles.has('?')) {
+					if (access === true) {
+						result = self._handleRbacForbidden(Authentication, authenticated, action);
+					} else {
+						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
+					}
 				} else if (roles.has('@')) {
+					if (access === true) {
+						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
+					} else {
+						result = self._handleRbacForbidden(Authentication, authenticated, action);
+					}
 				}
+				return false;
+			} else if (actions.has(action)) {
+				if (roles.has('?')) {
+					if (access === true) {
+						result = self._handleRbacForbidden(Authentication, authenticated, action);
+						console.info(actions, roles, action, result);
+					} else {
+						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
+					}
+				} else if (roles.has('@')) {
+					if (access === true) {
+						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
+					} else {
+						result = self._handleRbacForbidden(Authentication, authenticated, action);
+					}
+				}
+				return false;
 			} else {
-				if (actions.has(action)) {
-					if (roles.has('?')) {
-						if (access === true) {
-							result = this._handleRbacForbidden(Authentication, authenticated, action);
-						} else {
-							if (authenticated === true) {
-								result = true;
-							} else {
-								result = rbac["class"].unauthorized();
-							}
-						}
-						interrupt = true;
-					} else if (roles.has('@')) {
-						if (access === true) {
-							if (authenticated === true) {
-								result = true;
-							} else {
-								result = rbac["class"].unauthorized();
-							}
-						} else {
-							result = this._handleRbacForbidden(Authentication, authenticated, action);
-						}
-						interrupt = true;
-					}
-					if (interrupt) {
-						break;
-					}
-				}
+				return true;
 			}
-			// console.error(roles, actions, action, interrupt, result);
+		});
+		console.log(res, result);
+		return result;
+	}
+
+
+	_handleRbacAction(Rbac, authenticated, action){
+		let result = null;
+		if (roles.has('?')) {
+			if (access === true) {
+				result = self._handleRbacForbidden(Rbac, authenticated, action);
+			} else {
+				result = self._handleRbacUnauthorized(Rbac, authenticated, action);
+			}
+		} else if (roles.has('@')) {
+			if (access === true) {
+				result = self._handleRbacUnauthorized(Rbac, authenticated, action);
+			} else {
+				result = self._handleRbacForbidden(Rbac, authenticated, action);
+			}
 		}
-		return result
+		return result;
 	}
 
 	// noinspection JSMethodCanBeStatic
@@ -431,6 +453,16 @@ class FaApplicationModule {
 		if (authenticated === true) {
 			return Rbac.forbidden(action);
 		} else {
+			return true;
+		}
+	}
+
+	// noinspection JSMethodCanBeStatic
+	_handleRbacUnauthorized(Rbac, authenticated, action) {
+		if (authenticated === true) {
+			return true;
+		} else {
+			// return Rbac.unauthorized(action);
 			return true;
 		}
 	}
