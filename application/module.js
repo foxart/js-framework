@@ -470,3 +470,4 @@ class FaApplicationModule {
 
 /** @class {FaApplicationModule} */
 module.exports = FaApplicationModule;
+
