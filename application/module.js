@@ -468,8 +468,5 @@ class FaApplicationModule {
 	}
 }
 
-/**
- *
- * @type {FaApplicationModule}
- */
+/** @class {FaApplicationModule} */
 module.exports = FaApplicationModule;
