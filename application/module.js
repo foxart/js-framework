@@ -349,11 +349,10 @@ class FaApplicationModule {
 				let data;
 				let mixins = Controller["mixins"]();
 				let rbac = self._handleRbac(req, action, mixins["rbac"]);
-				// console.log([rbac]);
-				if (rbac === true) {
-					data = await Controller[controllerAction].apply(Controller, arguments);
-				} else {
+				if (rbac) {
 					data = rbac;
+				} else {
+					data = await Controller[controllerAction].apply(Controller, arguments);
 				}
 				// console.warn(data);
 				// let data = await Controller[controllerAction].call(Controller, req);
@@ -380,91 +379,58 @@ class FaApplicationModule {
 	_handleRbac(req, action, rbac) {
 		// access["class"] = access["class"].name;
 		let self = this;
-		let Authentication = rbac["class"];
-		let authenticated = rbac["class"].sessionCheck(req);
-		// console.info(authentication, action);
-		let result = true;
-		// for (let i = 0, count = rbac['rules'].length; i < count; i++) {
-		// let {access, actions, roles} = rbac['rules'][i];
-		let res = rbac["rules"].every(function (rule) {
-			// console.info(rule)
+		let Rbac = rbac["class"];
+		let session = Rbac.sessionCheck(req);
+		// let forbidden= Rbac.forbidden;
+		// let unauthorized = Rbac.unauthorized;
+		let result = undefined;
+		let res = rbac["rules"].some(function (rule) {
+			// console.info(rule);
 			let {access, actions, roles} = rule;
-			// console.info(actions, roles, action, result);
+			// console.warn(actions, roles, action, result);
 			if (actions === "*") {
-				if (roles.has('?')) {
-					if (access === true) {
-						result = self._handleRbacForbidden(Authentication, authenticated, action);
-					} else {
-						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
-					}
-				} else if (roles.has('@')) {
-					if (access === true) {
-						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
-					} else {
-						result = self._handleRbacForbidden(Authentication, authenticated, action);
-					}
-				}
-				return false;
-			} else if (actions.has(action)) {
-				if (roles.has('?')) {
-					if (access === true) {
-						result = self._handleRbacForbidden(Authentication, authenticated, action);
-						console.info(actions, roles, action, result);
-					} else {
-						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
-					}
-				} else if (roles.has('@')) {
-					if (access === true) {
-						result = self._handleRbacUnauthorized(Authentication, authenticated, action);
-					} else {
-						result = self._handleRbacForbidden(Authentication, authenticated, action);
-					}
-				}
-				return false;
-			} else {
+				// console.info(actions, roles, action, result);
+				result = self._handleRbacAction(Rbac, session, access, roles, action);
 				return true;
+			} else if (actions.has(action)) {
+				// console.info(actions, roles, action, result);
+				result = self._handleRbacAction(Rbac, session, access, roles, action);
+				return true;
+			} else {
+				// result = null;
+				return false;
 			}
 		});
-		console.log(res, result);
+		console.log(res, action, result);
 		return result;
 	}
 
-
-	_handleRbacAction(Rbac, authenticated, action){
-		let result = null;
+	_handleRbacAction(Rbac, session, access, roles, action) {
+		let result = undefined;
 		if (roles.has('?')) {
 			if (access === true) {
-				result = self._handleRbacForbidden(Rbac, authenticated, action);
+				result = this._handleRbacForbidden(Rbac, session, action);
 			} else {
-				result = self._handleRbacUnauthorized(Rbac, authenticated, action);
+				result = this._handleRbacUnauthorized(Rbac, session, action);
 			}
 		} else if (roles.has('@')) {
 			if (access === true) {
-				result = self._handleRbacUnauthorized(Rbac, authenticated, action);
+				result = this._handleRbacUnauthorized(Rbac, session, action);
 			} else {
-				result = self._handleRbacForbidden(Rbac, authenticated, action);
+				result = this._handleRbacForbidden(Rbac, session, action);
 			}
 		}
 		return result;
 	}
 
 	// noinspection JSMethodCanBeStatic
-	_handleRbacForbidden(Rbac, authenticated, action) {
-		if (authenticated === true) {
-			return Rbac.forbidden(action);
-		} else {
-			return true;
-		}
+	_handleRbacForbidden(Rbac, session, action) {
+		return session === true ? Rbac.forbidden(action) : undefined;
 	}
 
 	// noinspection JSMethodCanBeStatic
-	_handleRbacUnauthorized(Rbac, authenticated, action) {
-		if (authenticated === true) {
-			return true;
-		} else {
-			return Rbac.unauthorized(action);
-			// return true;
-		}
+	_handleRbacUnauthorized(Rbac, session, action) {
+		return session === true ? undefined : Rbac.unauthorized(action);
 	}
 }
 

@@ -20,10 +20,12 @@ class FaHttpResponse {
 		if (status) {
 			result.status = status;
 		}
-		if (headers && typeof headers === "string") {
-			result.headers["Content-Type"] = headers;
-		} else if (headers && typeof headers === "object") {
-			result.headers = headers;
+		if (headers) {
+			if (typeof headers === "string") {
+				result.headers["Content-Type"] = headers;
+			} else if (typeof headers === "object") {
+				result.headers = headers;
+			}
 		}
 		// console.info(result);
 		return result;
@@ -109,7 +111,6 @@ class FaHttpResponse {
 	renderXml(body, status = null) {
 		return FaHttpResponse.create(body, status, this.contentType.xml);
 	}
-
 }
 
 /** @class {FaHttpResponse} */
