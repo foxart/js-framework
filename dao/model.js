@@ -12,39 +12,34 @@ class FaDaoModel {
 		this._result = null;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
+	 *
+	 * @param error
 	 * @return {boolean}
 	 */
-	hasError() {
-		return this._error !== null;
+	isError(error) {
+		return error instanceof FaError;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
-	 * @param error {string|FaError}
-	 */
-	setError(error) {
-		this._error = new FaError(error);
-	}
-
-	/**
+	 *
+	 * @param error
 	 * @return {FaError}
 	 */
-	getError() {
-		return this._error;
+	setError(error) {
+		return new FaError(error);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
-	 * @param result {Array<Object>|Object|null}
+	 *
+	 * @param error
+	 * @return {string}
 	 */
-	setResult(result) {
-		this._result = result;
-	}
-
-	/**
-	 * @return {Array<Object>|Object|null}
-	 */
-	getResult() {
-		return this._result;
+	getErrorMessage(error) {
+		return error.message;
 	}
 
 	// noinspection JSMethodCanBeStatic

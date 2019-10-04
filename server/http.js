@@ -166,7 +166,6 @@ class FaServerHttp {
 		});
 		req.on("end", function () {
 			let url = self._parser.parseUrl(req.url);
-			// console.info(req.headers, req.url, url, body);
 			let post = null;
 			let files = null;
 			let type = req.headers["content-type"] || req.headers["accept"] || "";

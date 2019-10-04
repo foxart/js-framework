@@ -328,6 +328,7 @@ class FaApplicationModule {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	_getRouteIndex(data) {
 		let {module, controller, action} = data;
 		// return `${uri}@${module}/${controller}/${action}`;
@@ -383,8 +384,8 @@ class FaApplicationModule {
 		let session = Rbac.sessionCheck(req);
 		// let forbidden= Rbac.forbidden;
 		// let unauthorized = Rbac.unauthorized;
-		let result = undefined;
-		let res = rbac["rules"].some(function (rule) {
+		let result;
+		rbac["rules"].some(function (rule) {
 			// console.info(rule);
 			let {access, actions, roles} = rule;
 			// console.warn(actions, roles, action, result);
@@ -397,16 +398,14 @@ class FaApplicationModule {
 				result = self._handleRbacAction(Rbac, session, access, roles, action);
 				return true;
 			} else {
-				// result = null;
 				return false;
 			}
 		});
-		console.log(res, action, result);
-		return result;
+		return result ? result : undefined;
 	}
 
 	_handleRbacAction(Rbac, session, access, roles, action) {
-		let result = undefined;
+		let result;
 		if (roles.has('?')) {
 			if (access === true) {
 				result = this._handleRbacForbidden(Rbac, session, action);

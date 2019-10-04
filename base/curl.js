@@ -65,6 +65,9 @@ class FaCurl {
 				path: function () {
 					return this["path"] ? this["path"] : "/";
 				},
+				auth: function () {
+					return this["auth"] ? this["auth"] : null;
+				},
 				method: function () {
 					return this["method"] ? this["method"].toLowerCase() : "get";
 				},
@@ -177,25 +180,28 @@ class FaCurl {
 		return result;
 	}
 
-	async execute(data = null) {
+	async execute(data = null, options = null) {
 		let self = this;
 		let trace = FaTrace.trace(1);
-		let curl = {
+		let opts = {
 			hostname: this.options.hostname,
 			port: this.options.port,
 			method: this.options.method,
+			auth: this.options.auth,
 			path: this.options.path,
 			headers: this.options.headers,
 			encoding: this.options.encoding,
 		};
-		// console.info("curl", curl);
 		return new Promise(function (resolve, reject) {
+			// let opts = Object.assign(self.options, options);
+			// console.info("curl", opts);
 			let body;
 			if (["patch", "post", "put"].has(self.options.method)) {
-				body = FaCurl._dataToType(data, FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]));
-				// console.log(1, FaHttpHeaders.getValue("Content-Type", [curl.headers, {"content-type": curl.headers["accept"]}]));
+				body = FaCurl._dataToType(data, FaHttpHeaders.getValue("Content-Type", [opts.headers, {"content-type": opts.headers["accept"]}]));
+				// console.log(FaHttpHeaders.getValue("Content-Type", [opts.headers, {"content-type": opts.headers["accept"]}]));
+				// console.log(data, body);
 			} else {
-				curl.path = `${curl.path}?${FaConverter.toUrlEncoded(data)}`;
+				opts.path = `${opts.path}?${FaConverter.toUrlEncoded(data)}`;
 			}
 			// let enc = FaConverter.toUrlEncoded({a: "раз", b: [1, "два"]});
 			// let dec = FaConverter.fromUrlEncoded(enc);
@@ -203,10 +209,10 @@ class FaCurl {
 			/**
 			 *
 			 */
-			let req = self.options.protocol === "https" ? Https.request(curl) : Http.request(curl);
+
+			let req = self.options.protocol === "https" ? Https.request(opts) : Http.request(opts);
 			if (body) {
 				req.write(body);
-
 			}
 			req.on("socket", function (Socket) {
 				// self.options.timeout = 1;
@@ -224,7 +230,8 @@ class FaCurl {
 				});
 				res.on("end", function () {
 					// console.error("body", body);
-					let data = FaCurl._dataFromType(body, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
+					// log(body);
+					let data = FaCurl._dataFromType(body, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": opts.headers["accept"]}]));
 					// console.log(3, FaHttpHeaders.getValue("content-type", [res.headers, {"content-type": curl.headers["accept"]}]));
 					resolve(FaHttpResponse.create(data, res.statusCode, res.headers));
 				});
@@ -241,8 +248,5 @@ class FaCurl {
 	}
 }
 
-/**
- *
- * @type {FaCurl}
- */
+/** @class {FaCurl} */
 module.exports = FaCurl;

@@ -79,13 +79,14 @@ class FaError extends Error {
 	}
 
 	/**
-	 *
+	 * @deprecated
 	 * @param context {*}
 	 * @return {FaError}
 	 */
 	setContext(context) {
 		if (context) {
 			this.context = context;
+			console.log(1,context);
 		}
 		return this;
 	}
