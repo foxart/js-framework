@@ -27,12 +27,22 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 		return this;
 	}
 
+	result(data) {
+		let res = {};
+		res.test = function () {
+			// return 'XXX123';
+			return data;
+		};
+		return res;
+	}
+
 	/** @return {Object} */
 	async findOne() {
 		let trace = FaTrace.trace(1);
 		try {
 			await this.daoClient.open();
-			console.warn(this.sql)
+			/**/
+			// console.warn(this.sql);
 			let result = await this.daoClient.execute(this._sql);
 			await this.daoClient.close();
 			if (result && result[0]) {
@@ -53,6 +63,7 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 			await this.daoClient.open();
 			let result = await this.daoClient.execute(this._sql);
 			await this.daoClient.close();
+			// return this.result(result);
 			if (result && result.length) {
 				return result;
 			} else {
@@ -69,9 +80,15 @@ class FaDaoMysqlModel extends FaDaoModelQuery {
 		let trace = FaTrace.trace(1);
 		try {
 			await this.daoClient.open();
-			let result = await this.daoClient.execute(this._sql);
+			let cursor = await this.daoClient.execute(this._sql);
 			await this.daoClient.close();
-			return result;
+			console.info(cursor)
+			return {
+				id: cursor["insertId"],
+				inserted: cursor["affectedRows"],
+				data: [],
+			};
+			// return result;
 			// if (result && result.length) {
 			// 	return result;
 			// } else {
