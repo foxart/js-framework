@@ -190,9 +190,11 @@ class FaFile {
 		// fileStream.end();
 		let trace = FaTrace.trace(1);
 		try {
+			// Fs.writeFileSync(`${this.getPathname(filename)}`, Buffer.from(data, 'base64'), {
 			Fs.writeFileSync(`${this.getPathname(filename)}`, data, {
 				flag: 'w',
 				// mode: 0o755,
+				// encoding: 'utf8',
 			});
 		} catch (e) {
 			throw FaFile._Error(e).setTrace(trace);

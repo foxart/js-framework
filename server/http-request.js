@@ -32,7 +32,6 @@ class FaHttpRequest {
 	// get _converter() {
 	// 	return this._FaBaseConverter;
 	// }
-
 	parseCookie(cookies) {
 		let result = this._Cookie.parse(cookies);
 		if (Object.entries(result).length !== 0) {
@@ -71,7 +70,7 @@ class FaHttpRequest {
 			let file = this.parseMultipartHeader(header);
 			if (typeof file === "object" && Object.entries(file).length !== 0) {
 				files.push({
-					content: value,
+					content: Buffer.from(value, 'binary'),
 					filename: file["filename"],
 					length: value.length,
 					name: file["name"],

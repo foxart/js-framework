@@ -157,14 +157,17 @@ class FaServerHttp {
 	 */
 	_listenHttp(req, res) {
 		let self = this;
-		let body = "";
+		let body = [];
+		// let body = "";
 		req.on("data", function (chunk) {
-			body += chunk;
+			body.push(chunk);
+			// body += chunk.toString();
 		});
 		req.on("error", function (error) {
 			console.error(error);
 		});
 		req.on("end", function () {
+			body = Buffer.concat(body).toString('binary');
 			let url = self._parser.parseUrl(req.url);
 			let post = null;
 			let files = null;
