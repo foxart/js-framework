@@ -129,6 +129,11 @@ class FaTwig {
 				let list = pointer["variable"][variable];
 				if (list) {
 					list.forEach(function (index) {
+						// if (value === null) {
+						// 	source[index] = source[index].replace(`{{ ${variable} }}`, '');
+						// } else {
+						// 	source[index] = source[index].replace(`{{ ${variable} }}`, value);
+						// }
 						source[index] = source[index].replace(`{{ ${variable} }}`, value);
 					});
 				} else {

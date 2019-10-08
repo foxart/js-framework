@@ -2,102 +2,105 @@
 /*fa*/
 const FaError = require("fa-nodejs/base/error");
 const FaTrace = require("fa-nodejs/base/trace");
-const FaDaoModelQuery = require("fa-nodejs/dao/model-query");
+const FaDaoModel = require("fa-nodejs/dao/model");
+/*vars*/
+let _client_list = {};
 
-class FaDaoMysqlModel extends FaDaoModelQuery {
+class FaDaoMysqlModel extends FaDaoModel {
 	/**
-	 * @param limit {Number}
-	 * @return {FaDaoMysqlModel}
+	 *
+	 * @return {*}
+	 * @private
 	 */
-	limit(limit) {
-		if (limit) {
-			this._query.push(`LIMIT ${limit}`);
+	get _client() {
+		if (!_client_list[this.client]) {
+			let Client = require(this.client);
+			_client_list[this.client] = new Client(this.client);
 		}
-		return this;
-	}
-
-	/**
-	 * @param offset {Number}
-	 * @return {FaDaoMysqlModel}
-	 */
-	offset(offset) {
-		if (offset) {
-			this._query.push(`OFFSET ${offset}`);
-		}
-		return this;
-	}
-
-	result(data) {
-		let res = {};
-		res.test = function () {
-			// return 'XXX123';
-			return data;
-		};
-		return res;
+		return _client_list[this.client];
 	}
 
 	/** @return {Object} */
 	async findOne() {
 		let trace = FaTrace.trace(1);
 		try {
-			await this.daoClient.open();
+			await this._client.open();
 			/**/
 			// console.warn(this.sql);
-			let result = await this.daoClient.execute(this._sql);
-			await this.daoClient.close();
+			let result = await this._client.execute(this._sql);
+			await this._client.close();
 			if (result && result[0]) {
 				return result[0];
 			} else {
 				return null;
 			}
 		} catch (e) {
-			await this.daoClient.close();
+			await this._client.close();
 			return new FaError(e).prependTrace(trace);
 		}
 	}
 
 	/** @return {Array} */
-	async findMany() {
+	/**
+	 * @param query
+	 * @return {Promise<FaDaoModel|Array>}
+	 */
+	async findMany(query) {
 		let trace = FaTrace.trace(1);
 		try {
-			await this.daoClient.open();
-			let result = await this.daoClient.execute(this._sql);
-			await this.daoClient.close();
-			// return this.result(result);
+			await this._client.open();
+			let result = await this._client.execute(query);
+			await this._client.close();
+			console.info(query, result);
 			if (result && result.length) {
-				return result;
+				this.setData(result).setCount(result.length);
 			} else {
-				return [];
+				this.setData([]).setCount(0);
 			}
+			return this;
 		} catch (e) {
-			await this.daoClient.close();
-			return new FaError(e).prependTrace(trace);
+			await this._client.close();
+			return this.setError(new FaError(e).setTrace(trace));
 		}
 	}
 
-	/** @return {Array} */
+	/**
+	 *
+	 * @return {Promise<FaDaoModel>}
+	 */
 	async addOne() {
 		let trace = FaTrace.trace(1);
 		try {
-			await this.daoClient.open();
-			let cursor = await this.daoClient.execute(this._sql);
-			await this.daoClient.close();
-			console.info(cursor)
-			return {
-				id: cursor["insertId"],
-				inserted: cursor["affectedRows"],
-				data: [],
-			};
-			// return result;
-			// if (result && result.length) {
-			// 	return result;
-			// } else {
-			// 	return [];
-			// }
+			await this._client.open();
+			let cursor = await this._client.execute(this._sql + ';' + this._sql);
+			console.info(cursor);
+			await this._client.close();
+			this.load({id: cursor["insertId"]});
+			this.setCount(cursor["affectedRows"]);
+			return this;
 		} catch (e) {
-			await this.daoClient.close();
-			// throw new FaError(e).prependTrace(trace);
-			return new FaError(e).prependTrace(trace);
+			await this._client.close();
+			return this.setError(new FaError(e).setTrace(trace));
+		}
+	}
+
+	/**
+	 *
+	 * @return {Promise<FaDaoModel>}
+	 */
+	async delete() {
+		let trace = FaTrace.trace(1);
+		try {
+			await this._client.open();
+			let cursor = await this._client.execute(this._sql + ';' + this._sql);
+			console.info(cursor);
+			await this._client.close();
+			this.load({id: cursor["insertId"]});
+			this.setCount(cursor["affectedRows"]);
+			return this;
+		} catch (e) {
+			await this._client.close();
+			return this.setError(new FaError(e).setTrace(trace));
 		}
 	}
 }

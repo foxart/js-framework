@@ -78,6 +78,7 @@ class FaDaoAttribute {
 		} else {
 			result = this._fill(this._attributes, [data])[0];
 		}
+
 		return result;
 	};
 }

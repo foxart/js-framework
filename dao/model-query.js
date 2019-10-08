@@ -101,6 +101,17 @@ class FaDaoModelQuery extends FaDaoModel {
 		return this;
 	}
 
+	delete(table = null) {
+		let from = [];
+		if (Array.isArray(table)) {
+			from = table;
+		} else {
+			from = [this.table];
+		}
+		this._query.push(`DELETE FROM ${from.map(item => item).join(', ')}`);
+		return this;
+	}
+
 	/**
 	 * @deprecated
 	 * @return {FaDaoModelQuery}
