@@ -51,7 +51,6 @@ class FaDaoMysqlModel extends FaDaoModel {
 			await this._client.open();
 			let result = await this._client.execute(query);
 			await this._client.close();
-			console.info(query, result);
 			if (result && result.length) {
 				this.setData(result).setCount(result.length);
 			} else {
