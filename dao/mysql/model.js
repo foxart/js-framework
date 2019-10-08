@@ -21,18 +21,21 @@ class FaDaoMysqlModel extends FaDaoModel {
 	}
 
 	/** @return {Object} */
-	async findOne() {
+	async findOne(query) {
 		let trace = FaTrace.trace(1);
 		try {
 			await this._client.open();
-			/**/
-			// console.warn(this.sql);
-			let result = await this._client.execute(this._sql);
+			let result = await this._client.execute(query);
 			await this._client.close();
+			// if (result && result[0]) {
+			// 	return result[0];
+			// } else {
+			// 	return null;
+			// }
 			if (result && result[0]) {
-				return result[0];
+				this.setData(result[0]).setCount(result.length);
 			} else {
-				return null;
+				this.setData(null).setCount(0);
 			}
 		} catch (e) {
 			await this._client.close();
@@ -64,7 +67,7 @@ class FaDaoMysqlModel extends FaDaoModel {
 	}
 
 	/**
-	 *
+	 * @deprecated
 	 * @return {Promise<FaDaoModel>}
 	 */
 	async addOne() {
@@ -87,11 +90,11 @@ class FaDaoMysqlModel extends FaDaoModel {
 	 *
 	 * @return {Promise<FaDaoModel>}
 	 */
-	async delete() {
+	async delete(query) {
 		let trace = FaTrace.trace(1);
 		try {
 			await this._client.open();
-			let cursor = await this._client.execute(this._sql + ';' + this._sql);
+			let cursor = await this._client.execute(query);
 			console.info(cursor);
 			await this._client.close();
 			this.load({id: cursor["insertId"]});

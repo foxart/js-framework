@@ -55,6 +55,10 @@ class FaDaoModel {
 		return this._data;
 	}
 
+	/**
+	 * @param data
+	 * @return {FaDaoModel}
+	 */
 	setData(data) {
 		this._data = data;
 		return this;
@@ -64,8 +68,13 @@ class FaDaoModel {
 		return this._count;
 	}
 
+	/**
+	 * @param count
+	 * @return {FaDaoModel}
+	 */
 	setCount(count) {
 		this._count = count;
+		return this;
 	}
 
 	/**
