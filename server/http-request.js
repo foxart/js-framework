@@ -57,7 +57,7 @@ class FaHttpRequest {
 
 	parseMultipart(body) {
 		let post = [];
-		let files = [];
+		let files = {};
 		let bodyLines = body.split(BODY_SEPARATOR);
 		let boundary = bodyLines.shift();
 		let bodyContent = bodyLines.join(BODY_SEPARATOR).slice(0, -`${BODY_SEPARATOR}${boundary}--${BODY_SEPARATOR}`.length);
@@ -67,25 +67,38 @@ class FaHttpRequest {
 			let sectionLines = sections[i].split(SECTION_SEPARATOR);
 			let header = sectionLines.shift().split(BODY_SEPARATOR).filter(item => !!item);
 			let value = sectionLines.join(SECTION_SEPARATOR);
-			let file = this.parseMultipartHeader(header);
-			if (typeof file === "object" && Object.entries(file).length !== 0) {
-				files.push({
-					content: Buffer.from(value, 'binary'),
-					filename: file["filename"],
-					length: value.length,
-					name: file["name"],
-					type: file["type"],
-				});
+			let parameter = this.parseMultipartHeader(header);
+			// console.info(header);
+			// if (typeof parameter === 'object' && Object.entries(parameter).length !== 0) {
+			if (typeof parameter === 'object') {
+				// if (parameter['filename']) {
+					let file = {
+						data: Buffer.from(value, 'binary'),
+						filename: parameter['filename'],
+						length: value.length,
+						// name: parameter['name'],
+						type: parameter['type'],
+					};
+					// console.log(file);
+					if (files[parameter['name']]) {
+						if (Array.isArray(files[parameter['name']]) === false) {
+							files[parameter['name']] = [files[parameter['name']]];
+						}
+						files[parameter['name']].push(file);
+					} else {
+						files[parameter['name']] = file;
+					}
+				// }
 			} else {
-				post.push({[file]: value});
+				post.push({[parameter]: value});
 			}
 		}
-		post = post.map(function (item) {
+		post = FaConverter.fromUrlEncoded(post.map(function (item) {
 			return `${Object.keys(item)}=${Object.values(item)}`;
-		});
+		}).join('&'));
 		return {
-			files: files.length === 0 ? null : files,
-			post: post.length === 0 ? null : FaConverter.fromUrlEncoded(post.join("&")),
+			files: Object.keys(files).length === 0 ? null : files,
+			post: post.length === 0 ? null : post,
 		};
 	}
 
@@ -97,11 +110,10 @@ class FaHttpRequest {
 			let keyValue = item.split(HEADER_SEPARATOR);
 			let key = keyValue[0].trim().toLowerCase();
 			let value = keyValue[1].trim();
-			if (key === "content-disposition") {
+			if (key === 'content-disposition') {
 				let parameters = value.split(';').filter(function (filter) {
 					return filter.indexOf(PARAMETER_SEPARATOR) !== -1;
 				}).map(function (item) {
-					// console.info(item)
 					let result = item.trim().split(PARAMETER_SEPARATOR);
 					result[1] = result[1].replace(/^[\s'"]+|[\s'"]+$/g, "");
 					return result;
