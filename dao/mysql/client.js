@@ -93,6 +93,8 @@ class FaDaoMysqlClient extends FaDaoClient {
 					}
 				});
 			}
+		}).catch(function (e) {
+			console.error(e);
 		});
 	}
 }
