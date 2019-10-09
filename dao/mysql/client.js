@@ -83,6 +83,7 @@ class FaDaoMysqlClient extends FaDaoClient {
 			if (self.persistent) {
 				resolve(false);
 			} else {
+				console.warn(self.getConnection());
 				self.getConnection().end(function (error) {
 					if (error) {
 						reject(self.error(error));
