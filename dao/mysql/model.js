@@ -7,6 +7,16 @@ const FaDaoModel = require("fa-nodejs/dao/model");
 let _client_list = {};
 
 class FaDaoMysqlModel extends FaDaoModel {
+	// noinspection JSMethodCanBeStatic
+	get client() {
+		throw new FaError('client not specified');
+	}
+
+	// noinspection JSMethodCanBeStatic
+	get table() {
+		throw new FaError('table not specified');
+	}
+
 	/**
 	 *
 	 * @return {*}
@@ -25,84 +35,83 @@ class FaDaoMysqlModel extends FaDaoModel {
 		let trace = FaTrace.trace(1);
 		try {
 			await this._client.open();
-			let result = await this._client.execute(query);
+			let cursor = await this._client.execute(query);
+			// console.info(cursor);
 			await this._client.close();
-			// if (result && result[0]) {
-			// 	return result[0];
-			// } else {
-			// 	return null;
-			// }
-			if (result && result[0]) {
-				this.setData(result[0]).setCount(result.length);
+			if (cursor && cursor[0]) {
+				this.setData(cursor[0]).setCount(cursor.length);
 			} else {
 				this.setData(null).setCount(0);
 			}
+			return true;
 		} catch (e) {
 			await this._client.close();
-			return new FaError(e).prependTrace(trace);
-		}
-	}
-
-	/** @return {Array} */
-	/**
-	 * @param query
-	 * @return {Promise<FaDaoModel|Array>}
-	 */
-	async findMany(query) {
-		let trace = FaTrace.trace(1);
-		try {
-			await this._client.open();
-			let result = await this._client.execute(query);
-			await this._client.close();
-			if (result && result.length) {
-				this.setData(result).setCount(result.length);
-			} else {
-				this.setData([]).setCount(0);
-			}
-			return this;
-		} catch (e) {
-			await this._client.close();
-			return this.setError(new FaError(e).setTrace(trace));
-		}
-	}
-
-	/**
-	 * @deprecated
-	 * @return {Promise<FaDaoModel>}
-	 */
-	async addOne() {
-		let trace = FaTrace.trace(1);
-		try {
-			await this._client.open();
-			let cursor = await this._client.execute(this._sql + ';' + this._sql);
-			console.info(cursor);
-			await this._client.close();
-			this.load({id: cursor["insertId"]});
-			this.setCount(cursor["affectedRows"]);
-			return this;
-		} catch (e) {
-			await this._client.close();
-			return this.setError(new FaError(e).setTrace(trace));
+			this.setError(new FaError(e).setTrace(trace));
+			return false;
 		}
 	}
 
 	/**
 	 *
-	 * @return {Promise<FaDaoModel>}
+	 * @param query
+	 * @return {Promise<boolean>}
+	 */
+	async findMany(query) {
+		let trace = FaTrace.trace(1);
+		try {
+			await this._client.open();
+			let cursor = await this._client.execute(query);
+			// console.info(cursor);
+			await this._client.close();
+			if (cursor && cursor.length) {
+				this.setData(cursor).setCount(cursor.length);
+			} else {
+				this.setData([]).setCount(0);
+			}
+			return true;
+		} catch (e) {
+			await this._client.close();
+			this.setError(new FaError(e).setTrace(trace));
+			return false;
+		}
+	}
+
+	/**
+	 *
+	 * @param query
+	 * @return {Promise<boolean>}
+	 */
+	async insert(query) {
+		let trace = FaTrace.trace(1);
+		try {
+			await this._client.open();
+			let cursor = await this._client.execute(query);
+			await this._client.close();
+			this.setId({id: cursor["insertId"]}).setCount(cursor["affectedRows"]);
+			return true;
+		} catch (e) {
+			await this._client.close();
+			this.setError(new FaError(e).setTrace(trace));
+			return false;
+		}
+	}
+
+	/**
+	 * @param query
+	 * @return {Promise<boolean>}
 	 */
 	async delete(query) {
 		let trace = FaTrace.trace(1);
 		try {
 			await this._client.open();
 			let cursor = await this._client.execute(query);
-			console.info(cursor);
 			await this._client.close();
-			this.load({id: cursor["insertId"]});
 			this.setCount(cursor["affectedRows"]);
-			return this;
+			return true;
 		} catch (e) {
 			await this._client.close();
-			return this.setError(new FaError(e).setTrace(trace));
+			this.setError(new FaError(e).setTrace(trace));
+			return false;
 		}
 	}
 }

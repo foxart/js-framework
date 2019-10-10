@@ -11,7 +11,6 @@ class FaDaoMysqlClient extends FaDaoClient {
 		super(connection);
 	}
 
-	// noinspection JSMethodCanBeStatic
 	/**
 	 * @param error {Error}
 	 * @return {FaError}
@@ -54,23 +53,8 @@ class FaDaoMysqlClient extends FaDaoClient {
 					}
 				});
 			}
-		});
-	}
-
-	/**
-	 * @param query {string}
-	 * @return {Promise<any>}
-	 */
-	execute(query) {
-		let self = this;
-		return new Promise(function (resolve, reject) {
-			self.getConnection().query(query, function (error, results) { // error, results, fields
-				if (error) {
-					reject(self.error(error));
-				} else {
-					resolve(results);
-				}
-			});
+		}).catch(function (e) {
+			console.error(e);
 		});
 	}
 
@@ -83,8 +67,8 @@ class FaDaoMysqlClient extends FaDaoClient {
 			if (self.persistent) {
 				resolve(false);
 			} else {
-				console.warn(self.getConnection());
 				self.getConnection().end(function (error) {
+					// console.warn(arguments);
 					if (error) {
 						reject(self.error(error));
 					} else {
@@ -95,6 +79,25 @@ class FaDaoMysqlClient extends FaDaoClient {
 			}
 		}).catch(function (e) {
 			console.error(e);
+		});
+	}
+
+	/**
+	 * @param query {string}
+	 * @return {Promise<any>}
+	 */
+	execute(query) {
+		let self = this;
+		return new Promise(function (resolve, reject) {
+			// noinspection JSUnusedLocalSymbols
+			self.getConnection().query(query, function (error, results, fields) {
+				// console.warn(arguments);
+				if (error) {
+					reject(self.error(error));
+				} else {
+					resolve(results);
+				}
+			});
 		});
 	}
 }

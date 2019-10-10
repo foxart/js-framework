@@ -6,40 +6,8 @@ class FaDaoModel {
 	/** @constructor */
 	constructor() {
 		this._error = null;
-		// this._result = null;
-		this._data = null;
+		this._data = {};
 		this._count = 0;
-	}
-
-	/**
-	 * @return {boolean}
-	 */
-	get hasError() {
-		return this._error !== null;
-	}
-
-	/**
-	 *
-	 * @param error
-	 * @return {FaDaoModel}
-	 */
-	setError(error) {
-		this._error = new FaError(error);
-		return this;
-	}
-
-	/**
-	 * @return {FaError}
-	 */
-	get error() {
-		return this._error;
-	}
-
-	/**
-	 * @return {string}
-	 */
-	get errorMessage() {
-		return this._error['message'];
 	}
 
 	// noinspection JSMethodCanBeStatic
@@ -50,6 +18,29 @@ class FaDaoModel {
 	get attributes() {
 		throw new FaError("attributes not specified");
 	};
+
+	/**
+	 * @return {FaError}
+	 */
+	get error() {
+		return this._error;
+	}
+
+	/**
+	 * @param error
+	 * @return {FaDaoModel}
+	 */
+	setError(error) {
+		this._error = new FaError(error);
+		return this;
+	}
+
+	/**
+	 * @return {string}
+	 */
+	get errorMessage() {
+		return this._error['message'];
+	}
 
 	get data() {
 		return this._data;
@@ -77,17 +68,31 @@ class FaDaoModel {
 		return this;
 	}
 
+	get id() {
+		return this._id;
+	}
+
+	/**
+	 * @param id
+	 * @return {FaDaoModel}
+	 */
+
+	setId(id) {
+		this._id = id;
+		return this;
+	}
+
 	/**
 	 * @param data
 	 * @return {Object|Array<Object>}
 	 */
 	load(data) {
 		let self = this;
-		this.attributes.forEach(function (map) {
-			if (data[map]) {
-				self._data[map] = data[map];
+		this.attributes.forEach(function (value) {
+			if (data[value]) {
+				self._data[value] = data[value];
 			} else {
-				// self._data[map] = null;
+				self._data[value] = null;
 			}
 		});
 	}
