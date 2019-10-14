@@ -91,7 +91,6 @@ class FaDaoMysqlClient extends FaDaoClient {
 		return new Promise(function (resolve, reject) {
 			// noinspection JSUnusedLocalSymbols
 			self.getConnection().query(query, function (error, results, fields) {
-				// console.warn(arguments);
 				if (error) {
 					reject(self.error(error));
 				} else {

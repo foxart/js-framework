@@ -27,19 +27,23 @@ class FaDaoModel {
 	}
 
 	/**
-	 * @param error
-	 * @return {FaDaoModel}
-	 */
-	setError(error) {
-		this._error = new FaError(error);
-		return this;
-	}
-
-	/**
 	 * @return {string}
 	 */
 	get errorMessage() {
 		return this._error['message'];
+	}
+
+	/**
+	 * @param error
+	 * @return {FaDaoModel}
+	 */
+	setError(error) {
+		if (error === null) {
+			this._error = null;
+		} else {
+			this._error = new FaError(error);
+		}
+		return this;
 	}
 
 	get data() {
@@ -76,7 +80,6 @@ class FaDaoModel {
 	 * @param id
 	 * @return {FaDaoModel}
 	 */
-
 	setId(id) {
 		this._id = id;
 		return this;
