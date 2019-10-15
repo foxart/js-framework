@@ -170,7 +170,7 @@ class FaServerHttp {
 			body = Buffer.concat(body).toString('binary');
 			let url = self._parser.parseUrl(req.url);
 			let get = url.query ? FaConverter.fromUrlEncoded(url.query) : null;
-			let post = null;
+			let post = {};
 			let files = null;
 			let type = req.headers["content-type"] || req.headers["accept"] || "";
 			if (["patch", "post", "put"].has(req.method.toLowerCase())) {
@@ -193,7 +193,7 @@ class FaServerHttp {
 				path: url.pathname,
 				get: get,
 				post: post,
-				request: get ? get : post ? post : null,
+				request: get ? get : post ? post : {},
 				files: files,
 				cookies: req.headers["cookie"] ? self._parser.parseCookie(req.headers["cookie"]) : null,
 				// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},

@@ -55,6 +55,7 @@ class FaDaoModelQuery extends FaDaoModel {
 		return result;
 	}
 
+
 	// noinspection JSMethodCanBeStatic
 	get table() {
 		throw new FaError('table not specified');

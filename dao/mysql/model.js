@@ -56,11 +56,12 @@ class FaDaoMysqlModel extends FaDaoModel {
 			await this._client.close();
 			this.__log(cursor, query, trace);
 			if (cursor && cursor.length) {
-				this.setData(cursor).setCount(cursor.length);
+				this.setResult(cursor).setCount(cursor.length);
+				return true;
 			} else {
-				this.setData([]).setCount(0);
+				this.setResult([]).setCount(0);
+				return null;
 			}
-			return true;
 		} catch (e) {
 			await this._client.close();
 			this.setError(new FaError(e).setTrace(trace));
@@ -80,18 +81,12 @@ class FaDaoMysqlModel extends FaDaoModel {
 			let cursor = await this._client.execute(query);
 			await this._client.close();
 			this.__log(cursor, query, trace);
-			if (cursor && cursor[0]) {
-				let fields = Object.values(cursor[0]).filter(item => item).length;
-				if (fields) {
-					this.setData(cursor[0]).setCount(1);
-					return true;
-				} else {
-					this.setData(null).setCount(0);
-					return false;
-				}
-			} else {
-				this.setData(null).setCount(0);
+			if (cursor && cursor[0] && Object.values(cursor[0]).filter(item => item).length) {
+				this.setResult(cursor[0]).setCount(1);
 				return true;
+			} else {
+				this.setResult(null).setCount(0);
+				return null;
 			}
 		} catch (e) {
 			await this._client.close();
@@ -128,6 +123,28 @@ class FaDaoMysqlModel extends FaDaoModel {
 	 * @return {Promise<boolean>}
 	 * @protected
 	 */
+	async update(query) {
+		let trace = FaTrace.trace(1);
+		try {
+			await this._client.open();
+			let cursor = await this._client.execute(query);
+			await this._client.close();
+			this.__log(cursor, query, trace);
+			this.setCount(cursor["affectedRows"]);
+			return true;
+		} catch (e) {
+			await this._client.close();
+			this.setError(new FaError(e).setTrace(trace));
+			return false;
+		}
+	}
+
+	/**
+	 *
+	 * @param query
+	 * @return {Promise<boolean>}
+	 * @protected
+	 */
 	async delete(query) {
 		let trace = FaTrace.trace(1);
 		try {
@@ -135,6 +152,7 @@ class FaDaoMysqlModel extends FaDaoModel {
 			let cursor = await this._client.execute(query);
 			await this._client.close();
 			this.__log(cursor, query, trace);
+			// console.error(cursor, query, trace);
 			this.setCount(cursor["affectedRows"]);
 			return true;
 		} catch (e) {

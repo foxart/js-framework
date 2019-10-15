@@ -6,6 +6,7 @@ class FaDaoModel {
 	/** @constructor */
 	constructor() {
 		this._error = null;
+		this._result = null;
 		this._data = {};
 		this._count = 0;
 	}
@@ -46,16 +47,16 @@ class FaDaoModel {
 		return this;
 	}
 
-	get data() {
-		return this._data;
+	get result() {
+		return this._result;
 	}
 
 	/**
-	 * @param data
+	 * @param result
 	 * @return {FaDaoModel}
 	 */
-	setData(data) {
-		this._data = data;
+	setResult(result) {
+		this._result = result;
 		return this;
 	}
 
@@ -86,10 +87,12 @@ class FaDaoModel {
 	}
 
 	/**
+	 *
 	 * @param data
-	 * @return {Object|Array<Object>}
+	 * @return {FaDaoModel}
 	 */
 	load(data) {
+		// console.log(data);
 		let self = this;
 		this.attributes.forEach(function (value) {
 			if (data[value]) {
@@ -98,7 +101,14 @@ class FaDaoModel {
 				self._data[value] = null;
 			}
 		});
+		// console.info(this.data);
+		return this;
 	}
+
+	get data() {
+		return this._data;
+	}
+
 }
 
 /** @class {FaDaoModel} */
