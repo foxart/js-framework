@@ -14,21 +14,6 @@ class FaDaoClient extends FaDaoClientInterface {
 		this._client_path = client_path;
 	}
 
-	// noinspection JSMethodCanBeStatic
-	open() {
-		throw new Error("open not implemented");
-	}
-
-	// noinspection JSMethodCanBeStatic
-	execute() {
-		throw new Error("execute not implemented");
-	}
-
-	// noinspection JSMethodCanBeStatic
-	close() {
-		throw new Error("close not implemented");
-	}
-
 	/** @return {boolean} */
 	checkConnection() {
 		return !!_connection_list[this._client_path];

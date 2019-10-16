@@ -32,7 +32,7 @@ class FaDaoMysqlModel extends FaDaoModel {
 
 	/**
 	 *
-	 * @return {*}
+	 * @return {FaDaoMysqlClient}
 	 * @private
 	 */
 	get _client() {
@@ -63,7 +63,9 @@ class FaDaoMysqlModel extends FaDaoModel {
 				return null;
 			}
 		} catch (e) {
-			await this._client.close();
+			if (this._client.exist) {
+				await this._client.close();
+			}
 			this.setError(new FaError(e).setTrace(trace));
 			return false;
 		}
@@ -89,7 +91,9 @@ class FaDaoMysqlModel extends FaDaoModel {
 				return null;
 			}
 		} catch (e) {
-			await this._client.close();
+			if (this._client.exist) {
+				await this._client.close();
+			}
 			this.setError(new FaError(e).setTrace(trace));
 			return false;
 		}
@@ -111,7 +115,9 @@ class FaDaoMysqlModel extends FaDaoModel {
 			this.setId(cursor["insertId"]).setCount(cursor["affectedRows"]);
 			return true;
 		} catch (e) {
-			await this._client.close();
+			if (this._client.exist) {
+				await this._client.close();
+			}
 			this.setError(new FaError(e).setTrace(trace));
 			return false;
 		}
@@ -133,7 +139,9 @@ class FaDaoMysqlModel extends FaDaoModel {
 			this.setCount(cursor["affectedRows"]);
 			return true;
 		} catch (e) {
-			await this._client.close();
+			if (this._client.exist) {
+				await this._client.close();
+			}
 			this.setError(new FaError(e).setTrace(trace));
 			return false;
 		}
@@ -156,7 +164,9 @@ class FaDaoMysqlModel extends FaDaoModel {
 			this.setCount(cursor["affectedRows"]);
 			return true;
 		} catch (e) {
-			await this._client.close();
+			if (this._client.exist) {
+				await this._client.close();
+			}
 			this.setError(new FaError(e).setTrace(trace));
 			return false;
 		}

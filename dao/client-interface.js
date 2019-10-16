@@ -58,11 +58,24 @@ class FaDaoClientInterface {
 	}
 
 	// noinspection JSMethodCanBeStatic
-	get error() {
+	error() {
 		throw new Error("error not implemented");
 	}
 
+	// noinspection JSMethodCanBeStatic
+	open() {
+		throw new Error("open not implemented");
+	}
 
+	// noinspection JSMethodCanBeStatic
+	execute() {
+		throw new Error("execute not implemented");
+	}
+
+	// noinspection JSMethodCanBeStatic
+	close() {
+		throw new Error("close not implemented");
+	}
 }
 
 /**

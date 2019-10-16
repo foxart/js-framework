@@ -1,9 +1,0 @@
-{
-	"hostname": "localhost",
-	"port": 3306,
-	"database": "information_schema",
-	"user": "root",
-	"password": "",
-	"persistent": false,
-	"timeout": 5000
-}

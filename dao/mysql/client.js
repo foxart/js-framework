@@ -9,6 +9,7 @@ const FaDaoClient = require("fa-nodejs/dao/client");
 class FaDaoMysqlClient extends FaDaoClient {
 	constructor(connection) {
 		super(connection);
+		this._open = false;
 	}
 
 	/**
@@ -28,8 +29,12 @@ class FaDaoMysqlClient extends FaDaoClient {
 		}
 	}
 
+	get exist() {
+		return this._open === true;
+	}
+
 	/**
-	 * @return {Promise<any>}
+	 * @return {Promise<*>}
 	 */
 	async open() {
 		let self = this;
@@ -37,6 +42,7 @@ class FaDaoMysqlClient extends FaDaoClient {
 			if (self.checkConnection()) {
 				resolve(true);
 			} else {
+				/** @type {Object} */
 				let connection = Mysql.createConnection({
 					host: self.hostname,
 					port: self.port,
@@ -46,20 +52,20 @@ class FaDaoMysqlClient extends FaDaoClient {
 				});
 				connection.connect(function (error) {
 					if (error) {
+						self._open = false;
 						reject(self.error(error));
 					} else {
+						self._open = true;
 						self.attachConnection(connection);
 						resolve(connection.threadId);
 					}
 				});
 			}
-		}).catch(function (e) {
-			console.error(e);
 		});
 	}
 
 	/**
-	 * @return {Promise<any>}
+	 * @return {Promise<*>}
 	 */
 	async close() {
 		let self = this;
@@ -68,23 +74,22 @@ class FaDaoMysqlClient extends FaDaoClient {
 				resolve(false);
 			} else {
 				self.getConnection().end(function (error) {
-					// console.warn(arguments);
 					if (error) {
+						self._open = true;
 						reject(self.error(error));
 					} else {
+						self._open = false;
 						self.detachConnection();
 						resolve(true);
 					}
 				});
 			}
-		}).catch(function (e) {
-			console.error(e);
 		});
 	}
 
 	/**
 	 * @param query {string}
-	 * @return {Promise<any>}
+	 * @return {Promise<*>}
 	 */
 	execute(query) {
 		let self = this;
