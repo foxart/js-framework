@@ -84,7 +84,8 @@ class FaDaoMysqlModel extends FaDaoModel {
 			await this._client.close();
 			this.__log(cursor, query, trace);
 			if (cursor && cursor[0] && Object.values(cursor[0]).filter(item => item).length) {
-				this.setResult(cursor[0]).setCount(1);
+				//todo remove setResult
+				this.setResult(cursor[0]).load(cursor[0]).setCount(1);
 				return true;
 			} else {
 				this.setResult(null).setCount(0);

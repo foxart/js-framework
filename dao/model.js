@@ -92,23 +92,26 @@ class FaDaoModel {
 	 * @return {FaDaoModel}
 	 */
 	load(data) {
-		// console.log(data);
 		let self = this;
-		this.attributes.forEach(function (value) {
-			if (data[value]) {
-				self._data[value] = data[value];
-			} else {
-				self._data[value] = null;
+		Object.entries(data).forEach(function (item) {
+			if (self.attributes.has(item[0])){
+				self._data[item[0]] = item[1];
 			}
 		});
-		// console.info(this.data);
+		// this.attributes.forEach(function (item) {
+		// 	if (data[item]) {
+		// 		self._data[item] = data[item];
+		// 	} else {
+		// 		self._data[item] = null;
+		// 	}
+		// });
+		// console.error(this.data);
 		return this;
 	}
 
 	get data() {
 		return this._data;
 	}
-
 }
 
 /** @class {FaDaoModel} */
