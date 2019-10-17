@@ -111,4 +111,3 @@ class FaDaoMysqlClient extends FaDaoClient {
  * @class {FaDaoMysqlClient}
  */
 module.exports = FaDaoMysqlClient;
-
