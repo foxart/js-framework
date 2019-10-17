@@ -1,7 +1,2 @@
 !.gitignore
-##FOLDERS
-.idea
-node_modules
-##FILES
-.attach_pid*
-*.iml
+/.idea
