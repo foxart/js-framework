@@ -353,7 +353,12 @@ class FaApplicationModule {
 				if (rbac) {
 					data = rbac;
 				} else {
-					data = await Controller[controllerAction].apply(Controller, arguments);
+					// data = await Controller[controllerAction].call(Controller, req);
+					try {
+						data = await Controller['beforeAction'].call(Controller, req, action);
+					} catch (e) {
+						console.warn(e, e instanceof Error);
+					}
 				}
 				// console.warn(data);
 				// let data = await Controller[controllerAction].call(Controller, req);
@@ -389,12 +394,7 @@ class FaApplicationModule {
 			// console.info(rule);
 			let {access, actions, roles} = rule;
 			// console.warn(actions, roles, action, result);
-			if (actions === "*") {
-				// console.info(actions, roles, action, result);
-				result = self._handleRbacAction(Rbac, session, access, roles, action);
-				return true;
-			} else if (actions.has(action)) {
-				// console.info(actions, roles, action, result);
+			if (actions === "*" || actions.has(action)) {
 				result = self._handleRbacAction(Rbac, session, access, roles, action);
 				return true;
 			} else {

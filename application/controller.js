@@ -65,6 +65,22 @@ class FaController {
 		};
 	}
 
+	_controllerMethodToAction(action) {
+		this._regularControllerMethod = new RegExp("^[a-z][a-z0-9-_]+[a-z0-9]$");
+		let match = action.match(this._regularControllerMethod);
+		if (match) {
+			return `action${match[0].split("-").map(item => item.capitalize()).join("")}`;
+		} else {
+			// throw new Error(`wrong controller action: ${action}`);
+			return null;
+		}
+	}
+
+	async beforeAction(req, action) {
+		console.warn(this.name, action, this._controllerMethodToAction(action));
+		return await this[this._controllerMethodToAction(action)].call(this, req);
+	}
+
 	// noinspection JSMethodCanBeStatic
 	get contentType() {
 		return FaHttpContentType;

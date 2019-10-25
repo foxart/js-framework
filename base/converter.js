@@ -99,6 +99,7 @@ class FaConverter {
 	 */
 	static toJson(data) {
 		return FaConverter.isString(data) ? data : JSON.stringify(data, null, 128);
+		// return FaConverter.isString(data) ? data : JSON.stringify(data);
 	}
 
 	/**

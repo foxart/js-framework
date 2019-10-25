@@ -199,7 +199,6 @@ class FaCurl {
 			if (["patch", "post", "put"].has(self.options.method)) {
 				body = FaCurl._dataToType(data, FaHttpHeaders.getValue("Content-Type", [opts.headers, {"content-type": opts.headers["accept"]}]));
 				// console.log(FaHttpHeaders.getValue("Content-Type", [opts.headers, {"content-type": opts.headers["accept"]}]));
-				// console.log(data, body);
 			} else {
 				opts.path = `${opts.path}?${FaConverter.toUrlEncoded(data)}`;
 			}
@@ -213,6 +212,8 @@ class FaCurl {
 			let req = self.options.protocol === "https" ? Https.request(opts) : Http.request(opts);
 			if (body) {
 				req.write(body);
+				// console.log(body, opts);
+				// log(body);
 			}
 			req.on("socket", function (Socket) {
 				// self.options.timeout = 1;
