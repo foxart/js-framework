@@ -1,6 +1,6 @@
 {
 	"name": "fa-framework",
-	"version": "1.0.330",
+	"version": "1.0.331",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
@@ -44,7 +44,7 @@
 	},
 	"bugs": {
 		"url": "https://github.com/foxart/nodejs-framework/issues",
-		"email" : "foxartorg@gmail.com"
+		"email": "foxartorg@gmail.com"
 	},
 	"author": "Kosenko Ivan Sergeevich",
 	"license": "MIT",
