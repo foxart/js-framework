@@ -1,14 +1,10 @@
 {
-	"name": "fa-nodejs",
-	"version": "1.0.329",
+	"name": "fa-framework",
+	"version": "1.0.330",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/foxart/fa-nodejs.git"
 	},
 	"dependencies": {
 		"browser-detect": "^0.2.28",
@@ -27,12 +23,6 @@
 		"utils-extend": "^1.0.8",
 		"uuid": "^3.3.2"
 	},
-	"author": "Kosenko Ivan Sergeevich",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/foxart/fa-nodejs/issues"
-	},
-	"homepage": "https://github.com/foxart/fa-nodejs#readme",
 	"devDependencies": {
 		"@babel/core": "^7.5.5",
 		"gulp": "^4.0.2",
@@ -47,5 +37,16 @@
 		"gulp-notify": "^3.2.0",
 		"gulp-plumber": "^1.2.1",
 		"gulp-sourcemaps": "^2.6.5"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/foxart/nodejs-framework.git"
+	},
+	"bugs": {
+		"url": "https://github.com/foxart/nodejs-framework/issues",
+		"email" : "foxartorg@gmail.com"
+	},
+	"author": "Kosenko Ivan Sergeevich",
+	"license": "MIT",
+	"homepage": "https://github.com/foxart/nodejs-framework#readme"
 }

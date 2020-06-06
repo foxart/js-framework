@@ -130,18 +130,18 @@ class FaServerHttp {
 				key: this.FilePrivate.readFileSync("ssl/server.key"),
 				cert: this.FilePrivate.readFileSync("ssl/server.cert")
 			};
-			Https.createServer(options, function (req, res) {
+			Https.createServer(options, function(req, res) {
 				self._listenHttp(req, res);
-			}).listen(configuration.port, function () {
-				console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
+			}).listen(configuration.port, function() {
+				console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function(key) {
 					return `{${key}}`;
 				}), Object.values(configuration)));
 			});
 		} else {
-			Http.createServer(function (req, res) {
+			Http.createServer(function(req, res) {
 				self._listenHttp(req, res);
-			}).listen(configuration.port, function () {
-				console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function (key) {
+			}).listen(configuration.port, function() {
+				console.log(`FaHttp ${FaConsoleColor.effect.bold}${FaConsoleColor.color.green}\u2714${FaConsoleColor.effect.reset} {protocol}://{host}:{port} <{path}>`.replaceAll(Object.keys(configuration).map(function(key) {
 					return `{${key}}`;
 				}), Object.values(configuration)));
 			});
@@ -159,14 +159,14 @@ class FaServerHttp {
 		let self = this;
 		let body = [];
 		// let body = "";
-		req.on("data", function (chunk) {
+		req.on("data", function(chunk) {
 			body.push(chunk);
 			// body += chunk.toString();
 		});
-		req.on("error", function (error) {
+		req.on("error", function(error) {
 			console.error(error);
 		});
-		req.on("end", function () {
+		req.on("end", function() {
 			body = Buffer.concat(body).toString('binary');
 			let url = self._parser.parseUrl(req.url);
 			let get = url.query ? FaConverter.fromUrlEncoded(url.query) : null;
@@ -199,7 +199,7 @@ class FaServerHttp {
 				// request: (typeof get === "object" && typeof post === "object") ? Object.assign({}, get, post) : {},
 				input: body,
 			};
-			self._handleRequest(request).then(function (result) {
+			self._handleRequest(request).then(function(result) {
 				/*todo make proper content-type and|or charset extractor*/
 				let contentType = FaHttpHeaders.getValue("Content-Type", [
 					result["headers"],
@@ -230,7 +230,7 @@ class FaServerHttp {
 						result["body"] = result["body"].toString();
 					}
 				}
-				Object.entries(result["headers"]).map(function ([key, value]) {
+				Object.entries(result["headers"]).map(function([key, value]) {
 					if (["Content-Type", "content-type"].omit(key)) {
 						res.setHeader(key, value);
 					}
@@ -261,7 +261,7 @@ class FaServerHttp {
 		let mime = MimeTypes.lookup(data.path);
 		let route = this.router.find(data.path);
 		let asset = this.asset.find(data.path);
-		return new Promise(function (resolve) {
+		return new Promise(function(resolve) {
 			if (route) {
 				resolve(self._handleRoute(route, data));
 			} else if (asset) {
@@ -300,17 +300,17 @@ class FaServerHttp {
 	 */
 	_handleRoute(callback, data) {
 		let self = this;
-		return new Promise(function (resolve) {
+		return new Promise(function(resolve) {
 			// resolve(callback.call(self, data));
 			resolve(callback(data));
-		}).then(function (result) {
+		}).then(function(result) {
 			if (FaHttpResponse.check(result)) {
 				return result;
 			} else {
 				// console.error(result, false);
 				return FaHttpResponse.create(result);
 			}
-		}).catch(function (e) {
+		}).catch(function(e) {
 			// let error = new FaError(e).pickTrace(0);
 			let error = new FaError(e);
 			console.error(error);
@@ -347,8 +347,5 @@ class FaServerHttp {
 	}
 }
 
-/**
- *
- * @type {FaServerHttp}
- */
+/** @type {FaServerHttp} */
 module.exports = FaServerHttp;

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# BABEL
+npm install --save-dev @babel/core
 # GULP
 npm install --save-dev gulp
 npm install --save-dev gulp-babel
@@ -12,6 +14,3 @@ npm install --save-dev gulp-less-changed
 npm install --save-dev gulp-notify
 npm install --save-dev gulp-plumber
 npm install --save-dev gulp-sourcemaps
-# BABEL
-npm install --save-dev @babel/core
-#npm install --save-dev @babel/preset-env

@@ -59,8 +59,5 @@ class FaAsset {
 	}
 }
 
-/**
- *
- * @type {FaAsset}
- */
+/** @class {FaAsset} */
 module.exports = FaAsset;
