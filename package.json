@@ -15,7 +15,6 @@
 		"js-md5": "^0.7.3",
 		"merge-deep": "^3.0.2",
 		"mime-types": "^2.1.24",
-		"mongodb": "^3.3.0",
 		"qs": "^6.6.0",
 		"socket.io": "^2.1.1",
 		"socket.io-client": "^2.2.0",
